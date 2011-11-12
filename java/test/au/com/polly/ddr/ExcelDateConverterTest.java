@@ -13,6 +13,7 @@ import java.util.Date;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Exercise the excel date conversion routines. These tests are especially important because the
@@ -137,6 +138,21 @@ public void testStartTwoThousand()
     Date result = ExcelDateConverter.getInstance().convert( 36526.0 );
     assertNotNull( result );
     assertEquals( when, result );
+}
+
+@Test
+public void testFourteenthAugust2005()
+{
+    Calendar cal = dateParser.parse( "14th August 2005" );
+    Date when = cal.getTime();
+    Date result = ExcelDateConverter.getInstance().convert( 38578.0 );
+    String resultText;
+    assertNotNull( result );
+    assertEquals(when, result);
+    resultText = result.toString();
+    assertTrue( resultText.contains( "Aug" ) );
+    assertTrue( resultText.contains( "14" ) );
+    assertTrue( resultText.contains( "2005" ) );
 }
 
 

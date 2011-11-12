@@ -319,7 +319,7 @@ public class p46
                     ( sheet.getSheetName().toLowerCase().equals( "allocation" ) )
                 ||  ( sheet.getSheetName().toLowerCase().equals( "allocated" ) ) )
             {
-                processAllocationSheet( sheet );
+                processAllocationSheet( sheet, 59 );
             }
 
             /*
@@ -341,11 +341,13 @@ public class p46
         }
     }
 
-    protected void processAllocationSheet( Sheet sheet )
+
+    protected void processAllocationSheet( Sheet sheet, int column )
     {
         // find the row with "well" in the first column...
         // ------------------------------------------------
         int firstRow = sheet.getFirstRowNum();
+        int numberRows = sheet.getPhysicalNumberOfRows();
         int rowCursor = firstRow;
         int columnCursor;
         String text = null;
@@ -364,11 +366,17 @@ public class p46
         formatter.setMinimumIntegerDigits(4);
         formatter.setGroupingUsed( false );
 
-        Pattern dateFormatPattern = Pattern.compile( "^mm\\/dd\\/yy(yy)?" );
+        Pattern dateFormatPattern = Pattern.compile( "^mm\\/dd\\/yy(yy)?.*" );
         Matcher dateFormatMatcher;
 
         Row row;
         Cell cell;
+        Cell oilCell;
+        Cell waterCell;
+        Cell gasCell;
+        Cell NpCell;
+        Cell GORCell;
+        Cell WCTCell;
 
 
         do {
@@ -379,7 +387,59 @@ public class p46
 
             CellStyle style = cell.getCellStyle();
             String format = style.getDataFormatString();
+            dateFormatMatcher = dateFormatPattern.matcher( format );
 
+            // only process rows where the first column is a date/time..
+            // ----------------------------------------------------------
+            if ( ( cell.getCellType() == Cell.CELL_TYPE_NUMERIC ) && dateFormatMatcher.matches() )
+            {
+                when = ExcelDateConverter.getInstance().convert( cell.getNumericCellValue() );
+
+                // move along to first column to extract data from...
+                // --------------------------------------------------
+                columnCursor = column;
+                oilCell = row.getCell( columnCursor++ );
+                gasCell = row.getCell( columnCursor++ );
+                waterCell = row.getCell( columnCursor++ );
+                NpCell = row.getCell( columnCursor++ );
+                GORCell = row.getCell( columnCursor++ );
+                WCTCell = row.getCell( columnCursor++ );
+
+                System.out.println( rowCursor + ", oilCell.type=" + cellTypeName( oilCell.getCellType() )
+                        + ", gasCell.type=" + cellTypeName( gasCell.getCellType() )
+                        + ", waterCell.type=" + cellTypeName( waterCell.getCellType())
+                        + ", NpCell.type=" + cellTypeName( NpCell.getCellType() )
+                        + ", GORCell.type=" + cellTypeName( GORCell.getCellType() )
+                        + ", WCTCell.type=" + cellTypeName( WCTCell.getCellType() )
+                );
+
+                if (
+                        ( oilCell.getCellType() == Cell.CELL_TYPE_NUMERIC )
+                     && ( gasCell.getCellType() == Cell.CELL_TYPE_NUMERIC )
+                     && ( waterCell.getCellType() == Cell.CELL_TYPE_NUMERIC )
+                     && ( NpCell.getCellType() == Cell.CELL_TYPE_FORMULA )
+                     && ( GORCell.getCellType() == Cell.CELL_TYPE_FORMULA )
+                     && ( WCTCell.getCellType() == Cell.CELL_TYPE_FORMULA )
+                    )
+                {
+                    double oilProduction;
+                    double gasProduction;
+                    double waterProduction;
+                    double Np;
+                    double GOR;
+                    double WCT;
+
+                    System.out.println( ">>> " + when.toString()
+                            + " oil=" + formatter.format( oilCell.getNumericCellValue() )
+                            + ", gas=" + formatter.format( gasCell.getNumericCellValue() )
+                            + ", water=" + formatter.format( waterCell.getNumericCellValue() )
+                            + ", Np=" + formatter.format( NpCell.getNumericCellValue() )
+                            + ", GOR=" + formatter.format( GORCell.getNumericCellValue() )
+                            + ", WCT=" + formatter.format( WCTCell.getNumericCellValue() ));
+
+                }
+            }
+ /*
             switch( cell.getCellType() )
             {
                 case Cell.CELL_TYPE_NUMERIC:
@@ -391,7 +451,7 @@ public class p46
                     dateFormatMatcher = dateFormatPattern.matcher( format );
                     if ( dateFormatMatcher.matches() )
                     {
-                        when = convertExcelDate( number );
+                        when = ExcelDateConverter.getInstance().convert( number );
                         contents = when.toString();
                     } else {
                         contents = formatter.format( number ) + " - format[" + format + "]";
@@ -424,13 +484,13 @@ public class p46
             }
 
             System.out.println( "Cell( row=" + rowCursor + ", column=" + columnCursor + " )=" + contents );
-
+ */
             emptyCellCount = cellEmpty ? emptyCellCount+1 : 0;
             // consider the worksheet at an end if the data in the first column is empty, as is the case in the prevous
             // rowm and we are at least ten rows into the worksheet proper...
             // ---------------------------------------------------------------------------------------------------------
-            atEndOfSheet = ( ( emptyCellCount > 3 )  && ( rowCursor > firstRow + 10 ) ) || rowCursor > 65000;
-            if ( ! atEndOfSheet ) { rowCursor++; }
+            rowCursor++;
+            atEndOfSheet = ( ( emptyCellCount > 3 )  && ( rowCursor > firstRow + 10 ) ) || rowCursor >= numberRows || rowCursor > 65000;
         } while( !atEndOfSheet );
 
 
@@ -718,29 +778,40 @@ public class p46
         }
     }
 
-    protected static Date convertExcelDate( double xlValue )
+    public static String cellTypeName( int type )
     {
-        int dayComponent;
-        int seconds;
-        Date result;
-        Calendar cal = Calendar.getInstance();
-        cal.set( Calendar.YEAR, 1900 );
-        cal.set( Calendar.MONTH, Calendar.JANUARY );
-        cal.set( Calendar.DAY_OF_MONTH, 1 );
-        cal.set( Calendar.HOUR_OF_DAY, 0 );
-        cal.set( Calendar.MINUTE, 0 );
-        cal.set( Calendar.SECOND, 0 );
+        String result = "<unknown>";
 
-        dayComponent = (int)Math.floor( xlValue );
-        seconds = (int)(  xlValue - Math.floor( xlValue ) ) * 86400;
+        switch( type )
+        {
+            case Cell.CELL_TYPE_BLANK:
+                result = "BLANK";
+                break;
 
-        cal.add( Calendar.DATE, dayComponent );
-        cal.add( Calendar.SECOND, seconds );
+            case Cell.CELL_TYPE_BOOLEAN:
+                result="BOOLEAN";
+                break;
 
-        result = cal.getTime();
+            case Cell.CELL_TYPE_ERROR:
+                result="ERROR";
+                break;
 
+            case Cell.CELL_TYPE_FORMULA:
+                result="FORMULA";
+                break;
+
+            case Cell.CELL_TYPE_NUMERIC:
+                result="NUMBER";
+                break;
+
+            case Cell.CELL_TYPE_STRING:
+                result="STRING";
+                break;
+        }
         return result;
     }
+
+
 
     /**
      * An instance of this class can be used to control the files returned
