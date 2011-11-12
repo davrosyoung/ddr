@@ -12,10 +12,8 @@ import java.util.Date;
 public class GasWellDataLocator
 {
     String wellName;
-    int startRow;
-    int endRow;
-    int startColumn;
-    int endColumn;
+    ExcelCellLocation startCell;
+    ExcelCellLocation endCell;
     int dateColumn;
     Date startDate;
     Date endDate;
@@ -25,13 +23,11 @@ public GasWellDataLocator()
 
 }
 
-public GasWellDataLocator( String wellName, int startRow, int endRow, int startColumn, int endColumn, Date startDate, Date endDate )
+public GasWellDataLocator( String wellName, ExcelCellLocation startCell, ExcelCellLocation endCell, Date startDate, Date endDate )
 {
     setWellName( wellName );
-    setStartRow( startRow );
-    setEndRow( endRow );
-    setStartColumn( startColumn );
-    setEndColumn( endColumn );
+    setStartCell( startCell );
+    setEndCell( endCell);
     setStartDate( startDate );
     setEndDate( endDate );
 }
@@ -46,44 +42,24 @@ public void setWellName(String wellName)
     this.wellName = wellName;
 }
 
-public int getStartRow()
+public ExcelCellLocation getStartCell()
 {
-    return startRow;
+    return startCell;
 }
 
-public void setStartRow(int startRow)
+public void setStartCell(ExcelCellLocation startCell)
 {
-    this.startRow = startRow;
+    this.startCell = startCell;
 }
 
-public int getEndRow()
+public ExcelCellLocation getEndCell()
 {
-    return endRow;
+    return endCell;
 }
 
-public void setEndRow(int endRow)
+public void setEndCell(ExcelCellLocation endCell)
 {
-    this.endRow = endRow;
-}
-
-public int getStartColumn()
-{
-    return startColumn;
-}
-
-public void setStartColumn(int startColumn)
-{
-    this.startColumn = startColumn;
-}
-
-public int getEndColumn()
-{
-    return endColumn;
-}
-
-public void setEndColumn(int endColumn)
-{
-    this.endColumn = endColumn;
+    this.endCell = endCell;
 }
 
 public int getDateColumn()

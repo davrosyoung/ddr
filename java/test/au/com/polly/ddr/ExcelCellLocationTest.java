@@ -5,6 +5,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by IntelliJ IDEA.
@@ -168,7 +172,102 @@ public void testAAA1001()
     assertEquals( 1000, loc.getRow() );
     assertEquals( 702, loc.getColumn() );
     assertEquals("AAA1001", loc.toString());
+}
 
+@Test
+public void testCopyLocation()
+{
+    ExcelCellLocation a = new ExcelCellLocation( "ABA5825");
+    ExcelCellLocation b = a.copy();
+    assertTrue( a.equals( b ) );
+    assertEquals(a, b);
+    assertEquals( a.getColumn(), b.getColumn() );
+    assertEquals( a.getRow(), b.getRow() );
+    assertEquals( a.toString(), b.toString() );
+}
+
+
+
+@Test
+public void testEquals()
+{
+    ExcelCellLocation a = new ExcelCellLocation( "ABA5825");
+    ExcelCellLocation b = a.copy();
+    assertTrue( a.equals( b ) );
+    assertEquals(a, b);
+    assertEquals( a.getColumn(), b.getColumn() );
+    assertEquals( a.getRow(), b.getRow() );
+    assertEquals( a.toString(), b.toString() );
+
+    b.moveDown();
+    assertFalse(a.getRow() == b.getRow());
+    assertTrue(a.getColumn() == b.getColumn());
+
+    b = a.copy();
+    assertEquals(a, b);
+    assertEquals( a.getColumn(), b.getColumn() );
+    assertEquals( a.getRow(), b.getRow() );
+    assertEquals( a.toString(), b.toString() );
+
+    b.moveRight();
+    assertTrue(!a.equals(b));
+    assertEquals(a.getRow(), b.getRow());
+    assertFalse(a.getColumn() == b.getColumn());
+}
+
+@Test
+public void testMovingCell()
+{
+    ExcelCellLocation a = new ExcelCellLocation( "E15");
+    assertEquals( 4, a.getColumn() );
+    assertEquals( 14, a.getRow() );
+
+    a.moveUp();
+    assertEquals( 4, a.getColumn() );
+    assertEquals( 13, a.getRow() );
+
+    a.moveRight();
+    assertEquals( 5, a.getColumn() );
+    assertEquals( 13, a.getRow() );
+
+    a.moveDown();
+    assertEquals( 5, a.getColumn() );
+    assertEquals( 14, a.getRow() );
+
+    a.moveLeft();
+    assertEquals( 4, a.getColumn() );
+    assertEquals( 14, a.getRow() );
+
+    a.moveLeft();
+    a.moveLeft();
+    a.moveLeft();
+
+    assertEquals( 1, a.getColumn() );
+    assertEquals( 14, a.getRow() );
+    a.moveLeft();
+    assertEquals( 0, a.getColumn() );
+    assertEquals( 14, a.getRow() );
+    a.moveLeft();
+    assertEquals( 0, a.getColumn() );
+    assertEquals( 14, a.getRow()  );
+
+    for( int i = 0; i < 13; i++ )
+    {
+        a.moveUp();
+    }
+
+    assertEquals( 0, a.getColumn() );
+    assertEquals( 1, a.getRow() );
+
+    a.moveUp();
+
+    assertEquals( 0, a.getColumn() );
+    assertEquals( 0, a.getRow() );
+
+    a.moveUp();
+
+    assertEquals( 0, a.getColumn() );
+    assertEquals( 0, a.getRow() );
 }
 
 }

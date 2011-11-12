@@ -6,24 +6,29 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 12/11/11
- * Time: 12:49 PM
- * To change this template use File | Settings | File Templates.
+ * Represents a location within an excel worksheet. It does not include the
+ * worksheet identifier. Things peculiar to an excel location;
+ * rows start at 1, not 0. we store internally from 0.
+ * column specifiers are letters, but are not strictly a base 26 number using
+ * letters as digits. All locations are absolute, not relative.
+ *
  */
 public class ExcelCellLocation
 {
 static Pattern locationPattern = Pattern.compile( "^([a-zA-Z]{1,3})(\\d{1,5})$" );
-int row;
-int column;
-String excelLocation;
-boolean updated = false;
+private int row;
+private int column;
+private String excelLocation;
+private boolean updated = false;
 
+/**
+ *
+ * @param location cell location in excell notation format (eg; AB535)
+ */
 public ExcelCellLocation( String location )
 {
     Matcher locationMatcher = locationPattern.matcher( location.toLowerCase() );
-    int column = 0;
+    int column;
 
     if ( locationMatcher.matches() )
     {
@@ -37,10 +42,84 @@ public ExcelCellLocation( String location )
     }
 }
 
+/**
+ *
+ * @param row identifies the row in the worksheet, with first row being number zero.
+ * @param column identifies the column in the worksheet, with first column being number zero.
+ */
 public ExcelCellLocation( int row, int column )
 {
     setRow( row );
     setColumn( column );
+}
+
+/**
+ *
+ * @return a duplicate of the location object that this method is invoked upon.
+ */
+public ExcelCellLocation copy()
+{
+    return new ExcelCellLocation( getRow(), getColumn()  );
+}
+
+@Override
+public boolean equals( Object other )
+{
+    boolean result = false;
+    ExcelCellLocation b;
+
+    do {
+        if ( ! ( other instanceof ExcelCellLocation ) )
+        {
+            break;
+        }
+
+        b = (ExcelCellLocation)other;
+
+        result = ( this.getColumn() == b.getColumn() ) && ( this.getRow() == b.getRow() );
+
+    } while( false );
+
+    return result;
+}
+
+@Override
+public int hashCode()
+{
+    int result;
+    result = this.getColumn() * ( 26 * 26 * 27 );
+    result += this.getRow();
+    return result;
+}
+
+public void moveRight()
+{
+    this.column++;
+    updated = false;
+}
+
+public void moveDown()
+{
+    this.row++;
+    updated = false;
+}
+
+public void moveLeft()
+{
+    if ( this.column > 0 )
+    {
+        this.column--;
+        updated = false;
+    }
+}
+
+public void moveUp()
+{
+    if ( this.row > 0 )
+    {
+        this.row--;
+        updated = false;
+    }
 }
 
 public int getRow()
@@ -72,13 +151,12 @@ protected void update()
         excelLocation = obtainExcelColumnSpecifier( getColumn() ) + Integer.toString( getRow() + 1 );
         updated = true;
     }
-    return;
 }
 
 public String toString()
 {
     String result;
-    StringBuffer out = new StringBuffer();
+    StringBuilder out = new StringBuilder();
 
     if ( !updated )
     {
@@ -99,7 +177,7 @@ protected static int decodeExcelColumnSpecifier( String specifier )
     int digit;
     for( int i = specifier.length() - 1; i >= 0; i-- )
     {
-        char khar = Character.toLowerCase( specifier.charAt( i ) );
+        char khar = Character.toLowerCase(specifier.charAt(i));
         digit = ( i == specifier.length() - 1 ) ? ( khar - 'a' ) : ( khar - 'a' ) + 1;
         column += digit * multiplier;
         multiplier *= 26;
@@ -120,7 +198,7 @@ protected static String obtainExcelColumnSpecifier( int column )
     final int factor = 26;
     int x = column;
     List<Integer> a = new ArrayList<Integer>();
-    StringBuffer out = new StringBuffer();
+    StringBuilder out = new StringBuilder();
 
     // start with the small digits and work up......
     // -----------------------------------------------
@@ -142,42 +220,5 @@ protected static String obtainExcelColumnSpecifier( int column )
     return out.toString();
 
 }
-
-
-/**
- * Produce a string which matches a column specifier as used in
- * microsoft excel.
- *
- *
- * @param column where first column is zero!!
- * @return excel column specifier
- */
-protected static String obtainColumnSpecifier( int column )
-{
-    final int factor = 10;
-    int x = column;
-    List<Integer> a = new ArrayList<Integer>();
-    StringBuffer out = new StringBuffer();
-
-    // start with the small digits and work up......
-    // -----------------------------------------------
-    a.add( x % factor );
-    while( x >= factor )
-    {
-        x = x - factor;
-        x = x / factor;
-        a.add( x % factor );
-    }
-
-    // output the column letters in the correct order...
-    // --------------------------------------------------
-    for( int i = a.size() - 1; i>= 0; i-- )
-    {
-        out.append( (char)('A' + a.get( i ) ) );
-    }
-
-    return out.toString();
-}
-
 
 }
