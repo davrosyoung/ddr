@@ -1,5 +1,6 @@
 package au.com.polly.ddr;
 
+import junit.framework.JUnit4TestAdapter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -221,14 +222,17 @@ public void testMovingCell()
     ExcelCellLocation a = new ExcelCellLocation( "E15");
     assertEquals( 4, a.getColumn() );
     assertEquals( 14, a.getRow() );
+    assertEquals( "E15", a.toString() );
 
     a.moveUp();
     assertEquals( 4, a.getColumn() );
     assertEquals( 13, a.getRow() );
+    assertEquals( "E14", a.toString() );
 
     a.moveRight();
     assertEquals( 5, a.getColumn() );
     assertEquals( 13, a.getRow() );
+    assertEquals( "F14", a.toString() );
 
     a.moveDown();
     assertEquals( 5, a.getColumn() );
@@ -238,9 +242,7 @@ public void testMovingCell()
     assertEquals( 4, a.getColumn() );
     assertEquals( 14, a.getRow() );
 
-    a.moveLeft();
-    a.moveLeft();
-    a.moveLeft();
+    a.moveLeft( 3 );
 
     assertEquals( 1, a.getColumn() );
     assertEquals( 14, a.getRow() );
@@ -251,10 +253,7 @@ public void testMovingCell()
     assertEquals( 0, a.getColumn() );
     assertEquals( 14, a.getRow()  );
 
-    for( int i = 0; i < 13; i++ )
-    {
-        a.moveUp();
-    }
+    a.moveUp( 13 );
 
     assertEquals( 0, a.getColumn() );
     assertEquals( 1, a.getRow() );
@@ -269,5 +268,11 @@ public void testMovingCell()
     assertEquals( 0, a.getColumn() );
     assertEquals( 0, a.getRow() );
 }
+
+
+public static junit.framework.Test suite() {
+    return new JUnit4TestAdapter( ExcelCellLocationTest.class );
+}
+
 
 }

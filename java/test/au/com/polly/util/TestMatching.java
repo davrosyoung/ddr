@@ -1,5 +1,6 @@
 package au.com.polly.util;
 
+import junit.framework.JUnit4TestAdapter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -346,5 +347,11 @@ public void testDateAndTime()
     assertEquals( ":07", m.group( 16 ) );
     assertEquals( "07", m.group( 17 ) );
 }
+
+
+public static junit.framework.Test suite() {
+    return new JUnit4TestAdapter( TestMatching.class );
+}
+
 
 }

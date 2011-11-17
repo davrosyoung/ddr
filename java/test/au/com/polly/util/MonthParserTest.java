@@ -1,5 +1,6 @@
 package au.com.polly.util;
 
+import junit.framework.JUnit4TestAdapter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -170,5 +171,11 @@ public void testDecember()
     assertEquals( Calendar.DECEMBER, MonthParser.parseMonth( "12" ) ) ;
     assertEquals( Calendar.DECEMBER, MonthParser.parseMonth( " 12 " ) ) ;
 }
+
+
+public static junit.framework.Test suite() {
+    return new JUnit4TestAdapter( MonthParserTest.class );
+}
+
 
 }

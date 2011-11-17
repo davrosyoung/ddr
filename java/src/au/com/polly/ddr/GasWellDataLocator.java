@@ -1,9 +1,5 @@
 package au.com.polly.ddr;
 
-import com.sun.tools.corba.se.idl.StringGen;
-
-import java.util.Date;
-
 /**
  * For a given gas well, specifies where the data is located within an excel worksheet.
  *
@@ -11,25 +7,69 @@ import java.util.Date;
  */
 public class GasWellDataLocator
 {
-    String wellName;
-    ExcelCellLocation startCell;
-    ExcelCellLocation endCell;
-    int dateColumn;
-    Date startDate;
-    Date endDate;
+    private ExcelCellLocation wellCellLocation = null;
+    private ExcelCellLocation oilCellLocation = null;
+    private ExcelCellLocation gasCellLocation = null;
+    private ExcelCellLocation waterCellLocation = null;
+    private ExcelCellLocation condensateCellLocation = null;
+    private String wellName = null;
+    private int dateColumn = -1;
+    private int startDataRow = -1;
+    private int endDataRow = -1;
 
 public GasWellDataLocator()
 {
 
 }
 
-public GasWellDataLocator( String wellName, ExcelCellLocation startCell, ExcelCellLocation endCell, Date startDate, Date endDate )
+public ExcelCellLocation getWellCellLocation()
 {
-    setWellName( wellName );
-    setStartCell( startCell );
-    setEndCell( endCell);
-    setStartDate( startDate );
-    setEndDate( endDate );
+    return wellCellLocation;
+}
+
+public void setWellCellLocation(ExcelCellLocation wellCellLocation)
+{
+    this.wellCellLocation = wellCellLocation;
+}
+
+public ExcelCellLocation getOilCellLocation()
+{
+    return oilCellLocation;
+}
+
+public void setOilCellLocation(ExcelCellLocation oilCellLocation)
+{
+    this.oilCellLocation = oilCellLocation;
+}
+
+public ExcelCellLocation getGasCellLocation()
+{
+    return gasCellLocation;
+}
+
+public void setGasCellLocation(ExcelCellLocation gasCellLocation)
+{
+    this.gasCellLocation = gasCellLocation;
+}
+
+public ExcelCellLocation getWaterCellLocation()
+{
+    return waterCellLocation;
+}
+
+public void setWaterCellLocation(ExcelCellLocation waterCellLocation)
+{
+    this.waterCellLocation = waterCellLocation;
+}
+
+public ExcelCellLocation getCondensateCellLocation()
+{
+    return condensateCellLocation;
+}
+
+public void setCondensateCellLocation(ExcelCellLocation condensateCellLocation)
+{
+    this.condensateCellLocation = condensateCellLocation;
 }
 
 public String getWellName()
@@ -42,26 +82,6 @@ public void setWellName(String wellName)
     this.wellName = wellName;
 }
 
-public ExcelCellLocation getStartCell()
-{
-    return startCell;
-}
-
-public void setStartCell(ExcelCellLocation startCell)
-{
-    this.startCell = startCell;
-}
-
-public ExcelCellLocation getEndCell()
-{
-    return endCell;
-}
-
-public void setEndCell(ExcelCellLocation endCell)
-{
-    this.endCell = endCell;
-}
-
 public int getDateColumn()
 {
     return dateColumn;
@@ -72,24 +92,24 @@ public void setDateColumn(int dateColumn)
     this.dateColumn = dateColumn;
 }
 
-public Date getStartDate()
+public int getStartDataRow()
 {
-    return startDate;
+    return startDataRow;
 }
 
-public void setStartDate(Date startDate)
+public void setStartDataRow(int startDataRow)
 {
-    this.startDate = startDate;
+    this.startDataRow = startDataRow;
 }
 
-public Date getEndDate()
+public int getEndDataRow()
 {
-    return endDate;
+    return endDataRow;
 }
 
-public void setEndDate(Date endDate)
+public void setEndDataRow(int endDataRow)
 {
-    this.endDate = endDate;
+    this.endDataRow = endDataRow;
 }
 
 public String toString()

@@ -94,32 +94,58 @@ public int hashCode()
 
 public void moveRight()
 {
-    this.column++;
+    moveRight( 1 );
+}
+
+public void moveRight( int cols )
+{
+    this.column += cols;
     updated = false;
 }
 
 public void moveDown()
 {
-    this.row++;
+    moveDown( 1 );
+}
+
+public void moveDown( int rows )
+{
+    this.row += rows;
     updated = false;
 }
 
 public void moveLeft()
 {
-    if ( this.column > 0 )
+    moveLeft( 1 );
+}
+
+public void moveLeft( int cols )
+{
+    if ( this.column > cols )
     {
-        this.column--;
-        updated = false;
+        this.column -= cols;
+    } else {
+        this.column = 0;
     }
+    updated = false;
+
 }
 
 public void moveUp()
 {
-    if ( this.row > 0 )
+    moveUp( 1 );
+}
+
+public void moveUp( int rows )
+{
+    if ( this.row > rows )
     {
-        this.row--;
+        this.row -= rows;
         updated = false;
+    } else {
+        this.row = 0;
     }
+    updated = false;
 }
 
 public int getRow()
@@ -158,13 +184,8 @@ public String toString()
     String result;
     StringBuilder out = new StringBuilder();
 
-    if ( !updated )
-    {
-        update();
-    }
-
+    update();
     out.append( excelLocation );
-
     result = out.toString();
 
     return result;

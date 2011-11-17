@@ -263,7 +263,7 @@ public void testParsingEndNineteenNinetyNine()
 }
 
 public static junit.framework.Test suite() {
-    return new JUnit4TestAdapter( ExcelDateConverterTest.class );
+    return new JUnit4TestAdapter( AussieDateParserTest.class );
 }
 
 }
