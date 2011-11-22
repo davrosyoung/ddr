@@ -9,11 +9,15 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Program to help us run the allocation sheet harness.
@@ -98,8 +102,23 @@ public static void main( String... args )
             for( GasWellDataLocator location : locations )
             {
                 GasWell well = new GasWell( location.getWellName() );
-                GasWellDataSet data = explorer.obtainDataSet( well, location );
-                System.out.println( data );
+                GasWellDataSet data = explorer.obtainDataSet(well, location);
+                String outputFilename = "data" + File.separator + location.getWellName().toLowerCase().replaceAll( "\\s+\\-_\\(\\)", "" ) + ".txt";
+                try
+                {
+                    logger.debug( "About to open file '" + outputFilename + "' for writing data for well \"" + location.getWellName() );
+                    FileOutputStream fos = new FileOutputStream( outputFilename );
+                    PrintWriter writer = new PrintWriter( fos );
+                    writer.print( data );
+                    writer.close();
+                    fos.close();
+                } catch (IOException e)
+                {
+                    logger.error( "Failed to write out data file " + outputFilename );
+                    logger.error(e);
+                }
+
+//                System.out.println( data );
             }
         } else {
             logger.error( "Unable to find any gas well locations!!" );
