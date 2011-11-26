@@ -1,19 +1,32 @@
 package au.com.polly.ddr;
 
+import au.com.polly.util.HashCodeUtil;
+
+import java.io.Serializable;
+
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 17/11/11
- * Time: 8:16 PM
- * To change this template use File | Settings | File Templates.
+ * Represents a gas well.
+ *
+ *
  */
-public class GasWell
+public final class GasWell implements Serializable
 {
-private String name;
+private final String name;
 
 public GasWell(String name)
 {
-    setName( name );
+    if ( name == null )
+    {
+        throw new NullPointerException( "Gas Well needs a non-NULL name!! Give me a break!!" );
+    }
+
+    String trimmed = name.trim();
+    if ( trimmed.length() == 0 )
+    {
+        throw new IllegalArgumentException( "Gas well name is blank!" );
+    }
+
+    this.name = name.trim();
 }
 
 public String getName()
@@ -21,8 +34,39 @@ public String getName()
     return name;
 }
 
-public void setName(String name)
+public boolean equals( Object other )
 {
-    this.name = name;
+    boolean result = false;
+    if ( other instanceof GasWell )
+    {
+        GasWell otherWell = (GasWell)other;
+        do {
+            if ( ( otherWell.getName() == null ) && ( this.getName() == null ) )
+            {
+                result = true;
+                break;
+            }
+
+            if ( ( otherWell.getName() == null ) || ( this.getName() == null ) )
+            {
+                result = false;
+                break;
+            }
+
+            result = this.getName().equals( ((GasWell) other).getName() );
+        } while( false );
+    }
+    return result;
 }
+
+
+@Override
+public int hashCode()
+{
+    int result = HashCodeUtil.SEED;
+    result = HashCodeUtil.hash( result, name );
+    return result;
+}
+
+
 }

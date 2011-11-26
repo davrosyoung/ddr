@@ -1,12 +1,14 @@
 package au.com.polly.ddr;
 
+import au.com.polly.util.HashCodeUtil;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.text.NumberFormat;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -16,27 +18,88 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 17/11/11
- * Time: 8:12 PM
- * To change this template use File | Settings | File Templates.
+ * Contains the set of daily average flow rates of gas, oil, condensate and water
+ * for a given oil well. Written to enable the production of reduced rate data
+ * for a given data set.
+ *
+ *
  */
-public class GasWellDataSet
+public class GasWellDataSet implements Serializable
 {
 final static Logger logger = Logger.getLogger( GasWellDataSet.class );
 private GasWell well;
 private List<GasWellDataEntry> list;
 final static String[] monthNames = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
-private GasWellDataEntry minimumEntry;
-private GasWellDataEntry maximumEntry;
+transient private GasWellDataEntry minimumEntry;
+transient private GasWellDataEntry maximumEntry;
 
+/**
+ *
+ * @param well the gas well to which the data pertains.
+ */
 public GasWellDataSet( GasWell well )
 {
+    if ( well == null ) { throw new NullPointerException( "Well must not be null!! What are you thinking?" ); }
     this.well = well;
     list = new ArrayList<GasWellDataEntry>();
 }
 
+public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
+{
+    this(original.getWell());
+    if( original == null )
+    {
+        throw new NullPointerException( "Need non-NULL well to extract data from!!");
+    }
+
+    if ( intervalBoundaries == null )
+    {
+        throw new NullPointerException( "Need non-NULL array of dates to specify interval boundaries." );
+    }
+
+    if ( intervalBoundaries.length < 2 )
+    {
+        throw new IllegalArgumentException( "Need an array of at least TWO dates." );
+    }
+
+    if( intervalBoundaries[ 0 ].before( original.from() ) )
+    {
+        throw new IllegalArgumentException( "Initial date/time (" + intervalBoundaries[ 0 ] + ") precedes start of specified data set (" + original.from() + ")" );
+    }
+
+    if( intervalBoundaries[ intervalBoundaries.length - 1 ].after(original.until()) )
+    {
+        throw new IllegalArgumentException( "Terminal date/time (" + intervalBoundaries[ intervalBoundaries.length - 1 ] + ") beyond end of specified data set (" + original.until() + ")" );
+    }
+
+
+    for( int i = 0; i < intervalBoundaries.length - 1; i++ )
+    {
+        if ( intervalBoundaries[ i ].getTime() >=  intervalBoundaries[ i + 1 ].getTime() )
+        {
+            throw new IllegalArgumentException( "interval boundary array must contain date/times which get larger from start to finish." );
+        }
+    }
+
+    // all params checked ... let's get going through these intervals....
+    // -------------------------------------------------------------------
+    for( int i = 0; i < intervalBoundaries.length - 1; i++ )
+    {
+        boolean lastInterval = ( i == intervalBoundaries.length - 2 );
+        long untilSpecifier = intervalBoundaries[ i + 1 ].getTime();
+        if ( ! lastInterval ) { untilSpecifier-= 1000; } // end-boundary is one second before start of next boundary!!
+        Date until = new Date( untilSpecifier );
+        GasWellDataEntry entry = original.consolidateEntries( intervalBoundaries[ i ], until );
+        addDataEntry( entry );
+    }
+}
+
+/**
+ * Add another set of measurements to the existing data set. It is assumed that this
+ * entry comes directly after the last measurement added to the data set!!!
+ *
+ * @param entry
+ */
 public void addDataEntry( GasWellDataEntry entry )
 {
     list.add( entry );
@@ -55,7 +118,7 @@ public void addDataEntry( GasWellDataEntry entry )
         minimumEntry.setStartInterval( entry.getStartInterval() );
     }
 
-    if ( maximumEntry.getUntil().getTime() < entry.getUntil().getTime() )
+    if ( maximumEntry.until().getTime() < entry.until().getTime() )
     {
         maximumEntry.setStartInterval( entry.getStartInterval() );
         maximumEntry.setIntervalLength( entry.getIntervalLength() );
@@ -78,6 +141,24 @@ public void addDataEntry( GasWellDataEntry entry )
     }
 }
 
+public String getWellName()
+{
+    String result = null;
+
+    result = ( well != null ) ? well.getName() : null;
+
+    return result;
+}
+
+public GasWell getWell()
+{
+    return well;
+}
+
+/**
+ *
+ * @return the date/time from which this data set commences.
+ */
 public Date from()
 {
     Date result = null;
@@ -90,44 +171,68 @@ public Date from()
     return result;
 }
 
+/**
+ *
+ * @return the date/time up until which (inclusively) this data sets finishes.
+ */
 public Date until()
 {
     Date result = null;
 
     if ( maximumEntry != null )
     {
-        result = maximumEntry.getUntil();
+        result = maximumEntry.until();
     }
 
     return result;
 }
 
+/**
+ *
+ * @return iterator over the data entries in this data set.
+ */
 public Iterator<GasWellDataEntry> getIterator()
 {
     return list.iterator();
 }
 
+/**
+ *
+ * @return the data entries in this data set.
+ */
 public List<GasWellDataEntry> getData()
 {
     return list;
 }
 
+/**
+ *
+ * @param wmt the type of measurement
+ * @return the minimum value recorded for this measurement type. Double.MAX_VALUE
+ * is returned if no measurements have been recorded for the specified measurement type.
+ */
 public double getMinimum( WellMeasurementType wmt )
 {
     double result = Double.MAX_VALUE;
 
-    if ( minimumEntry != null )
+    if ( ( minimumEntry != null ) && minimumEntry.containsMeasurement( wmt ) )
     {
         result = minimumEntry.getMeasurement( wmt );
     }
     return result;
 }
 
+/**
+ *
+ * @param wmt the type of measurement
+ * @return the maximum value recorded for the specified measurement type. Double.MIN_VALUE
+ * is returned if no measurements have been recorded for the specified measurement type.
+ */
 public double getMaximum( WellMeasurementType wmt )
 {
     double result = Double.MIN_VALUE;
 
-    if( maximumEntry != null )
+    if ( ( maximumEntry != null ) && maximumEntry.containsMeasurement( wmt ) )
     {
         result = maximumEntry.getMeasurement( wmt );
     }
@@ -135,14 +240,230 @@ public double getMaximum( WellMeasurementType wmt )
     return result;
 }
 
+/**
+ *
+ * @deprecated
+ */
 protected GasWellDataEntry getMaxima()
 {
     return maximumEntry;
 }
 
+/**
+ *
+ * @deprecated
+ */
 protected GasWellDataEntry getMinima()
 {
     return minimumEntry;
+}
+
+/**
+ *
+ * @param when
+ * @return the data entry for the specified date..
+ */
+public GasWellDataEntry getEntry( Date when )
+{
+    GasWellDataEntry result = null;
+    GasWellDataEntry candidate = null;
+
+    // let's check to see if the date is within bounds...
+    // -------------------------------------------------
+    if ( when == null )
+    {
+        throw new NullPointerException( "Cannot find data entry for NULL date. What were you thinking?" );
+    }
+
+    int entryIdx;
+
+    if ( ( entryIdx = locateEntryIndex( when ) ) >= 0 )
+    {
+        result = getData().get( entryIdx );
+    }
+
+    return result;
+}
+
+public GasWellDataEntry getEntry( int idx )
+{
+    if ( ( idx < 0 ) || ( idx > ( getData().size() - 1 ) ) )
+    {
+        throw new IllegalArgumentException( "index supplied " + idx + " out of range. valid values 0 ... " + ( getData().size() - 1 ) );
+    }
+
+    return getData().get( idx );
+}
+
+/**
+ *
+ * @param when
+ * @return the index within the list of data entries corresponding to the specified date or -1 if
+ * no matching entry was located.
+ */
+protected int locateEntryIndex( Date when )
+{
+    int result = -1;
+    GasWellDataEntry candidate = null;
+
+    // let's check to see if the date is within bounds...
+    // -------------------------------------------------
+    if ( when == null )
+    {
+        throw new NullPointerException( "Cannot find data entry for NULL date. What were you thinking?" );
+    }
+
+    do {
+
+        if ( ( when.before( from() ) ) || ( when.after( until() ) ) )
+        {
+            logger.error( "Date specified " + when + " is not within the start/end range of this data set. start=" + from() + ", end=" + until() );
+            break;
+        }
+
+        // simple (but slow) implementation ... just search from start to end ... smarter solution would
+        // be some kind of binary search ... but later on!!
+        // -----------------------------------------------------------------------------------------------
+        for( int i = 0; i < getData().size() && ( result < 0 ); i++ )
+        {
+            candidate = getData().get( i );
+            if ( between( when, candidate.getStartInterval(), candidate.until() ) )
+            {
+                if ( logger.isDebugEnabled() )
+                {
+                    logger.debug( "Found matching time interval at i=" + i + ", when=" + when + ", startInterval=" + candidate.getStartInterval() + ", intervalLength=" + candidate.getIntervalLength() + "seconds" );
+                }
+                result = i;
+            }
+            if ( logger.isTraceEnabled() )
+            {
+                logger.trace( "i=" + i + ", startInterval=" + candidate.getStartInterval() + ", until=" + candidate.until() + ",result=" + result );
+                logger.trace( "i=" + i + ", startInterval.time=" + candidate.getStartInterval().getTime() + ", until.time=" + candidate.until().getTime() + ", when.time=" + when.getTime() + ", result=" + result );
+            }
+        }
+
+        if ( result < 0 )
+        {
+            logger.warn( "FAILED to find data entry for date/time=" + when );
+        }
+
+    } while( false );
+
+    return result;
+
+}
+
+/**
+ * This method checks to see if a date is between two other dates, taking away the headache of
+ * dealing with millisecond values...
+ *
+ *
+ * @param candidate
+ * @param from
+ * @param until
+ * @return whether the specified candidate is between 'from' and 'until' to within a second of accuracy.
+ */
+static protected boolean between( Date candidate, Date from, Date until )
+{
+    long c = candidate.getTime() / 1000;
+    long f = from.getTime() / 1000;
+    long u = until.getTime() / 1000;
+    return ( ( c >= f ) && ( c <= u )  );
+}
+
+/**
+ *
+ * @param segmentStart when to start the measurements from
+ * @param segmentEnd when to end the measurements at
+ * @return a gas well data entry which contains the combined (and averaged) measurement entries recorded
+ * for the dates provided.
+ */
+public GasWellDataEntry consolidateEntries( Date segmentStart, Date segmentEnd )
+{
+    GasWellDataEntry result = null;
+    int cursor;
+    long segmentLength;
+
+    if ( ( segmentStart == null ) || ( segmentEnd == null ) )
+    {
+        StringBuilder txt = new StringBuilder( "Cannot consolidate entries when " );
+        if ( segmentStart == null )
+        {
+            txt.append( "start date/time is NULL" );
+        }
+        if ( segmentEnd == null )
+        {
+            txt.append( "end date/time is NULL" );
+        }
+        throw new NullPointerException( txt.toString() );
+    }
+
+    if ( segmentEnd.getTime() <= segmentStart.getTime() )
+    {
+        throw new IllegalArgumentException( "end date/time " + segmentEnd + " must come AFTER start date/time " + segmentStart );
+    }
+
+    logger.debug( "from=" + from()  + ", until=" + until() + ", segmentStart=" + segmentStart + ", segmentEnd=" + segmentEnd );
+
+    if ( segmentStart.getTime() < from().getTime() )
+    {
+        throw new IllegalArgumentException( "start date/time " + segmentStart + " must be on or after dataset start date of " + from() );
+    }
+
+    if ( segmentEnd.getTime() > until().getTime() )
+    {
+        throw new IllegalArgumentException( "end date/time " + segmentStart + " must be on or before dataset end date of " + until() );
+    }
+
+    // length of the requested time segment in seconds.
+    segmentLength = ( segmentEnd.getTime() / 1000 ) - ( segmentStart.getTime() / 1000 ) + 1;
+
+    result = new GasWellDataEntry();
+    result.setWell( getWell() );
+    result.setStartInterval( segmentStart );
+    result.setIntervalLength( segmentLength );
+
+    cursor = locateEntryIndex( segmentStart );
+
+    if ( cursor < 0 )
+    {
+        logger.error( "Unable to obtain data entry index for segmentStart=" + segmentStart );
+        logger.error( "from=" + from() + ", until=" + until() );
+        throw new IllegalArgumentException( "Unable to obtain data entry index for segmentStart=" + segmentStart );
+    }
+
+    GasWellDataEntry interval;
+    double factor;
+    long overlapDuration;
+    long overlapStart;
+    long overlapFinish;
+    do {
+        interval = getEntry( cursor++ );
+        overlapStart = ( interval.getStartInterval().getTime() <= segmentStart.getTime() ) ? segmentStart.getTime() : interval.getStartInterval().getTime();
+        overlapFinish = ( interval.until().getTime() >= segmentEnd.getTime() ) ? segmentEnd.getTime() : interval.until().getTime();
+        overlapDuration = ( ( overlapFinish - overlapStart ) / 1000 ) + 1;    // in seconds!!
+        factor = (double)overlapDuration / (double)segmentLength;
+
+        logger.debug( "cursor=" + cursor + ", overlapDuration=" + overlapDuration + "seconds, factor=" + factor );
+
+        for( WellMeasurementType wmt : WellMeasurementType.values() )
+        {
+            double existingResult = 0;
+            if ( result.containsMeasurement( wmt ) )
+            {
+                existingResult = result.getMeasurement( wmt );
+            }
+            if ( interval.containsMeasurement( wmt ) )
+            {
+                existingResult += interval.getMeasurement( wmt ) * factor;
+                result.setMeasurement( wmt, existingResult );
+            }
+        }
+
+    } while( interval.until().getTime() < segmentEnd.getTime() );
+
+
+    return result;
 }
 
 /**
@@ -155,25 +476,44 @@ protected GasWellDataEntry getMinima()
 public void output( PrintStream writer )
 {
     Formatter formatter = new Formatter( writer, Locale.UK );
-    GasWellDataEntry firstEntry = list.get( 0 );
-    GasWellDataEntry lastEntry = list.get( list.size() - 1 );
-    Date firstDate = firstEntry.getStartInterval();
-    Date lastDate = new Date( lastEntry.getStartInterval().getTime() + lastEntry.getIntervalLength() );
-    Calendar firstCal = Calendar.getInstance();
-    firstCal.setTime( firstDate );
-    Calendar lastCal = Calendar.getInstance();
-    lastCal.setTime( lastDate );
-    Calendar cal = Calendar.getInstance();
+    GasWellDataEntry firstEntry = null;
+    GasWellDataEntry lastEntry = null;
+    Date firstDate = null;
+    Date lastDate = null;
+    Calendar firstCal = null;
+    Calendar lastCal = null;
+    Calendar cal = null;
+    long durationSeconds = 0;
+    long ds = 0;
+    long dm = 0;
+    long dh = 0;
+    long dd = 0;
 
-    long durationSeconds = ( lastDate.getTime() - firstDate.getTime() ) / 1000;
-    long ds = durationSeconds % 60;
-    long dm = ( durationSeconds / 60 ) % 60;
-    long dh = ( durationSeconds / 3600 ) % 24;
-    long dd = durationSeconds / 86400;
+
+
+    if ( ( list != null ) && ( list.size() > 0 ) )
+    {
+        firstEntry = list.get( 0 );
+        lastEntry = list.get( list.size() - 1 );
+        firstDate = firstEntry.getStartInterval();
+        lastDate = new Date( lastEntry.getStartInterval().getTime() + lastEntry.getIntervalLength() );
+        firstCal = Calendar.getInstance();
+        firstCal.setTime( firstDate );
+        lastCal = Calendar.getInstance();
+        lastCal.setTime( lastDate );
+        cal = Calendar.getInstance();
+        durationSeconds = ( lastDate.getTime() - firstDate.getTime() ) / 1000;
+        ds = durationSeconds % 60;
+        dm = ( durationSeconds / 60 ) % 60;
+        dh = ( durationSeconds / 3600 ) % 24;
+        dd = durationSeconds / 86400;
+    }
 
     logger.debug( "durationSeconds=" + durationSeconds + ", ds=" + ds + ", dm=" + dm + ", dh=" + dh + ", dd=" + dd );
 
     writer.append( "+-----------------------------------------------------------------------------------------------------------------+\n" );
+    if ( durationSeconds > 0 )
+    {
     formatter.format( "| Well: %-48s   From: %2d/%3s/%4d %02d:%02d:%02d  Until %2d/%3s/%4d %2d:%02d:%02d |\n",
             well.getName(),
             firstCal.get( Calendar.DAY_OF_MONTH ),
@@ -189,69 +529,75 @@ public void output( PrintStream writer )
             lastCal.get( Calendar.MINUTE),
             lastCal.get( Calendar.SECOND )
             );
-    writer.append( "|                                                              " );
-    formatter.format( "Duration: %4d days %2d hours %2d mins %2d seconds.   |\n", dd, dh, dm, ds );
-    
-    writer.append( "+----------------------+----------------------+---------------+---------------+-----------------+-----------------+\n" );
-    writer.append( "| From                 | Until                | Oil Flow Rate | Gas Flow Rate | Cond. Flow Rate | Water Flow Rate |\n" );
-    writer.append( "|                      |                      | (barrels/day) | (MMscf/day)   | (barrels/day)   | (barrels/day)   |\n" );
-    writer.append( "+----------------------+----------------------+---------------+---------------+-----------------+-----------------+\n" );
+            writer.append( "|                                                              " );
+            formatter.format( "Duration: %4d days %2d hours %2d mins %2d seconds.   |\n", dd, dh, dm, ds );
 
-    for( GasWellDataEntry entry : list )
-    {
-        cal.setTime( entry.getStartInterval() );
-        formatter.format( "| %02d/%3s/%04d %02d:%02d:%02d |",
-                cal.get( Calendar.DAY_OF_MONTH ),
-                monthNames[ cal.get( Calendar.MONTH ) ],
-                cal.get( Calendar.YEAR ),
-                cal.get( Calendar.HOUR_OF_DAY ),
-                cal.get( Calendar.MINUTE ),
-                cal.get( Calendar.SECOND )
-        );
-
-        cal.add( Calendar.SECOND, (int)entry.getIntervalLength() - 1 );
-
-        formatter.format( " %02d/%3s/%04d %02d:%02d:%02d |",
-                cal.get( Calendar.DAY_OF_MONTH ),
-                monthNames[ cal.get( Calendar.MONTH ) ],
-                cal.get( Calendar.YEAR ),
-                cal.get( Calendar.HOUR_OF_DAY ),
-                cal.get( Calendar.MINUTE ),
-                cal.get( Calendar.SECOND )
-        );
-
-        if ( entry.containsMeasurement( WellMeasurementType.OIL_FLOW ) )
-        {
-            formatter.format( "        %6d |", (int)Math.round( entry.getMeasurement( WellMeasurementType.OIL_FLOW ) ) );
-        } else {
-            writer.append( "        ------ |" );
-        }
-
-        if ( entry.containsMeasurement( WellMeasurementType.GAS_FLOW ) )
-        {
-            formatter.format( "       %6.3f |", entry.getMeasurement( WellMeasurementType.GAS_FLOW ) );
-        } else {
-            writer.append( "        ------ |" );
-        }
+            writer.append( "+----------------------+----------------------+---------------+---------------+-----------------+-----------------+\n" );
+            writer.append( "| From                 | Until                | Oil Flow Rate | Gas Flow Rate | Cond. Flow Rate | Water Flow Rate |\n" );
+            writer.append( "|                      |                      | (barrels/day) | (MMscf/day)   | (barrels/day)   | (barrels/day)   |\n" );
+            writer.append( "+----------------------+----------------------+---------------+---------------+-----------------+-----------------+\n" );
 
 
-        if ( entry.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) )
-        {
-            formatter.format( "        %6d |", (int)Math.round( entry.getMeasurement( WellMeasurementType.CONDENSATE_FLOW ) ) );
-        } else {
-            writer.append( "         ------ |" );
-        }
+            for( GasWellDataEntry entry : list )
+            {
+                cal.setTime( entry.getStartInterval() );
+                formatter.format( "| %02d/%3s/%04d %02d:%02d:%02d |",
+                        cal.get( Calendar.DAY_OF_MONTH ),
+                        monthNames[ cal.get( Calendar.MONTH ) ],
+                        cal.get( Calendar.YEAR ),
+                        cal.get( Calendar.HOUR_OF_DAY ),
+                        cal.get( Calendar.MINUTE ),
+                        cal.get( Calendar.SECOND )
+                );
+
+                cal.add( Calendar.SECOND, (int)entry.getIntervalLength() - 1 );
+
+                formatter.format( " %02d/%3s/%04d %02d:%02d:%02d |",
+                        cal.get( Calendar.DAY_OF_MONTH ),
+                        monthNames[ cal.get( Calendar.MONTH ) ],
+                        cal.get( Calendar.YEAR ),
+                        cal.get( Calendar.HOUR_OF_DAY ),
+                        cal.get( Calendar.MINUTE ),
+                        cal.get( Calendar.SECOND )
+                );
+
+                if ( entry.containsMeasurement( WellMeasurementType.OIL_FLOW ) )
+                {
+                    formatter.format( "        %6d |", (int)Math.round( entry.getMeasurement( WellMeasurementType.OIL_FLOW ) ) );
+                } else {
+                    writer.append( "        ------ |" );
+                }
+
+                if ( entry.containsMeasurement( WellMeasurementType.GAS_FLOW ) )
+                {
+                    formatter.format( "     %9.3f |", entry.getMeasurement( WellMeasurementType.GAS_FLOW ) );
+                } else {
+                    writer.append( "        ------ |" );
+                }
+
+                if ( entry.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) )
+                {
+                    formatter.format( "        %6d |", (int)Math.round( entry.getMeasurement( WellMeasurementType.CONDENSATE_FLOW ) ) );
+                } else {
+                    writer.append( "          ------ |" );
+                }
+
+                if ( entry.containsMeasurement( WellMeasurementType.WATER_FLOW ) )
+                {
+                    formatter.format( "          %6d |\n", (int)Math.round( entry.getMeasurement( WellMeasurementType.WATER_FLOW ) ) );
+                } else {
+                    writer.append( "            ------ |\n" );
+                }
+
+            } // end-FOR( each gas well data entry )
+
+            writer.append( "+----------------------+----------------------+---------------+---------------+-----------------+-----------------+\n" );
 
 
+    } else {
+        formatter.format( "| Well: %-48s  NO DATA                                             |\n", well.getName() );
+    }
 
-        if ( entry.containsMeasurement( WellMeasurementType.WATER_FLOW ) )
-        {
-            formatter.format( "        %6d |\n", (int)Math.round( entry.getMeasurement( WellMeasurementType.WATER_FLOW ) ) );
-        } else {
-            writer.append( "         ------ |\n" );
-        }
-
-    } // end-FOR( each gas well data entry )
 }
 
 public String toString()
@@ -276,5 +622,166 @@ public String toString()
 
     return os.toString();
 }
+
+/**
+ *
+ * @return an identical copy of this data set.
+ */
+public GasWellDataSet copy()
+{
+    GasWellDataSet result = new GasWellDataSet( this.well );
+    for( GasWellDataEntry entry : list )
+    {
+        result.addDataEntry( entry );
+    }
+    return result;
+}
+
+@Override
+public boolean equals( Object other )
+{
+    boolean result = true;
+    GasWellDataSet otherSet;
+
+    do {
+        if ( ! ( other instanceof GasWellDataSet ) )
+        {
+            result = false;
+            break;
+        }
+
+        otherSet = (GasWellDataSet)other;
+        if ( ( this.well != null ) && ( otherSet.well != null ) )
+        {
+            if ( ! ( result = this.well.equals( otherSet.well ) ) )
+            {
+                break;
+            }
+        }
+
+        if (
+                ( ( this.well == null ) && ( otherSet.well != null ) )
+            ||  ( ( this.well != null ) && ( otherSet.well == null ) )
+            )
+        {
+            result = false;
+            break;
+        }
+
+        // now test the actual data contents...
+        // -------------------------------------
+        if (
+                ( ( this.list == null ) && ( otherSet.list != null ) )
+            ||  ( ( this.list != null ) && ( otherSet.list == null ) )
+                )
+        {
+            result = false;
+            break;
+        }
+
+        // make both measurement sets are not null
+        // ----------------------------------------------------
+        if ( ( this.list != null ) && ( otherSet.list != null ) )
+        {
+            // do they contain the same number of elements??
+            // -----------------------------------------------------
+            if ( ! ( result = ( this.list.size() == otherSet.list.size() ) ) )
+            {
+                break;
+            }
+
+            for( int i = 0; ( i < this.list.size() ) && result; i++ )
+            {
+                GasWellDataEntry alpha = this.list.get( i );
+                GasWellDataEntry beta = otherSet.list.get( i );
+                result = alpha.equals( beta );
+            }
+
+        }
+
+
+    } while( false );
+
+    return result;
+}
+
+
+@Override
+public int hashCode()
+{
+    int result = HashCodeUtil.SEED;
+    if ( well != null )
+    {
+        result = HashCodeUtil.hash( result, well.getName() );
+    }
+
+    for( GasWellDataEntry entry : list )
+    {
+        result = HashCodeUtil.hash( result, entry );
+    }
+
+    return result;
+}
+
+/**
+ * Instead of serializing this object, we serialize a proxy representation of it instead :-)
+ *
+ *
+ * @return the serialization proxy to be written to the wire.
+ */
+private Object writeReplace()
+{
+    return new SerializationProxy( this );
+}
+
+/**
+ *
+ * Oh no you don't!!
+ * @param stream
+ * @throws java.io.InvalidObjectException
+ */
+private void readObject( ObjectInputStream stream )
+    throws InvalidObjectException
+{
+    throw new InvalidObjectException( "Proxy required." );
+}
+
+
+/**
+ * Provides the serialization and deserialization for a set of measurements
+ * for a gas well.
+ */
+private static class SerializationProxy implements Serializable
+{
+    private GasWell well;
+    private List<GasWellDataEntry> list;
+
+    SerializationProxy( GasWellDataSet dataSet )
+    {
+        this.well = dataSet.well;
+        this.list = dataSet.list;
+    }
+
+    /**
+     *
+     * @return a gas well data entry created from this proxy object...
+     */
+    private Object readResolve()
+    {
+        GasWellDataSet result = new GasWellDataSet( this.well );
+        if ( ( this.list != null ) && ( this.list.size() > 0 ) )
+        {
+            for( GasWellDataEntry entry : list )
+            {
+                result.addDataEntry( entry );
+            }
+        }
+
+        return result;
+    }
+
+    private static final long serialVersionID = 0xa4f87d4f;
+}
+
 
 }

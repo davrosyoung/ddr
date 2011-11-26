@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
@@ -112,6 +113,12 @@ public static void main( String... args )
                     writer.print( data );
                     writer.close();
                     fos.close();
+
+                    outputFilename = "data" + File.separator + location.getWellName().toLowerCase() .replaceAll( "\\s+\\-_\\(\\)", "" ) + ".obj";
+                    fos = new FileOutputStream( outputFilename );
+                    ObjectOutputStream oos = new ObjectOutputStream( fos );
+                    oos.writeObject( data );
+                    oos.close();
                 } catch (IOException e)
                 {
                     logger.error( "Failed to write out data file " + outputFilename );
