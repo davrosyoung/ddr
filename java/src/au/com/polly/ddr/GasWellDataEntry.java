@@ -171,9 +171,12 @@ public boolean equals( Object other )
 
         if ( !result ) { break; }
 
+        // check equality with accuracy of one second. date/times are stored in milliseconds. so divide by 1000 to
+        // make sure we are only comparing to within one second of each other!!
+        // ------------------------------------------------------------------------------------------------
         if ( this.startInterval != null )
         {
-            result = ( otherEntry.startInterval != null ) && ( startInterval.getTime() == otherEntry.startInterval.getTime() );
+            result = ( otherEntry.startInterval != null ) && ( startInterval.getTime()/1000 == otherEntry.startInterval.getTime()/1000 );
         } else {
             result = otherEntry.startInterval == null;
         }
@@ -198,7 +201,7 @@ public boolean equals( Object other )
 
                 if ( this.containsMeasurement( wmt ) && otherEntry.containsMeasurement( wmt ) )
                 {
-                    result = Math.abs( this.getMeasurement( wmt ) - otherEntry.getMeasurement( wmt ) ) < 0.00000001;
+                    result = Math.abs( this.getMeasurement( wmt ) - otherEntry.getMeasurement( wmt ) ) < 0.0000001;
                 }
             }
         }
@@ -231,6 +234,32 @@ public int hashCode()
 
     }
     return result;
+}
+
+
+/**
+ * human readable representation of the gas well data measurement entry....
+ * @return
+ */
+public String toString()
+{
+    StringBuilder out = new StringBuilder();
+    if ( getWell() != null )
+    {
+        out.append( "well:" + getWell().getName() + ", " );
+    }
+    out.append( "from:" + getStartInterval() + ", " );
+    out.append( "until:" + until() + ", " );
+    for( WellMeasurementType wmt : WellMeasurementType.values() )
+    {
+        if ( measurements.containsKey( wmt ) )
+        {
+            out.append( wmt + "=" + measurements.get(WellMeasurementType.OIL_FLOW ) + " " );
+        } else {
+            out.append( "no " + wmt + " ");
+        }
+    }
+    return out.toString();
 }
 
 /**

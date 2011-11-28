@@ -567,6 +567,51 @@ public void testConsolidatingDataFirstTwoHours()
 }
 
 
+@Test
+public void testConsolidatingDataFirstNinetyMinutes()
+{
+    GasWellDataEntry consolidated = null;
+
+    Date start = dateParser.parse( "23/APR/2011 05:00:00" ).getTime();
+    Date finish = dateParser.parse( "23/APR/2011 06:29:59" ).getTime();
+
+    consolidated = smallDataSet.consolidateEntries( start, finish );
+    assertNotNull( consolidated );
+    assertTrue( consolidated.containsMeasurement( WellMeasurementType.OIL_FLOW ) );
+    assertEquals( ( 37.6 + ( 37.8 * 0.5 ) ) / 1.5, consolidated.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertTrue( consolidated.containsMeasurement( WellMeasurementType.GAS_FLOW ) );
+    assertEquals( ( 0.89 + ( 0.86 * 0.5 ) ) / 1.5, consolidated.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertTrue( consolidated.containsMeasurement( WellMeasurementType.WATER_FLOW ) );
+    assertEquals( ( 15.2 + ( 15.1 * 0.5 ) ) / 1.5, consolidated.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+    assertFalse( consolidated.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) );
+
+    assertEquals( start, consolidated.getStartInterval() );
+    assertEquals( 5400, consolidated.getIntervalLength() );
+}
+
+@Test
+public void testConsolidatingDataFirstHundredAndFiftyMinutes()
+{
+    GasWellDataEntry consolidated = null;
+
+    Date start = dateParser.parse( "23/APR/2011 05:00:00" ).getTime();
+    Date finish = dateParser.parse( "23/APR/2011 07:29:59" ).getTime();
+
+    consolidated = smallDataSet.consolidateEntries( start, finish );
+    assertNotNull( consolidated );
+    assertTrue( consolidated.containsMeasurement( WellMeasurementType.OIL_FLOW ) );
+    assertEquals( ( 37.6 + 37.8 + ( 37.9 * 0.5 ) ) / 2.5, consolidated.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertTrue( consolidated.containsMeasurement( WellMeasurementType.GAS_FLOW ) );
+    assertEquals( ( 0.89 + 0.86 + ( 0.87 * 0.5 ) ) / 2.5, consolidated.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertTrue( consolidated.containsMeasurement( WellMeasurementType.WATER_FLOW ) );
+    assertEquals( ( 15.2 + 15.1 + ( 15.3 * 0.5 ) ) / 2.5, consolidated.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+    assertFalse( consolidated.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) );
+
+    assertEquals( start, consolidated.getStartInterval() );
+    assertEquals( 9000, consolidated.getIntervalLength() );
+}
+
+
 @Test( expected=NullPointerException.class )
 public void testExtractingReducedDataSetViaConstructorWithNullIntervals()
 {

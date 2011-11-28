@@ -61,15 +61,16 @@ public GasWellDataSet reduce(GasWellDataSet original, int maxIntervals)
         }
     });
 
-    logger.debug( "min=" + unsorted.get( 0 ) );
-    logger.debug( "max=" + unsorted.get( 99 ) );
-    logger.debug( "median=" + unsorted.get( 50 ) );
 
     median = unsorted.get( unsorted.size() / 2 );
     discontinuityTriggerLimit = median / 4.0;
 
     double c10 = unsorted.get( (int)Math.floor( unsorted.size() * 0.1 ) );
     double c90 = unsorted.get( (int)Math.ceil( unsorted.size() * 0.9 ) );
+
+    logger.debug( "min=" + unsorted.get( 0 ) );
+    logger.debug( "max=" + unsorted.get( unsorted.size() - 1 ) );
+    logger.debug( "median=" + median );
 
     logger.debug( "c10=" + c10 + ", c50=" + median + ", c90=" + c90 );
 
@@ -89,7 +90,7 @@ public GasWellDataSet reduce(GasWellDataSet original, int maxIntervals)
                     || ( ( previous < 0.1 ) && ( current >= 0.1 ) )
                     )
                 {
-                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity..." );
+                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity..." + entry.getStartInterval() );
                     boundaries.add( entry.getStartInterval() );
                     break;
                 }
@@ -99,7 +100,7 @@ public GasWellDataSet reduce(GasWellDataSet original, int maxIntervals)
                     ||  ( previous >= c90 ) && ( current < c90 )
                         )
                 {
-                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity..." );
+                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity... at " + entry.getStartInterval()  );
                     boundaries.add( entry.getStartInterval() );
                     break;
                 }
@@ -109,7 +110,7 @@ public GasWellDataSet reduce(GasWellDataSet original, int maxIntervals)
                     ||  ( previous >= c10 ) && ( current < c10 )
                         )
                 {
-                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity..." );
+                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity... at " + entry.getStartInterval() );
                     boundaries.add( entry.getStartInterval() );
                     break;
                 }
@@ -127,6 +128,8 @@ public GasWellDataSet reduce(GasWellDataSet original, int maxIntervals)
     }
 
     logger.debug( "We have " + boundaries.size() + " discontinuities..." );
+
+    boundaries.add( original.until() );
 
 
     Date[] boundaryArray = new Date[ boundaries.size() ];

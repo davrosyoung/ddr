@@ -16,7 +16,6 @@ import java.util.Date;
 public class SimplePlotGrapherHarness extends JPanel
 {
     private static Logger logger = Logger.getLogger( SimplePlotGrapherHarness.class );
-    static DataVsTimeSource dataSource = new DummyGasWellDataSet();
     SimplePlotGrapher grapher = null;
     SimpleOverlayPlotGrapher overlayGrapher = null;
     GraphControlPanel controlPanel = null;
@@ -55,21 +54,12 @@ public SimplePlotGrapherHarness()
         {
             until = overlayDataSet.until();
         }
-        overlayGrapher = new SimpleOverlayPlotGrapher( dataSet, overlayDataSet );
-    } else {
-        grapher = new SimplePlotGrapher( dataSet );
     }
+    overlayGrapher = new SimpleOverlayPlotGrapher( dataSet, overlayDataSet );
     controlPanel = new GraphControlPanel( from, until );
-    if ( overlayDataSet != null )
-    {
-        controlPanel.setPlotGrapher( overlayGrapher );
-        add( overlayGrapher, gbc );
 
-    } else {
-        controlPanel.setPlotGrapher( grapher );
-        add( grapher, gbc );
-
-    }
+    controlPanel.setPlotGrapher( overlayGrapher );
+    add( overlayGrapher, gbc );
 
     gbc.gridx = 0;
     gbc.gridy = 19;

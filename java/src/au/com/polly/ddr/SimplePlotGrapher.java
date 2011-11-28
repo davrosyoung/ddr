@@ -68,6 +68,12 @@ public void reduce(DataRateReducer reducer)
     throw new IllegalStateException( "DO NOT SUPPORT REDUCTION!!!!" );
 }
 
+@Override
+public GasWellDataSet getOverlayData()
+{
+    throw new IllegalStateException( "DO NOT SUPPORT OVERLAYS!!" );
+}
+
 public void render( Graphics2D gfx, int width, int height )
 {
     DateScale dateScale;

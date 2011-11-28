@@ -18,7 +18,7 @@ import java.util.Map;
 public class SimpleBestFitDataRateReducer implements DataRateReducer
 {
 static Logger logger = Logger.getLogger( SimpleBestFitDataRateReducer.class );
-private final static int TIME_DIVISIONS=25;
+private final static int TIME_DIVISIONS=15;
 
 public SimpleBestFitDataRateReducer()
 {

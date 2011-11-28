@@ -29,7 +29,7 @@ public class GasWellDataSet implements Serializable
 final static Logger logger = Logger.getLogger( GasWellDataSet.class );
 private GasWell well;
 private List<GasWellDataEntry> list;
-final static String[] monthNames = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+transient final static String[] monthNames = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
 transient private GasWellDataEntry minimumEntry;
 transient private GasWellDataEntry maximumEntry;
 
@@ -44,6 +44,16 @@ public GasWellDataSet( GasWell well )
     list = new ArrayList<GasWellDataEntry>();
 }
 
+/**
+ * Creates a new set of gas well data measurements, given an original set of measurements and a list of
+ * date/time boundaries (must be in ascending order) from which to construct the boundaries in the
+ * resultant data set.
+ *
+ *
+ * @param original data to base new data set upon.
+ * @param intervalBoundaries date/time boundaries. must be ascending. need to have more boundaries than in
+ * the original data set!!
+ */
 public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
 {
     this(original.getWell());
@@ -90,6 +100,7 @@ public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
         if ( ! lastInterval ) { untilSpecifier-= 1000; } // end-boundary is one second before start of next boundary!!
         Date until = new Date( untilSpecifier );
         GasWellDataEntry entry = original.consolidateEntries( intervalBoundaries[ i ], until );
+        logger.debug( "Adding " + entry + " to consolidated data array" );
         addDataEntry( entry );
     }
 }
@@ -103,6 +114,7 @@ public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
 public void addDataEntry( GasWellDataEntry entry )
 {
     list.add( entry );
+
     if ( minimumEntry == null )
     {
         minimumEntry = entry.copy();
@@ -113,29 +125,42 @@ public void addDataEntry( GasWellDataEntry entry )
         maximumEntry = entry.copy();
     }
 
+    // if our minimum entry contains a start date/time later than the one specified,
+    // then update the date/time in the minimum entry to represent the earliest date/time
+    // for the dataset.
+    // -----------------------------------------------------------------------------------
     if ( minimumEntry.getStartInterval().getTime() > entry.getStartInterval().getTime() )
     {
         minimumEntry.setStartInterval( entry.getStartInterval() );
     }
 
+
+    // if the interval "until" timestamp comes after the current maximum entry, then
+    // update the maximum entry to contain the timestamp in the data entry being added.
+    // -----------------------------------------------------------------------------------
     if ( maximumEntry.until().getTime() < entry.until().getTime() )
     {
         maximumEntry.setStartInterval( entry.getStartInterval() );
         maximumEntry.setIntervalLength( entry.getIntervalLength() );
     }
 
+    // for each measurement type, if the flow rate specified is smaller than the previous
+    // minimum or larger than the previous maximum, update the minima or maxima appropriately...
+    // ------------------------------------------------------------------------------------------
     for( WellMeasurementType wmt : WellMeasurementType.values() )
     {
         if ( entry.containsMeasurement( wmt ) )
         {
-            if ( ( ! minimumEntry.containsMeasurement( wmt ) ) || ( minimumEntry.getMeasurement( wmt ) > entry.getMeasurement( wmt ) ) )
+            double flow = entry.getMeasurement( wmt );
+
+            if ( ( ! minimumEntry.containsMeasurement( wmt ) ) || ( minimumEntry.getMeasurement( wmt ) > flow ) )
             {
-                minimumEntry.setMeasurement( wmt, entry.getMeasurement( wmt ) );
+                minimumEntry.setMeasurement( wmt, flow );
             }
 
-            if ( ( ! maximumEntry.containsMeasurement( wmt ) ) || ( maximumEntry.getMeasurement( wmt ) < entry.getMeasurement( wmt ) ) )
+            if ( ( ! maximumEntry.containsMeasurement( wmt ) ) || ( maximumEntry.getMeasurement( wmt ) < flow ) )
             {
-                maximumEntry.setMeasurement( wmt, entry.getMeasurement( wmt ) );
+                maximumEntry.setMeasurement( wmt, flow );
             }
         }
     }
@@ -372,6 +397,9 @@ static protected boolean between( Date candidate, Date from, Date until )
 }
 
 /**
+ * Produces a single gas well data entry containing an average value across the entire date/time range
+ * specified.
+ *
  *
  * @param segmentStart when to start the measurements from
  * @param segmentEnd when to end the measurements at
@@ -586,7 +614,7 @@ public void output( PrintStream writer )
                 {
                     formatter.format( "          %6d |\n", (int)Math.round( entry.getMeasurement( WellMeasurementType.WATER_FLOW ) ) );
                 } else {
-                    writer.append( "            ------ |\n" );
+                    writer.append( "          ------ |\n" );
                 }
 
             } // end-FOR( each gas well data entry )

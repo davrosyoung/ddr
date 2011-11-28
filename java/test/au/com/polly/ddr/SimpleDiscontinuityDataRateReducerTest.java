@@ -26,9 +26,9 @@ import static org.junit.Assert.assertNotNull;
  * To change this template use File | Settings | File Templates.
  */
 @RunWith(JUnit4.class)
-public class SimpleBestFitDataRateReducerTest
+public class SimpleDiscontinuityDataRateReducerTest
 {
-static private final Logger logger = Logger.getLogger( SimpleBestFitDataRateReducerTest.class );
+static private final Logger logger = Logger.getLogger( SimpleDiscontinuityDataRateReducerTest.class );
 static private final double oilFlowRates[] = {
         0000.0, 0000.0, 0000.0, 1567.5, 1342.1, 1152.6, 1133.6, 1132.8, 1127.6, 1128.3,
         1129.5, 1128.6, 1153.5, 1132.4, 1129.1, 1128.5, 1131.2, 1130.0, 1131.5, 1132.1,
@@ -69,16 +69,16 @@ public void setup()
 }
 
 @Test
-public void testReducingData()
+public void testReducingDataToTenIntervals()
 {
-    DataRateReducer reducer = new SimpleBestFitDataRateReducer();
+    DataRateReducer reducer = new SimpleDiscontinuityDataRateReducer();
     GasWellDataSet reducedDataSet;
 
     reducedDataSet = reducer.reduce( dataSet, 10 );
     assertNotNull( reducedDataSet );
     assertEquals( "Dummy", reducedDataSet.getWellName() );
     assertEquals( dataSet.from(), reducedDataSet.from() );
-    assertEquals( dataSet.from(), reducedDataSet.from() );
+    assertEquals( dataSet.until(), reducedDataSet.until() );
 
     Map<WellMeasurementType,Double> errorMap = GasWellDataSetUtil.getError( dataSet, reducedDataSet );
     if ( errorMap.containsKey( WellMeasurementType.OIL_FLOW ) )
@@ -87,7 +87,6 @@ public void testReducingData()
     }
 
     logger.debug( reducedDataSet );
-
 
 
 }

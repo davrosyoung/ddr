@@ -47,6 +47,13 @@ public void loadOverlayData( GasWellDataSet overlayDataSet );
 
 /**
  *
+ * @return the data measurement set being overlayed against the
+ * background/original data. may be null if there isn't any!!
+ */
+public GasWellDataSet getOverlayData();
+
+/**
+ *
  * Interrogate the original data set and produce a set of reduced
  * data from it...
  *

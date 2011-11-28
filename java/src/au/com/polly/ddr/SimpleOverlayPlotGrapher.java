@@ -8,7 +8,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * Produces a graph of measurement value against time for one or two data sets. the
+ * first data set is represented by crosses, the second by a dashed line. The different
+ * well measurement types (oil, gas, water and condensate) are repesented by different
+ * colours and can be displayed or make invisible.
+ *
+ */
 public class SimpleOverlayPlotGrapher extends JComponent implements PlotGrapher
 {
 private final static int CROSS_RADIUS=3;
@@ -232,6 +238,10 @@ public void render( Graphics2D gfx, int width, int height )
                         py = height - 100 - (int)Math.round( ( flow - minFlow ) / flowUnitsPerPixel );
                         gfx.drawLine( px0, py, px1, py );
                         logger.debug( "horz. line from ( " + px0 + ", " + py + " ) to ( " + px1 + ", " + py + " )" );
+                        if ( py < 0 )
+                        {
+                            logger.debug( "----> wmt=" + wmt + ", py=" + py + ", flow=" + flow + ", minFlow=" + minFlow + ", maxFlow=" + maxFlow );
+                        }
                     }
 
                     // draw the line connecting to the next interval...
@@ -266,6 +276,12 @@ public void setDisplayMeasurementType(WellMeasurementType wmt, Boolean display)
 {
     plotMeasurementType.put( wmt, display );
     repaint();
+}
+
+@Override
+public GasWellDataSet getOverlayData()
+{
+    return overlayData;
 }
 
 @Override

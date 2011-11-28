@@ -6,12 +6,21 @@ import org.apache.log4j.Logger;
 import sun.java2d.pipe.SpanShapeRenderer;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+
+import static javax.swing.JOptionPane.*;
 
 /**
  * Controls to allow the operator to change the measurements type
@@ -30,7 +39,11 @@ DateParser dateParser = new AussieDateParser();
     JButton condensateFlowButton;
     JButton waterFlowButton;
     JButton loadFileButton;
+    JButton loadOverlayFileButton;
+    JButton saveOverlayFileButton;
     JFileChooser loadFileBox;
+    JFileChooser loadOverlayFileBox;
+    JFileChooser saveOverlayFileBox;
     JLabel  availableDateLabel;
     JLabel  fromDateLabel;
     JLabel  untilDateLabel;
@@ -45,6 +58,9 @@ DateParser dateParser = new AussieDateParser();
 
 public GraphControlPanel( Date from, Date until )
 {
+    this.from = from;
+    this.until = until;
+
     oilFlowButton = new JButton();
     oilFlowButton.setEnabled( true );
     oilFlowButton.setName( "oilFlowButton" );
@@ -74,17 +90,35 @@ public GraphControlPanel( Date from, Date until )
     condensateFlowButton.addActionListener( this );
 
     loadFileButton = new JButton();
-    loadFileButton.setText( "Open ..." );
+    loadFileButton.setText( "Open Background data ..." );
     loadFileButton.addActionListener( this );
     loadFileButton.setName( "openFileButton" );
+
+    loadOverlayFileButton = new JButton();
+    loadOverlayFileButton.setText( "Open Overlay data..." );
+    loadOverlayFileButton.addActionListener( this );
+    loadOverlayFileButton.setName( "openOverlayFileButton" );
 
     generateOverlayButton = new JButton();
     generateOverlayButton.setText( "reduce" );
     generateOverlayButton.setName("reduce");
     generateOverlayButton.addActionListener( this );
 
+    saveOverlayFileButton = new JButton();
+    saveOverlayFileButton.setText( " Save Overlay Data..." );
+    saveOverlayFileButton.addActionListener( this );
+    saveOverlayFileButton.setName( "saveOverlayFileButton" );
+
     loadFileBox = new JFileChooser();
-    loadFileBox.setDialogTitle( "Data File" );
+    loadFileBox.setDialogTitle( "Open Background Data File" );
+    loadFileBox.setFileFilter( new ObjectFileFilter() );
+
+    loadOverlayFileBox = new JFileChooser();
+    loadOverlayFileBox.setDialogTitle( "Open Overlay Data File" );
+    loadOverlayFileBox.setFileFilter( new ObjectFileFilter() );
+
+    saveOverlayFileBox = new JFileChooser();
+    saveOverlayFileBox.setDialogTitle( "Save Overlay Data File" );
 
     fromDateLabel = new JLabel( "from:" );
     untilDateLabel = new JLabel( "until:" );
@@ -138,6 +172,7 @@ public GraphControlPanel( Date from, Date until )
     add(waterFlowButton, gbc );
 
     gbc.gridx = 4;
+    gbc.gridwidth = 1;
     add( availableDateLabel,gbc );
 
     gbc.gridx = 5;
@@ -150,23 +185,32 @@ public GraphControlPanel( Date from, Date until )
     gbc.gridheight = 2;
     add( updateGraphFromDatesButton, gbc );
 
+
     gbc.gridx = 0;
     gbc.gridy = 1;
-    gbc.gridwidth = 2;
-    gbc.gridheight = 1;
-    add( loadFileButton, gbc );
-
-    gbc.gridx = 4;
     gbc.gridwidth = 1;
+    gbc.gridheight = 1;
+
     add( generateOverlayButton, gbc );
 
     gbc.gridx = 5;
     add( untilDateLabel, gbc );
-
     gbc.gridx = 6;
     add( untilDateField, gbc );
 
-    setPreferredSize( new Dimension( 400, 100 ) );
+    gbc.gridx = 0;
+    gbc.gridy = 2;
+    gbc.gridwidth = 1;
+    gbc.gridheight = 1;
+    add( loadFileButton, gbc );
+
+    gbc.gridx = 2;
+    add( loadOverlayFileButton, gbc );
+
+    gbc.gridx = 4;
+    add( saveOverlayFileButton, gbc );
+
+    setPreferredSize( new Dimension( 500, 150 ) );
     setVisible( true );
 }
 
@@ -181,6 +225,7 @@ public void actionPerformed(ActionEvent evt)
     JButton button;
     Object source;
     logger.debug( "intercepted action event " + evt );
+    GasWellDataSet overlayData;
 
 
     if ( ( source = evt.getSource() ) instanceof JButton )
@@ -193,8 +238,118 @@ public void actionPerformed(ActionEvent evt)
 
             if( button.getName().equals( "openFileButton" ) )
             {
-                loadFileBox.showOpenDialog( this );
+                int retval = loadFileBox.showOpenDialog( this );
+                if ( retval == JFileChooser.APPROVE_OPTION )
+                {
+                    File file = loadFileBox.getSelectedFile();
+                    if ( file != null )
+                    {
+                        // load the file!!
+                        // ---------------------------
+                        GasWellDataSet newData = null;
+                        FileInputStream fis = null;
+                        ObjectInputStream ois = null;
+                        Object blah = null;
+                        try
+                        {
+                            fis = new FileInputStream( file );
+                            ois = new ObjectInputStream( fis );
+                            blah = ois.readObject();
+                            if ( ! ( blah instanceof GasWellDataSet ) )
+                            {
+                                JOptionPane.showMessageDialog( this, "File \"" + file.getAbsolutePath() + "\" does not contain gas well data.", "Error loading data", JOptionPane.ERROR_MESSAGE );
+                            } else {
+                                newData = (GasWellDataSet)blah;
+                                from = newData.from();
+                                until = newData.until();
+                                grapher.setDisplayDateRange( from, until );
+                                grapher.loadData( newData );
+                                StringBuilder dateAvailabilityText = new StringBuilder( "from:" );
+                                dateAvailabilityText.append( ( from != null ) ? dateFormatter.format( from ) : "unavailable" );
+                                dateAvailabilityText.append( " until:" );
+                                dateAvailabilityText.append( ( until != null ) ? dateFormatter.format( until ) : "unavailable" );
+                                availableDateLabel.setText(dateAvailabilityText.toString());
+                                fromDateField.setText( dateFormatter.format(from) );
+                                untilDateField.setText( dateFormatter.format( until ) );
+                            }
+                        } catch ( Exception e )
+                        {
+                            logger.error( "Failed to load gas well data set from file \"" + file.getAbsolutePath() + "\" - " + e.getClass().getName() + "  - " + e.getMessage() );
+                            JOptionPane.showMessageDialog( this, "Failed to load gas well data from \"" + file.getAbsolutePath() + "\"", "Error loading data", JOptionPane.ERROR_MESSAGE );
+                        }
+                    }
+
+                }
                 break;
+            }
+            if( button.getName().equals( "openOverlayFileButton" ) )
+            {
+                int retval = loadOverlayFileBox.showOpenDialog( this );
+                if ( retval == JFileChooser.APPROVE_OPTION )
+                {
+                    File file = loadFileBox.getSelectedFile();
+                    if ( file != null )
+                    {
+                        // load the file!!
+                        // ---------------------------
+                        GasWellDataSet newData = null;
+                        FileInputStream fis = null;
+                        ObjectInputStream ois = null;
+                        Object blah = null;
+                        try
+                        {
+                            fis = new FileInputStream( file );
+                            ois = new ObjectInputStream( fis );
+                            blah = ois.readObject();
+                            if ( ! ( blah instanceof GasWellDataSet ) )
+                            {
+                                JOptionPane.showMessageDialog( this, "File \"" + file.getAbsolutePath() + "\" does not contain gas well data.", "Error loading data", JOptionPane.ERROR_MESSAGE );
+                            } else {
+                                newData = (GasWellDataSet)blah;
+                                grapher.loadOverlayData( newData );
+                                StringBuilder dateAvailabilityText = new StringBuilder( "from:" );
+                            }
+                        } catch ( Exception e )
+                        {
+                            logger.error( "Failed to load gas well data set from file \"" + file.getAbsolutePath() + "\" - " + e.getClass().getName() + "  - " + e.getMessage() );
+                            JOptionPane.showMessageDialog( this, "Failed to load gas well data from \"" + file.getAbsolutePath() + "\"", "Error loading data", JOptionPane.ERROR_MESSAGE );
+                        }
+                    }
+
+                }
+                break;
+            }
+
+
+            if ( button.getName().equals( "saveOverlayFileButton" ) )
+            {
+                if ( ( overlayData = grapher.getOverlayData() ) != null )
+                {
+                    if ( saveOverlayFileBox.showSaveDialog( this ) == JFileChooser.APPROVE_OPTION )
+                    {
+                        logger.info( "THEY WANT TO SAVE!!" );
+                        File file = saveOverlayFileBox.getSelectedFile();
+                        if ( file != null )
+                        {
+                            FileOutputStream fos = null;
+                            ObjectOutputStream oos = null;
+
+                            try
+                            {
+                                fos = new FileOutputStream( file );
+                                oos = new ObjectOutputStream( fos );
+                                oos.writeObject( grapher.getOverlayData() );
+                            } catch (IOException e)
+                            {
+                                JOptionPane.showMessageDialog( this, "Failed to save overlay data to \"" + file.getAbsolutePath() + "\"" );
+                                logger.error( "Failed to save overlay data to file \"" + file.getAbsolutePath() + "\"" );
+                                logger.error( e.getClass().getName() + " - " + e.getMessage() );
+                            }
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog( this, "No overlay data to save", "Cannot save overlay", JOptionPane.WARNING_MESSAGE );
+                }
             }
 
             if ( button.getName().equals( "oilFlowButton" ) )
@@ -230,20 +385,30 @@ public void actionPerformed(ActionEvent evt)
 
             if ( button.getName().equals( "updateGraph" ) )
             {
-                Calendar from = null;
-                Calendar until = null;
+                Calendar fromInput = null;
+                Calendar untilInput = null;
 
                 try
                 {
-                    from = dateParser.parse( fromDateField.getText() );
-                    until = dateParser.parse( untilDateField.getText() );
+                    fromInput = dateParser.parse( fromDateField.getText() );
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog( this, "Dates should be in dd/mm/yyyy hh:mm:ss format.");
+                    JOptionPane.showMessageDialog( this, "Dates should be in dd/mm/yyyy hh:mm:ss format.", "Invalid From Date", JOptionPane.ERROR_MESSAGE );
+                    fromDateField.setText( dateFormatter.format( from ) );
                 }
 
-                if ( ( from != null ) && ( until != null ) )
+                try
                 {
-                    grapher.setDisplayDateRange( from.getTime(), until.getTime() );
+                    untilInput = dateParser.parse( untilDateField.getText() );
+                } catch (Exception e)
+                {
+                    JOptionPane.showMessageDialog(this, "Dates should be in dd/mm/yyyy hh:mm:ss format.", "Invalid Until Date", JOptionPane.ERROR_MESSAGE);
+                    untilDateField.setText( dateFormatter.format( until ) );
+                }
+
+
+                if ( ( fromInput != null ) && ( untilInput != null ) )
+                {
+                    grapher.setDisplayDateRange( fromInput.getTime(), untilInput.getTime() );
                 }
             }
 
@@ -254,6 +419,25 @@ public void actionPerformed(ActionEvent evt)
             }
 
         } while( false );
+    }
+}
+
+
+/* ImageFilter.java is used by FileChooserDemo2.java. */
+public class ObjectFileFilter extends FileFilter
+{
+    //Accept all directories and all gif, jpg, tiff, or png files.
+    public boolean accept(File f) {
+        if (f.isDirectory()) {
+            return true;
+        }
+
+        return f.getName().endsWith( ".obj" );
+    }
+
+    //The description of this filter
+    public String getDescription() {
+        return "Just Images";
     }
 }
 }

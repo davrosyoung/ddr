@@ -1,6 +1,6 @@
 log4j.rootLogger=debug, stdout, R
 log4j.logger.au.com.polly.ddr.AllocationSheetExplorer=TRACE
-log4j.logger.au.com.polly.ddr.GasWellDataSet=INFO
+log4j.logger.au.com.polly.ddr.GasWellDataSet=DEBUG
 log4j.logger.au.com.polly.ddr.GasWellDataSetUtil=DEBUG
 
 log4j.appender.stdout=org.apache.log4j.ConsoleAppender
