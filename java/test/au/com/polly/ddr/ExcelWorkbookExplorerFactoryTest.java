@@ -22,25 +22,9 @@ package au.com.polly.ddr;
 
 import junit.framework.JUnit4TestAdapter;
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.util.PaneInformation;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.AutoFilter;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellRange;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Comment;
-import org.apache.poi.ss.usermodel.DataValidation;
-import org.apache.poi.ss.usermodel.DataValidationHelper;
-import org.apache.poi.ss.usermodel.Drawing;
-import org.apache.poi.ss.usermodel.Footer;
-import org.apache.poi.ss.usermodel.Header;
-import org.apache.poi.ss.usermodel.PrintSetup;
-import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.SheetConditionalFormatting;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.junit.Before;
@@ -51,15 +35,12 @@ import org.junit.runners.JUnit4;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.Iterator;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 
 /**
  * Battery of tests for the gas well data extractor factory class.
@@ -172,7 +153,6 @@ public void testConstructingExcelStandardizedExplorerWithEmptyWorkbook()
     ExcelWorkbookExplorer explorer;
     List<GasWellDataLocator> locations;
 
-
     explorer = factory.createExcelStandardizedWorkbookExplorer( emptyBook );
     assertNotNull( explorer );
     assertTrue( explorer instanceof ExcelStandardizedWorkbookExplorer );
@@ -198,9 +178,60 @@ public void testConstructingExcelStandardizedExplorerWithValidWorkbook()
     locations = explorer.getLocations();
 
     assertNotNull( locations );
-    assertEquals( 5, locations.size() );
+    assertEquals( 10, locations.size() );
 
-    assertEquals( "SAA-7", locations.get( 0 ).getWellName() );
+    assertEquals( "SAA-1L", locations.get( 0 ).getWellName() );
+    assertNotNull(locations.get(0).getCondensateCellLocation());
+    assertEquals("SAA-1L!C1", locations.get(0).getCondensateCellLocation().toString());
+    assertNull(locations.get(0).getOilCellLocation());
+    assertNotNull(locations.get(0).getGasCellLocation());
+    assertEquals("SAA-1L!D1", locations.get(0).getGasCellLocation().toString());
+    assertNotNull(locations.get(0).getWaterCellLocation());
+    assertEquals("SAA-1L!E1", locations.get(0).getWaterCellLocation().toString());
+    assertEquals( 1, locations.get(0).getStartDataRow() );
+    assertEquals( 2178, locations.get( 0 ).getEndDataRow() );
+
+    
+    assertEquals("SAA-1S", locations.get(1).getWellName());
+    assertNull(locations.get(1).getCondensateCellLocation());
+    assertNotNull(locations.get(1).getOilCellLocation());
+    assertEquals("SAA-1S!C1", locations.get(1).getOilCellLocation().toString());
+    assertNotNull( locations.get( 1 ).getGasCellLocation() );
+    assertEquals( "SAA-1S!D1", locations.get( 1 ).getGasCellLocation().toString() );
+    assertNotNull( locations.get( 1 ).getWaterCellLocation() );
+    assertEquals( "SAA-1S!E1", locations.get( 1 ).getWaterCellLocation().toString() );
+    assertEquals( 1, locations.get( 1 ).getStartDataRow() );
+    assertEquals( 2156, locations.get( 1 ).getEndDataRow() );
+
+    assertEquals( "SAA-2", locations.get( 2 ).getWellName() );
+    assertNull( locations.get( 2 ).getCondensateCellLocation() );
+    assertNotNull( locations.get( 2 ).getOilCellLocation() );
+    assertEquals( "SAA-2!C1", locations.get( 2 ).getOilCellLocation().toString() );
+    assertNotNull( locations.get( 2 ).getGasCellLocation() );
+    assertEquals( "SAA-2!D1", locations.get( 2 ).getGasCellLocation().toString() );
+    assertNotNull( locations.get( 2 ).getWaterCellLocation() );
+    assertEquals( "SAA-2!E1", locations.get( 2 ).getWaterCellLocation().toString() );
+    assertEquals( 1, locations.get( 2 ).getStartDataRow() );
+    assertEquals( 2178, locations.get( 2 ).getEndDataRow() );
+
+    assertEquals( "SAA-4", locations.get( 3 ).getWellName() );
+    assertEquals( "SAA-5ST", locations.get( 4 ).getWellName() );
+    assertEquals( "SAA-13", locations.get( 5 ).getWellName() );
+    assertEquals( "SAA-7", locations.get( 6 ).getWellName() );
+    assertEquals( "SAA-10ST1", locations.get( 7 ).getWellName() );
+    assertEquals( "SAA-9", locations.get( 8 ).getWellName() );
+    
+    assertEquals( "SAA-11", locations.get( 9 ).getWellName() );
+    assertNull( locations.get( 9 ).getCondensateCellLocation() );
+    assertNotNull( locations.get( 9 ).getOilCellLocation() );
+    assertEquals( "SAA-11!C1", locations.get( 9 ).getOilCellLocation().toString() );
+    assertNotNull( locations.get( 9 ).getGasCellLocation() );
+    assertEquals( "SAA-11!D1", locations.get( 9 ).getGasCellLocation().toString() );
+    assertNotNull( locations.get( 9 ).getWaterCellLocation() );
+    assertEquals( "SAA-11!E1", locations.get( 9 ).getWaterCellLocation().toString() );
+    assertEquals( 1, locations.get( 9 ).getStartDataRow() );
+    assertEquals( 1574, locations.get( 9 ).getEndDataRow() );
+
 
 }
 

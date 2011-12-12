@@ -20,11 +20,16 @@
 
 package au.com.polly.ddr;
 
+import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Used to extract gas well data sets from the standardized excel workbook format.
@@ -32,31 +37,197 @@ import java.util.List;
  */
 public class ExcelStandardizedWorkbookExplorer implements ExcelWorkbookExplorer
 {
-Workbook spreadsheet;
-List<GasWellDataLocator> locations=null;
+private final static Logger logger = Logger.getLogger(ExcelStandardizedWorkbookExplorer.class);
+private Workbook spreadsheet;
+private List<GasWellDataLocator> locations=null;
+private final static Pattern dateTimeIdentifierPattern = Pattern.compile( "^[dD][aA][tT][eE]" );
 
 public ExcelStandardizedWorkbookExplorer( Workbook spreadsheet )
 {
     this.spreadsheet = spreadsheet;    
-    locations = new ArrayList<>();
+    this.locations = new ArrayList<GasWellDataLocator>();
 }
 
 public void process()
 {
     Sheet worksheet = null;
     String sheetName = null;
+    GasWellDataLocator locator = null;
+    
+    logger.debug( "we have " + spreadsheet.getNumberOfSheets() + " worksheets." );
     
     for( int i = 0; i < spreadsheet.getNumberOfSheets(); i++ )
     {
         worksheet = spreadsheet.getSheetAt( i );
         sheetName = worksheet.getSheetName();
         
+        if ( ( locator = interrogateSheet( worksheet ) ) != null )
+        {
+            locations.add( locator );
+        }
+        
     }
 }
+
+/**
+ * Find out where the gas data is to be found within the specified worksheet
+ * 
+ * @param sheet the worksheet within the spreadsheet.
+ * @return null if no gas data found, otherwise the location where it's to be read from.
+ */
+protected GasWellDataLocator interrogateSheet( Sheet sheet )
+{
+    ExcelCellLocation cursor= null;
+    Cell cell = null;
+    Row row = null;
+    String textValue;
+    boolean dateColumnHeadingLocated = false;
+    GasWellDataLocator result = null;
+    int dateCellRow=-1;
+    Date firstDate;
+    boolean stillSearchingForDates = true;
+    int firstDateRow = 0;
+    int lastDateRow = 0;
+    Date lastDate = null;
+    Date when = null;
+    
+    cursor = new ExcelCellLocation( sheet.getSheetName(), sheet.getFirstRowNum(), 0 );
+
+    // look in the first five rows for a column heading which starts with
+    // date .... expect the date column identifier within the first five
+    // columns ....
+    //
+    // ----------------------------------------------------------------------
+    for( int j = 0; j < 5 && ( result == null ); j++ )
+    {
+        row = sheet.getRow( cursor.getRow() );
+        cursor.setColumn( row.getFirstCellNum() );
+        for( int i = 0; i < 5 && ( result == null ); i++ )
+        {
+            cell = row.getCell( cursor.getColumn() );
+            if ( ( cell.getCellType() == Cell.CELL_TYPE_STRING )
+                    && ( ( textValue = cell.getStringCellValue() ) != null ) )
+            {
+                if ( textValue.toLowerCase().startsWith( "date" ) )
+                {
+                    result = new GasWellDataLocator();
+                    result.setWellName( sheet.getSheetName() );
+                    result.setDateColumn( cursor.getColumn() );
+                    dateCellRow = cursor.getRow();
+                }
+            }
+            cursor.moveRight();
+        }
+        cursor.moveDown();
+    }
+    
+    logger.debug( "dateCellRow=" + dateCellRow + ", result=" + result + " ... about to look for first row with date...");
+
+    // if we found the date column heading, let's look for the first row with
+    // a date in it... the cursor is already on the cell below the cell that
+    // the date field was in...
+    // -----------------------------------------------------------------------
+    if ( result != null )
+    {
+        cursor.setColumn( result.getDateColumn() );
+        do {
+
+            if (
+                    ( ( row = sheet.getRow( cursor.getRow() ) ) != null )
+                &&  ( ( cell = row.getCell( cursor.getColumn() ) ) != null )
+                &&  ( ( firstDate = ExcelConverter.extractDateFromCell( cell ) ) != null )
+            )
+            {
+                stillSearchingForDates = false;
+                firstDateRow = cursor.getRow();
+                logger.debug( "found first date " + firstDate + " at location " + cursor );
+            }
+            cursor.moveDown();
+        } while( stillSearchingForDates );
+
+        // ok, now let's look for the first row which isn't a date....
+        // -------------------------------------------------------------
+        do {
+            when = null;
+            if ( ( row = sheet.getRow( cursor.getRow() ) ) != null )
+            {
+                cell = row.getCell( cursor.getColumn() );
+                if ( ( when = ExcelConverter.extractDateFromCell( cell ) ) != null )
+                {
+                    lastDateRow = cursor.getRow();
+                    lastDate = when;
+                }
+                cursor.moveDown();
+            }
+        } while( ( row != null ) && ( when != null ) );
+        
+        // ok ... now locate the gas, oil, water and condensate flow column headings...
+        // ------------------------------------------------------------------------------
+        cursor.setRow( dateCellRow );
+        cursor.setColumn(result.getDateColumn());
+        result.setStartDataRow(firstDateRow);
+        result.setEndDataRow(lastDateRow);
+
+        // look in the rows between where the date cell was found and upto (but not
+        // including) the first row of data...
+        // -------------------------------------------------------------------------
+        for( int j = dateCellRow; j < firstDateRow; j++ )
+        {
+            row = sheet.getRow( j );
+            int maxCol = result.getDateColumn() + 10 > row.getLastCellNum() ? row.getLastCellNum() : result.getDateColumn() + 10;
+
+            for( int i = result.getDateColumn() + 1; i <= maxCol; i++ )
+            {
+                if ( ( ( cell = row.getCell( i ) ) != null ) && ( cell.getCellType() == Cell.CELL_TYPE_STRING ) )
+                {
+                    textValue = cell.getStringCellValue().toLowerCase();
+                    cursor.setRow( j );
+                    cursor.setColumn( i );
+
+                    if (
+                            ( result.getCondensateCellLocation() == null )
+                        &&  ( textValue.startsWith( "cond" ) || ( ( textValue.startsWith( "gas" ) && ( textValue.contains( "cond" ) ) ) ) ) )
+
+                    {
+                        result.setCondensateCellLocation( cursor.copy() );
+                        continue;
+                    }
+
+                    if (
+                            ( result.getOilCellLocation() == null )
+                        &&  ( textValue.toLowerCase().startsWith( "oil" ) )
+                        )
+                    {
+                        result.setOilCellLocation( cursor.copy() );
+                        continue;
+                    }
+
+                    if ( ( result.getGasCellLocation() == null ) && ( textValue.toLowerCase().startsWith( "gas" ) ) )
+                    {
+                        result.setGasCellLocation( cursor.copy() );
+                        continue;
+                    }
+
+                    if ( ( result.getWaterCellLocation() == null ) && ( textValue.toLowerCase().startsWith( "water" ) ) )
+                    {
+                        result.setWaterCellLocation( cursor.copy() );
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+    
+    logger.debug( "method returns with result=" + result + " for sheet \"" + sheet.getSheetName() + "\"" );
+
+    return result;
+}
+
 
 @Override
 public List<GasWellDataLocator> getLocations()
 {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    return this.locations;
 }
+
 }

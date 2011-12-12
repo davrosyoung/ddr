@@ -135,7 +135,43 @@ public void setEndDataRow(int endDataRow)
 public String toString()
 {
     StringBuffer out = new StringBuffer();
-    out.append( "well \"" + getWellName() + "\", ");
+    out.append( "well \"" + getWellName() + "\"");
+
+    if ( startDataRow >= 0 )
+    {
+        out.append( ", startDataRow=" + startDataRow );
+    }
+
+    if ( endDataRow >= 0 )
+    {
+        out.append( ", endDataRow=" + endDataRow );
+    }
+
+    if ( dateColumn >= 0 )
+    {
+        out.append( ", dateColumn=" + dateColumn );
+    }
+
+    if ( gasCellLocation != null )
+    {
+        out.append( ", gas cell location=" + gasCellLocation );
+    }
+
+    if ( gasCellLocation != null )
+    {
+        out.append( ", condensate cell location=" + condensateCellLocation );
+    }
+
+    if ( gasCellLocation != null )
+    {
+        out.append( ", oil cell location=" + oilCellLocation );
+    }
+
+    if ( waterCellLocation != null )
+    {
+        out.append( ", water cell location=" + waterCellLocation );
+    }
+
     return out.toString();
 }
 

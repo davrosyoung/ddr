@@ -46,12 +46,7 @@ public class AllocationSheetExplorer implements ExcelWorkbookExplorer
 {
 protected Sheet sheet = null;
 protected List<GasWellDataLocator> locations = null;
-private static Logger logger = null;
-
-static
-{
-    logger = Logger.getLogger( AllocationSheetExplorer.class );
-}
+private final static Logger logger = Logger.getLogger( AllocationSheetExplorer.class );;
 
 public AllocationSheetExplorer( Sheet sheet )
 {

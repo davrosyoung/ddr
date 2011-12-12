@@ -38,18 +38,6 @@ public class ExcelConverter
 {
 private final static Pattern dateFormatPattern = Pattern.compile( "^mm\\/dd\\/yy(yy)?.*" );
 
-
-public static String getCellSpecifierString( int row, int column )
-{
-    return null;
-}
-
-public static ExcelCellLocation getCellLocation( String location )
-{
-    return null;
-}
-
-
 public static String cellTypeName( int type )
 {
     String result = "<unknown>";

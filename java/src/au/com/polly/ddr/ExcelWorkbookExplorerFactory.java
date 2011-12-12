@@ -67,11 +67,12 @@ public ExcelWorkbookExplorer createExcelStandardizedWorkbookExplorer( Workbook s
         throw new NullPointerException( "NULL spreadsheet specified. Must specify an actual spreadsheet!!" );
     }
 
-    ExcelWorkbookExplorer result;
+    ExcelStandardizedWorkbookExplorer result;
 
     result = new ExcelStandardizedWorkbookExplorer( spreadsheet );
+    result.process();
 
-    return null;
+    return result;
 }
 
 
