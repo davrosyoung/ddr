@@ -1,0 +1,41 @@
+<!--
+  ~ Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+  ~  All rights reserved. This code is not to be distributed in binary
+  ~ or source form without express consent of Polly Enterprises Pty Ltd.
+  ~
+  ~
+  ~
+  ~  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+  ~  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  ~  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  ~  PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+  ~  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  ~  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  ~  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  ~  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  ~  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  ~  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  ~  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<html>
+<head>
+    <title>DDR - Dave's Data Reduction</title>
+</head>
+<body>
+<p>
+Reduces the number of lines of data required to represent the flow rate data from a gas/oil well's production data.
+Key classes are;
+    <ul>
+    <li><b>{@link ExcelDataConverter}</b> - hides the messiness involved in working with dates stored in Microsoft Excel.</li>
+    <li><b>{@link ExcelStandardizedGasWellDataExtractor}</b> - extracts data sets from an excel spreadsheet in a standarized format.</li>
+    <li><b>{@link ExcellCellLocation}</b> - enables us to navigate around an excel worksheet.</li>
+    <li><b>{@link GasWellDataLocator}</b> - Whereabouts within a source of data that the data for a specific gas well may be located.</li>
+    <li><b>{@link GasWellDataEntry}</b> - flow rates for a single time period for a specific gas well.</li>
+    <li><b>{@link GasWellDataSet}</b> - the collection of gas well data entries for a continuous period of time for a specific gas well.</li>
+    <li><b>{@link SimpleDiscontinuityDataRateReducer}</b> - calculates a reduced set of time intervals to represent a set of gas well data entries. Especially designed to pick up gas well transitioning from production to maintenance.</li></lib>
+    <li><b>{@link SimpleOverlayPlotGrapher}</b> - plots both original data set and reduced data set upon same graph.</li></lib>
+    </ul>
+</p>
+</body>
+</html>

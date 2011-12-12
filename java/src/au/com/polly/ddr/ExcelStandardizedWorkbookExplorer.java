@@ -20,18 +20,43 @@
 
 package au.com.polly.ddr;
 
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 21/11/11
- * Time: 2:54 PM
- * To change this template use File | Settings | File Templates.
+ * Used to extract gas well data sets from the standardized excel workbook format.
+ *
  */
-public interface DataVsTimeSource
+public class ExcelStandardizedWorkbookExplorer implements ExcelWorkbookExplorer
 {
+Workbook spreadsheet;
+List<GasWellDataLocator> locations=null;
 
-public GasWellDataSet getData();
+public ExcelStandardizedWorkbookExplorer( Workbook spreadsheet )
+{
+    this.spreadsheet = spreadsheet;    
+    locations = new ArrayList<>();
+}
 
+public void process()
+{
+    Sheet worksheet = null;
+    String sheetName = null;
+    
+    for( int i = 0; i < spreadsheet.getNumberOfSheets(); i++ )
+    {
+        worksheet = spreadsheet.getSheetAt( i );
+        sheetName = worksheet.getSheetName();
+        
+    }
+}
+
+@Override
+public List<GasWellDataLocator> getLocations()
+{
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+}
 }

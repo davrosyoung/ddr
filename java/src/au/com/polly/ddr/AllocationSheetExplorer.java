@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ *  All rights reserved. This code is not to be distributed in binary
+ * or source form without express consent of Polly Enterprises Pty Ltd.
+ *
+ *
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ *  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ *  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ *  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package au.com.polly.ddr;
 
 import jxl.CellType;
@@ -15,12 +35,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+
 /**
  *
  * Attempts to locate well specific data within a specified worksheet.
  *
  */
-public class AllocationSheetExplorer
+public class AllocationSheetExplorer implements ExcelWorkbookExplorer
 {
 protected Sheet sheet = null;
 protected List<GasWellDataLocator> locations = null;
@@ -46,7 +68,7 @@ public void process()
     int rowCount = 0;
     ExcelCellLocation wellCellLocation = null;
 
-    cursor = new ExcelCellLocation( row.getRowNum(), row.getFirstCellNum() );
+    cursor = ( row != null ) ? new ExcelCellLocation( row.getRowNum(), row.getFirstCellNum() ) : null;
 
     logger.trace( "process() method invoked. rowCount=" + rowCount + ", sheet.getFirstRowNum()=" + sheet.getFirstRowNum() + ", cursor=" + cursor );
 
@@ -54,7 +76,7 @@ public void process()
     // within the first ten rows of data within the spreadsheet...
     // .. look in the first three columns....
     // --------------------------------------------------------------------------------
-    while( !wellCellFound && rowCount < 10 )
+    while( ( cursor != null ) && !wellCellFound && rowCount < 10 )
     {
         if ( logger.isTraceEnabled() )
         {
@@ -97,7 +119,6 @@ public void process()
         logger.debug( "Located well cell at " + wellCellLocation );
         extractWellLocations( wellCellLocation );
     } // end-IF( cell containing "well" found )
-
 }
 
 /**

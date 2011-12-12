@@ -3,7 +3,7 @@
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
- *
+ *  
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -18,20 +18,43 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
-
-
+package au.com.polly.util;
 
 /**
  * Created by IntelliJ IDEA.
  * User: dave
- * Date: 21/11/11
- * Time: 2:54 PM
+ * Date: 12/12/11
+ * Time: 3:17 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface DataVsTimeSource
+public class StringArmyKnife
 {
 
-public GasWellDataSet getData();
+public static boolean areStringsEqual( String alpha, String beta )
+{
+    boolean result = false;
+    
+    do {
+        // if both strings are null, then they are equal!!
+        // ------------------------------------------------
+        if ( result = ( ( alpha == null ) && ( beta == null ) ) )
+        {
+            break;
+        }
+        
+        // if one or tuther is null, then they are not equal!!
+        // --------------------------------------------------
+        if ( ( alpha == null ) || ( beta == null ) )
+        {
+            result = false;
+            break;
+        }
+        
+        result = alpha.equals( beta );
+        
+    } while( false );
+    
+    return result;
+}
 
 }

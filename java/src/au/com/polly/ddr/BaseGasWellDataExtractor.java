@@ -20,18 +20,20 @@
 
 package au.com.polly.ddr;
 
-
+import java.util.Map;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 21/11/11
- * Time: 2:54 PM
- * To change this template use File | Settings | File Templates.
+ * Provides convenience method with no id array specified.
  */
-public interface DataVsTimeSource
+public abstract class BaseGasWellDataExtractor implements GasWellDataExtractor
 {
+@Override
+public Map<GasWell, GasWellDataSet> extract()
+{
+    return extract(null);
+}
 
-public GasWellDataSet getData();
+@Override
+public abstract Map<GasWell, GasWellDataSet> extract(String[] ids);
 
 }

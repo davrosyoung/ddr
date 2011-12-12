@@ -1,4 +1,27 @@
+/*
+ * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ *  All rights reserved. This code is not to be distributed in binary
+ * or source form without express consent of Polly Enterprises Pty Ltd.
+ *
+ *
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ *  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ *  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ *  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package au.com.polly.ddr;
+
+import au.com.polly.util.HashCodeUtil;
+import au.com.polly.util.StringArmyKnife;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +38,15 @@ import java.util.regex.Pattern;
  */
 public class ExcelCellLocation
 {
-static Pattern locationPattern = Pattern.compile( "^([a-zA-Z]{1,3})(\\d{1,5})$" );
+static Pattern locationPattern = Pattern.compile( "^((\\w+)!)?([a-zA-Z]{1,3})(\\d{1,5})$" );
+static private final int SHEET_GROUP=2;
+static private final int COLUMN_GROUP=3; 
+static private final int ROW_GROUP=4; 
 private int row;
 private int column;
-private String excelLocation;
-private boolean updated = false;
+private String sheetName;
+private transient String excelLocation;
+private transient boolean updated = false;
 
 /**
  *
@@ -27,13 +54,18 @@ private boolean updated = false;
  */
 public ExcelCellLocation( String location )
 {
-    Matcher locationMatcher = locationPattern.matcher( location.toLowerCase() );
+    Matcher locationMatcher = locationPattern.matcher( location );
     int column;
 
     if ( locationMatcher.matches() )
     {
-        String columnSpecifier = locationMatcher.group( 1 );
-        String rowSpecifier = locationMatcher.group( 2 );
+        String sheetSpecifier = locationMatcher.group( SHEET_GROUP );
+        String columnSpecifier = locationMatcher.group( COLUMN_GROUP );
+        String rowSpecifier = locationMatcher.group( ROW_GROUP );
+        if ( sheetSpecifier != null )
+        {
+            setSheetName( sheetSpecifier );
+        }
         setRow( Integer.parseInt( rowSpecifier ) - 1 );
         column = decodeExcelColumnSpecifier( columnSpecifier );
         setColumn( column );
@@ -49,6 +81,17 @@ public ExcelCellLocation( String location )
  */
 public ExcelCellLocation( int row, int column )
 {
+    this( null, row, column );
+}
+
+/**
+ * @param name identifies the name of the worksheet that this cell is located within.
+ * @param row identifies the row in the worksheet, with first row being number zero.
+ * @param column identifies the column in the worksheet, with first column being number zero.
+ */
+public ExcelCellLocation( String name, int row, int column )
+{
+    setSheetName( name );
     setRow( row );
     setColumn( column );
 }
@@ -59,7 +102,7 @@ public ExcelCellLocation( int row, int column )
  */
 public ExcelCellLocation copy()
 {
-    return new ExcelCellLocation( getRow(), getColumn()  );
+    return new ExcelCellLocation( getSheetName(), getRow(), getColumn()  );
 }
 
 @Override
@@ -76,7 +119,7 @@ public boolean equals( Object other )
 
         b = (ExcelCellLocation)other;
 
-        result = ( this.getColumn() == b.getColumn() ) && ( this.getRow() == b.getRow() );
+        result = StringArmyKnife.areStringsEqual( this.getSheetName(), ((ExcelCellLocation) other).getSheetName() ) && ( this.getColumn() == b.getColumn() ) && ( this.getRow() == b.getRow() );
 
     } while( false );
 
@@ -87,8 +130,9 @@ public boolean equals( Object other )
 public int hashCode()
 {
     int result;
-    result = this.getColumn() * ( 26 * 26 * 27 );
-    result += this.getRow();
+    result = HashCodeUtil.hash( 17, this.getColumn() );
+    result = HashCodeUtil.hash( result, this.getRow() );
+    result = HashCodeUtil.hash(result, this.getSheetName());
     return result;
 }
 
@@ -170,6 +214,19 @@ public void setColumn(int column)
     updated = false;
 }
 
+
+public String getSheetName()
+{
+    return sheetName;
+}
+
+public void setSheetName( String name )
+{
+    this.sheetName = name;
+    updated = false;
+}
+
+
 protected void update()
 {
     if ( ! updated )
@@ -179,12 +236,18 @@ protected void update()
     }
 }
 
+
 public String toString()
 {
     String result;
     StringBuilder out = new StringBuilder();
 
     update();
+    if ( getSheetName() != null )
+    {
+        out.append( getSheetName() );
+        out.append( "!" );
+    }
     out.append( excelLocation );
     result = out.toString();
 

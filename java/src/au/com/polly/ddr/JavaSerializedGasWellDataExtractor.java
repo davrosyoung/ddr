@@ -20,18 +20,23 @@
 
 package au.com.polly.ddr;
 
-
+import java.util.Map;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 21/11/11
- * Time: 2:54 PM
- * To change this template use File | Settings | File Templates.
+ * Obtains gas well data sets from a java serialzed object input stream.
  */
-public interface DataVsTimeSource
+public class JavaSerializedGasWellDataExtractor extends BaseGasWellDataExtractor implements GasWellDataExtractor
 {
 
-public GasWellDataSet getData();
+/**
+ *
+ * @param ids names of the gas wells for which data should be extracted.
+ * @return
+ */
+@Override
+public Map<GasWell, GasWellDataSet> extract(String[] ids)
+{
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+}
 
 }

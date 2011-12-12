@@ -1,0 +1,9 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="notice" value="Copyright (c) 2011-&amp;#36;today.year Polly Enterprises Pty Ltd and/or its affiliates.&#10; All rights reserved. This code is not to be distributed in binary&#10;or source form without express consent of Polly Enterprises Pty Ltd.&#10;&#10; &#10;&#10; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS&#10; IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,&#10; THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR&#10; PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR&#10; CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,&#10; EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,&#10; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR&#10; PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF&#10; LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING&#10; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS&#10; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE." />
+    <option name="keyword" value="Copyright" />
+    <option name="allowReplaceKeyword" value="Copyright" />
+    <option name="myName" value="commercial" />
+    <option name="myLocal" value="true" />
+  </copyright>
+</component>

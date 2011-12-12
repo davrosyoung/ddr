@@ -20,18 +20,18 @@
 
 package au.com.polly.ddr;
 
-
+import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 21/11/11
- * Time: 2:54 PM
- * To change this template use File | Settings | File Templates.
+ * Classes which search through excel workbooks for well data implement this interface...
+ *
  */
-public interface DataVsTimeSource
+public interface ExcelWorkbookExplorer
 {
-
-public GasWellDataSet getData();
+/**
+ *
+ * @return a list of locations where gas well data is located within the excel workbook.
+ */
+public List<GasWellDataLocator> getLocations();
 
 }

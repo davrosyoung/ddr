@@ -20,18 +20,19 @@
 
 package au.com.polly.ddr;
 
-
+import java.util.Map;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 21/11/11
- * Time: 2:54 PM
- * To change this template use File | Settings | File Templates.
+ * Implemented by objects which can obtain gas well data sets from an external object
+ * (like a csv file, excel file etc...)
+ *
+ *
  */
-public interface DataVsTimeSource
+public interface GasWellDataExtractor
 {
 
-public GasWellDataSet getData();
+public Map<GasWell, GasWellDataSet> extract();
+
+public Map<GasWell, GasWellDataSet> extract(String[] ids);
 
 }
