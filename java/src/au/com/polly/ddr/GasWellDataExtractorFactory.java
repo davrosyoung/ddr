@@ -55,7 +55,7 @@ public static GasWellDataExtractorFactory getInstance()
  */
 public GasWellDataExtractor getJavaSerializedObjectExtractor( ObjectInputStream serializedObjectInputStream )
 {
-    return getJavaSerializedObjectExtractor( null );
+    return getJavaSerializedObjectExtractor( serializedObjectInputStream, null );
 }
 
 /**
@@ -69,7 +69,7 @@ public GasWellDataExtractor getJavaSerializedObjectExtractor( ObjectInputStream 
  */
 public GasWellDataExtractor getJavaSerializedObjectExtractor( ObjectInputStream serializedObjectInputStream, String[] ids )
 {
-    return null;
+    return new JavaSerializedGasWellDataExtractor( serializedObjectInputStream );
 }
 
 
@@ -80,20 +80,9 @@ public GasWellDataExtractor getJavaSerializedObjectExtractor( ObjectInputStream 
  */
 public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( Workbook spreadsheet )
 {
-    return getExcelStandardizedGasWellDataExtractor( null );
+    return new ExcelStandardizedGasWellDataExtractor( spreadsheet );
 }
 
-/**
- *
- * @param spreadsheet the spreadsheet from which the data is to be extracted.
- * @param ids one or more gas well names to be extracted. if a null list is provided, then data for ALL wells will
- *            be returned.
- * @return   extractor from which the gas well data sets may be extracted.
- */
-public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( Workbook spreadsheet, String[] ids )
-{
-    return null;
-}
 
 
 /**

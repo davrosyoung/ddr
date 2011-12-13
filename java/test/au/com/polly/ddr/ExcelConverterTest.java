@@ -24,9 +24,13 @@ import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
 import junit.framework.JUnit4TestAdapter;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +57,11 @@ import static junit.framework.Assert.assertTrue;
 public class ExcelConverterTest
 {
 
+public void testConstructor()
+{
+    assertNotNull(new ExcelConverter());
+}
+
 @Test
 public void testConvertCellTypeName()
 {
@@ -66,12 +75,35 @@ public void testConvertCellTypeName()
 }
 
 @Test
-public void testGetNumericCellContents()
+public void testGetCellContents()
 {
-    Workbook book = WorkbookFactory.create();
-    Cell cell = new XSSFCell();
-}
+    Workbook wb = new XSSFWorkbook();
+    CreationHelper createHelper = wb.getCreationHelper();
+    Sheet sheet = wb.createSheet("new sheet");
 
+    // Create a row and put some cells in it. Rows are 0 based.
+    Row row = sheet.createRow((short)0);
+    // Create a cell and put a value in it.
+    Cell cell = row.createCell(0);
+    cell.setCellValue(1);
+
+    // Or do it on one line.
+    row.createCell(1).setCellValue(1.2);
+    row.createCell(2).setCellValue(
+            createHelper.createRichTextString("Hello World!"));
+    row.createCell(3).setCellValue( true );
+    row.createCell(4).setCellValue( (String)null );
+    row.createCell(5).setCellValue( false );
+
+
+    assertEquals("NUMERIC - 1.0", ExcelConverter.cellContents( row.getCell( 0 ) ) );
+    assertEquals( "NUMERIC - 1.2", ExcelConverter.cellContents( row.getCell( 1 ) ) );
+    assertEquals( "STRING - \"Hello World!\"", ExcelConverter.cellContents( row.getCell( 2 ) ) );
+    assertEquals( "BOOLEAN - <TRUE>", ExcelConverter.cellContents( row.getCell( 3 ) ) );
+    assertEquals( "BLANK - <NULL>", ExcelConverter.cellContents( row.getCell( 4 ) ) );
+    assertEquals( "BOOLEAN - <FALSE>", ExcelConverter.cellContents( row.getCell( 5 ) ) );
+
+}
 
 public static junit.framework.Test suite() {
     return new JUnit4TestAdapter( ExcelConverterTest.class );

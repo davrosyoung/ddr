@@ -27,7 +27,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
@@ -51,45 +53,40 @@ public static junit.framework.Test suite() {
 public void setup()
 {
     factory = GasWellDataExtractorFactory.getInstance();
+    ObjectOutputStream oos;
+    FileOutputStream fos;
+    GasWellDataSet dataSet;
+    GasWell well;
+    GasWellDataEntry entry;
+    
+    well = new GasWell( "Dave's well" );
 }
 
 @Test(expected=NullPointerException.class)
 public void testConstructingJavaSerializedExtractorWithNullInputStream()
 {
-    fail( "Not yet implemented" );    
+    GasWellDataExtractor extractor = null;
+
+    extractor = GasWellDataExtractorFactory.getInstance().getJavaSerializedObjectExtractor(null);
 }
 
 @Test(expected=ClassCastException.class)
 public void testConstructingJavaSerializedExtractorWithWrongObjectType()
 {
-    fail( "Not yet implemented" );
+    GasWellDataExtractor extractor = null;
+
+    extractor = GasWellDataExtractorFactory.getInstance().getJavaSerializedObjectExtractor( null );
 }
 
-@Test(expected=IllegalArgumentException.class)
-public void testConstructingJavaSerializedExtractorWithDuplicatedWellIDs()
+@Test(expected=ClassCastException.class)
+public void testConstructingJavaSerializedExtractor()
 {
-    fail( "Not yet implemented" );
+    GasWellDataExtractor extractor = null;
+
+    extractor = GasWellDataExtractorFactory.getInstance().getJavaSerializedObjectExtractor( null );
 }
 
-@Test(expected=IllegalArgumentException.class)
-public void testConstructingJavaSerializedExtractorWithEmptyIDArray()
-{
-    fail( "Not yet implemented" );
-}
 
-public void testConstructingJavaSerializedExtractorWithIDsSpecified()
-{
-    fail( "Not yet implemented" );
-}
-
-public void testConstructingJavaSerializedExtractorWithNullIDArray()
-{
-    ObjectInputStream ois = null;
-    GasWellDataExtractor extractor = factory.getJavaSerializedObjectExtractor( ois, null );
-    assertNotNull( extractor );
-    assertTrue( extractor instanceof JavaSerializedGasWellDataExtractor );
-    
-}
 
 @Test(expected=NullPointerException.class)
 public void testConstructingExcelStandardizedExtractorWithNullWorkbook()

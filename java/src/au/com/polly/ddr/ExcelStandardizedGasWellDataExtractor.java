@@ -20,6 +20,8 @@
 
 package au.com.polly.ddr;
 
+import org.apache.poi.ss.usermodel.Workbook;
+
 import java.util.Map;
 
 /**
@@ -27,6 +29,12 @@ import java.util.Map;
  */
 public class ExcelStandardizedGasWellDataExtractor extends BaseGasWellDataExtractor implements GasWellDataExtractor
 {
+private Workbook spreadsheet;
+
+protected ExcelStandardizedGasWellDataExtractor( Workbook spreadsheet )
+{
+    this.spreadsheet = spreadsheet;
+}
 
 /**
  *

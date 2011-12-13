@@ -20,6 +20,7 @@
 
 package au.com.polly.ddr;
 
+import java.io.ObjectInputStream;
 import java.util.Map;
 
 /**
@@ -27,6 +28,11 @@ import java.util.Map;
  */
 public class JavaSerializedGasWellDataExtractor extends BaseGasWellDataExtractor implements GasWellDataExtractor
 {
+
+protected JavaSerializedGasWellDataExtractor( ObjectInputStream ios )
+{
+
+}
 
 /**
  *

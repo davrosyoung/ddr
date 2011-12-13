@@ -28,16 +28,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 12/11/11
- * Time: 12:47 PM
- * To change this template use File | Settings | File Templates.
+ * Utility routines to aid in converting excel data.
+ *
  */
 public class ExcelConverter
 {
 private final static Pattern dateFormatPattern = Pattern.compile( "^mm\\/dd\\/yy(yy)?.*" );
 
+/**
+ *
+ * @param type the type of cell
+ * @return human readable version of the cell type.
+ */
 public static String cellTypeName( int type )
 {
     String result = "<unknown>";
@@ -61,7 +63,7 @@ public static String cellTypeName( int type )
             break;
 
         case Cell.CELL_TYPE_NUMERIC:
-            result="NUMBER";
+            result="NUMERIC";
             break;
 
         case Cell.CELL_TYPE_STRING:
@@ -71,6 +73,11 @@ public static String cellTypeName( int type )
     return result;
 }
 
+/**
+ *
+ * @param cell excel cell to be interrogated.
+ * @return a human readable version of the cell contents including it's type
+ */
 public static String cellContents( Cell cell )
 {
     StringBuilder out = new StringBuilder();
@@ -92,7 +99,7 @@ public static String cellContents( Cell cell )
         case Cell.CELL_TYPE_BLANK:
         case Cell.CELL_TYPE_ERROR:
         default:
-            out.append( "<NULL>" );
+            out.append( " - <NULL>" );
             break;
     }
 
@@ -100,6 +107,12 @@ public static String cellContents( Cell cell )
 }
 
 
+/**
+ *
+ * @param cell excel cell to be interrogated for a date/time value.
+ * @return if the cell contains a date, then this method will extract it, if not, then a
+ * NULL result is returned.
+ */
 public static Date extractDateFromCell( Cell cell )
 {
     Date result = null;
