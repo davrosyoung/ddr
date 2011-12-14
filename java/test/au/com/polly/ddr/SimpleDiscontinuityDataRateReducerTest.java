@@ -22,6 +22,7 @@ package au.com.polly.ddr;
 
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
+import au.com.polly.util.DateRange;
 import junit.framework.JUnit4TestAdapter;
 import org.apache.log4j.Logger;
 import org.junit.Before;
@@ -29,15 +30,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Created by IntelliJ IDEA.
@@ -50,20 +50,9 @@ import static org.junit.Assert.assertNotNull;
 public class SimpleDiscontinuityDataRateReducerTest
 {
 static private final Logger logger = Logger.getLogger( SimpleDiscontinuityDataRateReducerTest.class );
-static private final double oilFlowRates[] = {
-        0000.0, 0000.0, 0000.0, 1567.5, 1342.1, 1152.6, 1133.6, 1132.8, 1127.6, 1128.3,
-        1129.5, 1128.6, 1153.5, 1132.4, 1129.1, 1128.5, 1131.2, 1130.0, 1131.5, 1132.1,
-        1132.7, 1133.1, 1135.8, 1138.5, 1139.1, 1142.6, 1140.7, 1141.2, 1141.8, 1140.3,
-        0320.5, 0000.0, 0000.0, 0000.0, 0000.0, 0000.0, 0762.5, 1762.4, 1482.3, 1312.5,
-        1274.7, 1082.5, 0995.7, 1127.5, 1138.5, 1137.6, 1139.6, 1140.6, 1137.8, 1137.6,
-        1138.2, 1139.1, 1142.6, 1140.7, 1135.7, 0970.5, 0790.7, 0608.2, 0432.5, 0402.2,
-        0395.7, 0403.1, 0397.5, 0399.9, 0401.5, 0400.0, 0408.2, 0405.3, 0397.5, 0401.1,
-        0402.6, 0490.0, 0580.0, 0670.0, 0760.0, 0850.0, 0940.0, 1030.0, 1120.0, 1200.0,
-        1200.0, 1203.8, 1197.6, 1199.9, 1202.0, 1205.5, 1203.2, 1202.0, 1201.0, 1200.0,
-        1203.0, 1205.0, 1207.0, 1209.0, 1211.0, 1210.0, 1210.0, 1210.0, 1210.0, 1210.0
-};
-private final static GasWell dummyWell = new GasWell( "Dummy" );
+
 private GasWellDataSet dataSet = null;
+private DateParser dateParser = null;
 
 
 public static junit.framework.Test suite() {
@@ -75,23 +64,7 @@ public void setup()
 {
    // populate some dummy data into the gas well data set....
     // --------------------------------------------------------
-    dataSet = new GasWellDataSet( dummyWell );
-    GasWellDataEntry entry;
-    Calendar when;
-    DateParser dateParser = new AussieDateParser();
-
-    when = dateParser.parse( "13/06/2011 04:00" );
-
-    for( int i = 0; i < oilFlowRates.length; i++ )
-    {
-        entry = new GasWellDataEntry();
-        entry.setWell( dummyWell );
-        entry.setStartInterval( when.getTime() );
-        when.add( Calendar.DATE, 1 );
-        entry.setIntervalLength( 86400 );
-        entry.setMeasurement( WellMeasurementType.OIL_FLOW, oilFlowRates[ i ] );
-        dataSet.addDataEntry( entry );
-    }
+    dataSet = TestGasWellDataSet.getDummyDataSet();
 }
 
 @Test
@@ -115,6 +88,89 @@ public void testReducingDataToTenIntervals()
     logger.debug( reducedDataSet );
 
 
+}
+
+@Test
+public void testReducingSAA2FragmentData()
+{
+    DataRateReducer reducer = new SimpleDiscontinuityDataRateReducer();
+    GasWellDataSet reducedDataSet;
+    GasWellDataSet saa2FragmentDataSet = TestGasWellDataSet.getSAA2FragmentDataSet();
+
+    reducedDataSet = reducer.reduce( saa2FragmentDataSet, 10 );
+    assertNotNull( reducedDataSet );
+    assertEquals( "SAA-2", reducedDataSet.getWellName() );
+    assertEquals( saa2FragmentDataSet.from(), reducedDataSet.from() );
+    assertEquals( saa2FragmentDataSet.until(), reducedDataSet.until() );
+
+    
+    // intervals should contain at least;
+    // b01 ..... 30/JUL/2009 - 12/AUG/2009
+    // b02 ..... 12/AUG/2009 - 15/AUG/2009 (OUTAGE)
+    // b03 ..... 15/AUG/2009 - 19/AUG/2009
+    // b04 ..... 19/AUG/2009 - 20/AUG/2009 (OUTAGE)
+    // b05 ..... 20/AUG/2009 - 21/AUG/2009 (VERY LOW FLOW RATES)
+    // b06 ..... 21/AUG/2009 - 23/AUG/2009 (OUTAGE)
+    // b07 ..... 23/AUG/2009 - 15/SEP/2009
+    // b08 ..... 15/SEP/2009 - 16/SEP/2009 (OUTAGE)
+    // b09 ..... 16/SEP/2009 - 17/SEP/2009 (VERY FLOW FLOW RATES)
+    // b10 ..... 17/SEP/2009 - 19/SEP/2009 (OUTAGE)
+    // b11 ..... 19/SEP/2009 - 20/SEP/2009 (LOW FLOW RATES)
+    // b12 ..... 20/SEP/2009 - 21/SEP/2009 (OUTAGE)
+    // b13 ..... 21/SEP/2009 - 25/NOV/2009 (HIGH FLOW RATES)
+    // ---------------------
+    assertTrue( reducedDataSet.getData().size() >= 13 );
+    Date[] expectedBoundary = new Date[] {
+        dateParser.parse( "30/JUL/2009 00:00" ).getTime(),
+        dateParser.parse( "12/AUG/2009 00:00" ).getTime(),
+        dateParser.parse( "15/AUG/2009 00:00" ).getTime(),
+        dateParser.parse( "19/AUG/2009 00:00" ).getTime(),
+        dateParser.parse( "20/AUG/2009 00:00" ).getTime(),
+        dateParser.parse( "21/AUG/2009 00:00" ).getTime(),
+        dateParser.parse( "23/AUG/2009 00:00" ).getTime(),
+        dateParser.parse( "15/SEP/2009 00:00" ).getTime(),
+        dateParser.parse( "16/SEP/2009 00:00" ).getTime(),
+        dateParser.parse( "17/SEP/2009 00:00" ).getTime(),
+        dateParser.parse( "19/SEP/2009 00:00" ).getTime(),
+        dateParser.parse( "20/SEP/2009 00:00" ).getTime(),
+        dateParser.parse( "21/SEP/2009 00:00" ).getTime(),
+    };
+    boolean[] boundaryFound = { false, false, false, false,false, false, false, false, false, false, false, false, false };
+    
+    for( GasWellDataEntry entry : reducedDataSet.getData() )
+    {
+        for( int i = 0; i < expectedBoundary.length; i++ )
+        {
+            // we are going to get milliseconds, so let's have a tolerance to within one second!!
+            // -----------------------------------------------------------------------------------
+            long delta = Math.abs( expectedBoundary[ i ].getTime() - entry.from().getTime() );
+            if ( delta < 1000 )
+            {
+                if ( ! boundaryFound[ i ] )
+                {
+                    boundaryFound[ i ] = true;
+                } else {
+                    fail( "Boundary at \"" + expectedBoundary[ i ] + " \" has already been found!!" );
+                }
+            }
+        }
+    }
+    
+    for( int i = 0; i < boundaryFound.length; i++ )
+    {
+        assertTrue( boundaryFound[ i ] );
+    }
+    
+
+ /*
+    Map<WellMeasurementType,Double> errorMap = GasWellDataSetUtil.getError( dataSet, reducedDataSet );
+    if ( errorMap.containsKey( WellMeasurementType.OIL_FLOW ) )
+    {
+        logger.debug( "error on OIL_FLOW=" + errorMap.get( WellMeasurementType.OIL_FLOW ) );
+    }
+
+    logger.debug( reducedDataSet );
+ */
 }
 
 }

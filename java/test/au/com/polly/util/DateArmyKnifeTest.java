@@ -3,7 +3,7 @@
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
- *
+ *  
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -18,60 +18,63 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.util;
 
-import au.com.polly.util.AussieDateParser;
-import au.com.polly.util.DateParser;
+import junit.framework.Assert;
 import junit.framework.JUnit4TestAdapter;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.Calendar;
+import java.util.Date;
 
+import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 24/11/11
- * Time: 11:22 AM
- * To change this template use File | Settings | File Templates.
+ * Exercise the date parser
  */
 @RunWith(JUnit4.class)
-public class SimpleDataRateReducerTest
+public class DateArmyKnifeTest
 {
-static private final Logger logger = Logger.getLogger( SimpleDataRateReducerTest.class );
-private GasWellDataSet dataSet = null;
-
-
-public static junit.framework.Test suite() {
-    return new JUnit4TestAdapter( SimpleDataRateReducerTest.class );
-}
+DateParser parser = null;
 
 @Before
-public void setup()
+public void setUp() throws Exception
 {
-   // populate some dummy data into the gas well data set....
-    // --------------------------------------------------------
-    dataSet = TestGasWellDataSet.getDummyDataSet();
+    parser = new AussieDateParser();
 }
 
 @Test
-public void testReducingDataToTenIntervals()
+public void testFormattingDateWithMilliseconds()
 {
-    SimpleDataRateReducer reducer = new SimpleDataRateReducer();
-    GasWellDataSet reducedDataSet;
+    Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
+    String text = DateArmyKnife.format(stamp);
+    Assert.assertEquals( "13/JUN/1968 04:13:59.235", text  );
+}
 
-    reducedDataSet = reducer.reduce( dataSet, 10 );
-    assertNotNull( reducedDataSet );
-    assertEquals( "Dummy", reducedDataSet.getWellName() );
-    assertEquals( 10, reducedDataSet.getData().size() );
-    logger.debug( reducedDataSet );
+@Test
+public void testFormattingDateWithSeconds()
+{
+    Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
+    String text = DateArmyKnife.formatWithSeconds(stamp);
+    Assert.assertEquals( "13/JUN/1968 04:13:59", text  );
+}
 
+@Test
+public void testFormattingDateWithMinutes()
+{
+    Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
+    String text = DateArmyKnife.formatWithMinutes(stamp);
+    Assert.assertEquals( "13/JUN/1968 04:13", text  );
+}
+
+public static junit.framework.Test suite() {
+    return new JUnit4TestAdapter( DateArmyKnifeTest.class );
 }
 
 }

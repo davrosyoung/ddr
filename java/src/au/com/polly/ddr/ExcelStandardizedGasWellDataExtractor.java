@@ -20,8 +20,14 @@
 
 package au.com.polly.ddr;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,10 +36,71 @@ import java.util.Map;
 public class ExcelStandardizedGasWellDataExtractor extends BaseGasWellDataExtractor implements GasWellDataExtractor
 {
 private Workbook spreadsheet;
+protected Map<GasWell,GasWellDataSet> dataSetMap;
 
-protected ExcelStandardizedGasWellDataExtractor( Workbook spreadsheet )
+protected ExcelStandardizedGasWellDataExtractor( Workbook spreadsheet, List<GasWellDataLocator> locatorList )
 {
     this.spreadsheet = spreadsheet;
+    this.dataSetMap = new HashMap<GasWell,GasWellDataSet>();
+    Map<WellMeasurementType,Integer> measurementColumnIdxMap;
+    
+    for( GasWellDataLocator locator : locatorList )
+    {
+        Sheet sheet = spreadsheet.getSheet(locator.getWellName());
+        int dateColumn = locator.getDateColumn();
+        Row row;
+        Cell cell;
+        Date when;
+        
+        ExcelCellLocation dateCursor;
+        measurementColumnIdxMap = new HashMap<WellMeasurementType,Integer>();
+        
+        if ( locator.getOilCellLocation() != null )
+        {
+            measurementColumnIdxMap.put( WellMeasurementType.OIL_FLOW, locator.getOilCellLocation().getColumn() );
+        }
+        
+        if ( locator.getGasCellLocation() != null )
+        {
+            measurementColumnIdxMap.put( WellMeasurementType.GAS_FLOW, locator.getGasCellLocation().getColumn() );
+        }
+        
+        if ( locator.getCondensateCellLocation() != null )
+        {
+            measurementColumnIdxMap.put( WellMeasurementType.CONDENSATE_FLOW, locator.getCondensateCellLocation().getColumn() );
+        }
+        
+        if ( locator.getWaterCellLocation() != null )
+        {
+            measurementColumnIdxMap.put( WellMeasurementType.WATER_FLOW, locator.getWaterCellLocation().getColumn() );
+        }
+
+        // for each data row...
+        // -------------------------
+        for( int rowIdx = locator.getStartDataRow(); rowIdx <= locator.getEndDataRow(); rowIdx++ )
+        {
+            GasWellDataEntry entry;
+            // let's start at the first data row....
+            // --------------------------------------
+            row = sheet.getRow( rowIdx );
+            cell = row.getCell( dateColumn );
+
+            if ( ( when = ExcelConverter.extractDateFromCell( cell ) ) != null )
+            {
+                // yayy!!
+            }
+
+            // how to work out the time span??
+        }
+    }
+    
+    for( int i = 0; i < spreadsheet.getNumberOfSheets(); i++ )
+    {
+        Sheet sheet = spreadsheet.getSheetAt( i );
+        GasWell well = new GasWell( sheet.getSheetName() );
+        GasWellDataSet dataSet = new GasWellDataSet( well );
+        dataSetMap.put( well, dataSet );
+    }
 }
 
 /**
@@ -44,7 +111,7 @@ protected ExcelStandardizedGasWellDataExtractor( Workbook spreadsheet )
 @Override
 public Map<GasWell, GasWellDataSet> extract(String[] ids)
 {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    return dataSetMap;
 }
 
 }

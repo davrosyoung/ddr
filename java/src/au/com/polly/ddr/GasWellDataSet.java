@@ -20,6 +20,7 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.util.DateRange;
 import au.com.polly.util.HashCodeUtil;
 import org.apache.log4j.Logger;
 
@@ -144,14 +145,16 @@ public void addDataEntry( GasWellDataEntry entry )
     {
         maximumEntry = entry.copy();
     }
+    
+    
 
     // if our minimum entry contains a start date/time later than the one specified,
     // then update the date/time in the minimum entry to represent the earliest date/time
     // for the dataset.
     // -----------------------------------------------------------------------------------
-    if ( minimumEntry.getStartInterval().getTime() > entry.getStartInterval().getTime() )
+    if ( minimumEntry.from().getTime() > entry.from().getTime() )
     {
-        minimumEntry.setStartInterval( entry.getStartInterval() );
+        minimumEntry.setDateRange(new DateRange(entry.from(), entry.getIntervalLength(), 1000L));
     }
 
 
@@ -160,8 +163,7 @@ public void addDataEntry( GasWellDataEntry entry )
     // -----------------------------------------------------------------------------------
     if ( maximumEntry.until().getTime() < entry.until().getTime() )
     {
-        maximumEntry.setStartInterval( entry.getStartInterval() );
-        maximumEntry.setIntervalLength( entry.getIntervalLength() );
+        maximumEntry.setDateRange(new DateRange(entry.from(), entry.getIntervalLength(), 1000L));
     }
 
     // for each measurement type, if the flow rate specified is smaller than the previous
@@ -210,7 +212,7 @@ public Date from()
 
     if ( minimumEntry != null )
     {
-        result = minimumEntry.getStartInterval();
+        result = minimumEntry.from();
     }
 
     return result;
@@ -372,18 +374,18 @@ protected int locateEntryIndex( Date when )
         for( int i = 0; i < getData().size() && ( result < 0 ); i++ )
         {
             candidate = getData().get( i );
-            if ( between( when, candidate.getStartInterval(), candidate.until() ) )
+            if ( between( when, candidate.from(), candidate.until() ) )
             {
                 if ( logger.isDebugEnabled() )
                 {
-                    logger.debug( "Found matching time interval at i=" + i + ", when=" + when + ", startInterval=" + candidate.getStartInterval() + ", intervalLength=" + candidate.getIntervalLength() + "seconds" );
+                    logger.debug( "Found matching time interval at i=" + i + ", when=" + when + ", startInterval=" + candidate.from() + ", intervalLength=" + candidate.getIntervalLength() + "seconds" );
                 }
                 result = i;
             }
             if ( logger.isTraceEnabled() )
             {
-                logger.trace( "i=" + i + ", startInterval=" + candidate.getStartInterval() + ", until=" + candidate.until() + ",result=" + result );
-                logger.trace( "i=" + i + ", startInterval.time=" + candidate.getStartInterval().getTime() + ", until.time=" + candidate.until().getTime() + ", when.time=" + when.getTime() + ", result=" + result );
+                logger.trace( "i=" + i + ", startInterval=" + candidate.from() + ", until=" + candidate.until() + ",result=" + result );
+                logger.trace( "i=" + i + ", startInterval.time=" + candidate.from().getTime() + ", until.time=" + candidate.until().getTime() + ", when.time=" + when.getTime() + ", result=" + result );
             }
         }
 
@@ -467,9 +469,8 @@ public GasWellDataEntry consolidateEntries( Date segmentStart, Date segmentEnd )
     segmentLength = ( segmentEnd.getTime() / 1000 ) - ( segmentStart.getTime() / 1000 ) + 1;
 
     result = new GasWellDataEntry();
-    result.setWell( getWell() );
-    result.setStartInterval( segmentStart );
-    result.setIntervalLength( segmentLength );
+    result.setWell(getWell());
+    result.setDateRange(new DateRange(segmentStart, segmentLength * 1000L, 1000L));
 
     cursor = locateEntryIndex( segmentStart );
 
@@ -487,7 +488,7 @@ public GasWellDataEntry consolidateEntries( Date segmentStart, Date segmentEnd )
     long overlapFinish;
     do {
         interval = getEntry( cursor++ );
-        overlapStart = ( interval.getStartInterval().getTime() <= segmentStart.getTime() ) ? segmentStart.getTime() : interval.getStartInterval().getTime();
+        overlapStart = ( interval.from().getTime() <= segmentStart.getTime() ) ? segmentStart.getTime() : interval.from().getTime();
         overlapFinish = ( interval.until().getTime() >= segmentEnd.getTime() ) ? segmentEnd.getTime() : interval.until().getTime();
         overlapDuration = ( ( overlapFinish - overlapStart ) / 1000 ) + 1;    // in seconds!!
         factor = (double)overlapDuration / (double)segmentLength;
@@ -543,8 +544,8 @@ public void output( PrintStream writer )
     {
         firstEntry = list.get( 0 );
         lastEntry = list.get( list.size() - 1 );
-        firstDate = firstEntry.getStartInterval();
-        lastDate = new Date( lastEntry.getStartInterval().getTime() + lastEntry.getIntervalLength() );
+        firstDate = firstEntry.from();
+        lastDate = new Date( lastEntry.from().getTime() + lastEntry.getIntervalLength() );
         firstCal = Calendar.getInstance();
         firstCal.setTime( firstDate );
         lastCal = Calendar.getInstance();
@@ -588,7 +589,7 @@ public void output( PrintStream writer )
 
             for( GasWellDataEntry entry : list )
             {
-                cal.setTime( entry.getStartInterval() );
+                cal.setTime( entry.from() );
                 formatter.format( "| %02d/%3s/%04d %02d:%02d:%02d |",
                         cal.get( Calendar.DAY_OF_MONTH ),
                         monthNames[ cal.get( Calendar.MONTH ) ],

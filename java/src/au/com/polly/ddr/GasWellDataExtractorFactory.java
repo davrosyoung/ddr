@@ -25,6 +25,7 @@ import sun.net.idn.StringPrep;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 
@@ -51,25 +52,14 @@ public static GasWellDataExtractorFactory getInstance()
  *
  * @param serializedObjectInputStream stream containing java serialized object(s). we are expecting this
  *                                    stream to contain a List&lt;GasWellDataSet&gt;
- * @return
- */
-public GasWellDataExtractor getJavaSerializedObjectExtractor( ObjectInputStream serializedObjectInputStream )
-{
-    return getJavaSerializedObjectExtractor( serializedObjectInputStream, null );
-}
-
-/**
  *
- * @param serializedObjectInputStream stream containing java serialized object(s). we are expecting this
- *                                    stream to contain a List&lt;GasWellDataSet&gt;
- *
- * @param ids one or more gas well names to be extracted. if a null list is provided, then data for ALL wells will
- *            be returned.
  * @return extractor from which the gas well data sets may be extracted.
  */
-public GasWellDataExtractor getJavaSerializedObjectExtractor( ObjectInputStream serializedObjectInputStream, String[] ids )
+public GasWellDataExtractor getJavaSerializedObjectExtractor( ObjectInputStream serializedObjectInputStream )
+throws IOException, ClassCastException, ClassNotFoundException
 {
-    return new JavaSerializedGasWellDataExtractor( serializedObjectInputStream );
+    GasWellDataExtractor result = new JavaSerializedGasWellDataExtractor( serializedObjectInputStream );
+    return result;
 }
 
 
@@ -80,6 +70,16 @@ public GasWellDataExtractor getJavaSerializedObjectExtractor( ObjectInputStream 
  */
 public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( Workbook spreadsheet )
 {
+    if ( spreadsheet == null )
+    {
+        throw new NullPointerException( "NULL spreadsheet specified!!" );
+    }
+    
+    if ( spreadsheet.getNumberOfSheets() == 0 )
+    {
+        throw new IllegalArgumentException( "Spreadsheet specified is EMPTY!!" );
+    }
+
     return new ExcelStandardizedGasWellDataExtractor( spreadsheet );
 }
 
@@ -92,18 +92,6 @@ public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( Workbook s
  * @return   extractor from which the gas well data sets may be extracted.
  */
 public GasWellDataExtractor getLASGasWellDataExtractor( InputStream is )
-{
-    return getLASGasWellDataExtractor( null );
-}
-
-/**
- *
- * @param is   input stream containing gas well data in log ascii standard v3.0 format.
- *  @param ids one or more gas well names to be extracted. if a null list is provided, then data for ALL wells will
- *            be returned.
- * @return   extractor from which the gas well data sets may be extracted.
- */
-public GasWellDataExtractor getLASGasWellDataExtractor( InputStream is, String[] ids )
 {
     return null;
 }

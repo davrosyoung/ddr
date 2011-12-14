@@ -216,7 +216,7 @@ public void render( Graphics2D gfx, int width, int height )
             for( int i = startIdx; i < endIdx; i++ )
             {
                 entry = data.getData().get( i );
-                long daysSinceStart = ( entry.getStartInterval().getTime() - graphFrom.getTime() ) / 86400000;
+                long daysSinceStart = ( entry.from().getTime() - graphFrom.getTime() ) / 86400000;
                 if( entry.containsMeasurement( wmt ) )
                 {
                     flow = entry.getMeasurement( wmt );
@@ -251,7 +251,7 @@ public void render( Graphics2D gfx, int width, int height )
                     if ( entry.containsMeasurement( wmt ) )
                     {
                         flow = entry.getMeasurement( wmt );
-                        long day0 = ( entry.getStartInterval().getTime() - graphFrom.getTime() ) / 86400000;
+                        long day0 = ( entry.from().getTime() - graphFrom.getTime() ) / 86400000;
                         long day1 = ( entry.until().getTime() - graphFrom.getTime() ) / 86400000;
                         px0 = 50 + (int)Math.ceil( day0 / daysPerPixel );
                         px1 = 50 + (int)Math.ceil( day1 / daysPerPixel );

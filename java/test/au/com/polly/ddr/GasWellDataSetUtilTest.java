@@ -22,6 +22,7 @@ package au.com.polly.ddr;
 
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
+import au.com.polly.util.DateRange;
 import junit.framework.JUnit4TestAdapter;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -56,27 +57,13 @@ static Logger logger = Logger.getLogger( GasWellDataSetUtilTest.class );
 private final static double ACCEPTABLE_ERROR = 1E-8;
 GasWellDataSet littleDataSet;
 GasWellDataSet reducedDataSet;
-DateParser dateParser;
+static DateParser dateParser;
 Calendar twentyThirdApril;
 Calendar twentyThirdAprilFiveInTheMorning;
 Calendar twentyThirdAprilJustBeforeNoon;
 Calendar endJuly;
 GasWell davesWell = null;
 GasWell dummyWell;
-
-static private final double oilFlowRates[] = {
-        0000.0, 0000.0, 0000.0, 1567.5, 1342.1, 1152.6, 1133.6, 1132.8, 1127.6, 1128.3,
-        1129.5, 1128.6, 1153.5, 1132.4, 1129.1, 1128.5, 1131.2, 1130.0, 1131.5, 1132.1,
-        1132.7, 1133.1, 1135.8, 1138.5, 1139.1, 1142.6, 1140.7, 1141.2, 1141.8, 1140.3,
-        0320.5, 0000.0, 0000.0, 0000.0, 0000.0, 0000.0, 0762.5, 1762.4, 1482.3, 1312.5,
-        1274.7, 1082.5, 0995.7, 1127.5, 1138.5, 1137.6, 1139.6, 1140.6, 1137.8, 1137.6,
-        1138.2, 1139.1, 1142.6, 1140.7, 1135.7, 0970.5, 0790.7, 0608.2, 0432.5, 0402.2,
-        0395.7, 0403.1, 0397.5, 0399.9, 0401.5, 0400.0, 0408.2, 0405.3, 0397.5, 0401.1,
-        0402.6, 0490.0, 0580.0, 0670.0, 0760.0, 0850.0, 0940.0, 1030.0, 1120.0, 1200.0,
-        1200.0, 1203.8, 1197.6, 1199.9, 1202.0, 1205.5, 1203.2, 1202.0, 1201.0, 1200.0,
-        1203.0, 1205.0, 1207.0, 1209.0, 1211.0, 1210.0, 1210.0, 1210.0, 1210.0, 1210.1
-};
-
 
 public static junit.framework.Test suite() {
     return new JUnit4TestAdapter( GasWellDataSetUtilTest.class );
@@ -99,21 +86,7 @@ public void setupData()
 
     // populate some dummy data into the gas well data set....
     // --------------------------------------------------------
-    this.littleDataSet = new GasWellDataSet( dummyWell );
-    DateParser dateParser = new AussieDateParser();
-
-    when = dateParser.parse( "13/06/2011 04:00" );
-
-    for( int i = 0; i < oilFlowRates.length; i++ )
-    {
-        entry = new GasWellDataEntry();
-        entry.setWell( dummyWell );
-        entry.setStartInterval( when.getTime() );
-        when.add( Calendar.HOUR_OF_DAY, 1 );
-        entry.setIntervalLength( 3600 );
-        entry.setMeasurement( WellMeasurementType.OIL_FLOW, oilFlowRates[ i ] );
-        this.littleDataSet.addDataEntry(entry);
-    }
+    this.littleDataSet = TestGasWellDataSet.getDummyDataSet();
 
     reducedDataSet = new GasWellDataSet( littleDataSet, new Date[]{
             dateParser.parse( "13/JUNE/2011 04:00").getTime(),
@@ -172,4 +145,102 @@ public void testErrorAgainstReducedDataSet()
     assertTrue( error.containsKey( WellMeasurementType.OIL_FLOW ) );
     assertEquals( 27453.9, error.get( WellMeasurementType.OIL_FLOW), ACCEPTABLE_ERROR );
 }
+
+@Test( expected=NullPointerException.class)
+public void testCalculateVolumeWithNullDataSet()
+{
+    GasWellDataSetUtil.calculateTotalVolume( null, null, null );
+}
+
+@Test( expected=IllegalArgumentException.class )
+public void testCalculateVolumeWithDateRangeBeforeValidRange()
+{
+    GasWellDataSetUtil.calculateTotalVolume(
+            TestGasWellDataSet.getSAA2FragmentDataSet(),
+            dateParser.parse( "23/JUL/2009" ).getTime(),
+            dateParser.parse( "26/JUL/2009 23:59:59").getTime()
+    );
+    
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testCalculateVolumeWithDateRangeAfterValidRange()
+{
+    GasWellDataSetUtil.calculateTotalVolume(
+            TestGasWellDataSet.getSAA2FragmentDataSet(),
+            dateParser.parse( "25/NOV/2009 00:00:01" ).getTime(),
+            dateParser.parse( "26/NOV/2009 23:59:59").getTime()
+    );    
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testCalculateVolumeWithDateRangeBeyondValidRange()
+{
+    GasWellDataSetUtil.calculateTotalVolume(
+            TestGasWellDataSet.getSAA2FragmentDataSet(),
+            dateParser.parse( "26/JUL/2009 23:59:59" ).getTime(),
+            dateParser.parse( "25/NOV/2009 00:00:01").getTime()
+    );
+
+}
+
+@Test
+public void testCalculateVolumeForFirstEightDays()
+{
+    Map<WellMeasurementType,Double> volumes = GasWellDataSetUtil.calculateTotalVolume(
+            TestGasWellDataSet.getSAA2FragmentDataSet(),
+            dateParser.parse( "30/JUL/2009" ).getTime(),
+            dateParser.parse( "07/AUG/2009" ).getTime()
+    );
+    
+    assertNotNull( volumes );
+    assertTrue( volumes.containsKey( WellMeasurementType.GAS_FLOW ) );
+    assertTrue( volumes.containsKey( WellMeasurementType.OIL_FLOW ) );
+    assertTrue( volumes.containsKey( WellMeasurementType.WATER_FLOW ) );
+    assertFalse( volumes.containsKey( WellMeasurementType.CONDENSATE_FLOW ) );
+    
+    assertEquals( 2259.44, volumes.get( WellMeasurementType.OIL_FLOW ), 0.01 );
+    assertEquals( 1.57, volumes.get( WellMeasurementType.OIL_FLOW ), 0.01 );
+    assertEquals( 7620.72, volumes.get( WellMeasurementType.OIL_FLOW ), 0.01 );
+}
+
+@Test
+public void testCalculateVolumeForTwelveHours()
+{
+    Map<WellMeasurementType,Double> volumes = GasWellDataSetUtil.calculateTotalVolume(
+            TestGasWellDataSet.getSAA2FragmentDataSet(),
+            dateParser.parse( "30/JUL/2009 12:00" ).getTime(),
+            dateParser.parse( "31/JUL/2009" ).getTime()
+    );
+
+    assertNotNull( volumes );
+    assertTrue(volumes.containsKey(WellMeasurementType.GAS_FLOW));
+    assertTrue(volumes.containsKey(WellMeasurementType.OIL_FLOW));
+    assertTrue(volumes.containsKey(WellMeasurementType.WATER_FLOW));
+    assertFalse(volumes.containsKey(WellMeasurementType.CONDENSATE_FLOW));
+
+    assertEquals( 143.26, volumes.get( WellMeasurementType.OIL_FLOW ), 0.01 );
+    assertEquals( 0.095, volumes.get( WellMeasurementType.GAS_FLOW ), 0.01 );
+    assertEquals( 475.82, volumes.get( WellMeasurementType.WATER_FLOW ), 0.01 );
+}
+
+@Test
+public void testCalculateVolumeWithoutDates()
+{
+    Map<WellMeasurementType,Double> volumes = GasWellDataSetUtil.calculateTotalVolume(
+            TestGasWellDataSet.getSAA2FragmentDataSet()
+    );
+
+    assertNotNull( volumes );
+    assertTrue( volumes.containsKey( WellMeasurementType.GAS_FLOW ) );
+    assertTrue( volumes.containsKey( WellMeasurementType.OIL_FLOW ) );
+    assertTrue( volumes.containsKey( WellMeasurementType.WATER_FLOW ) );
+    assertFalse( volumes.containsKey( WellMeasurementType.CONDENSATE_FLOW ) );
+
+    assertEquals( 278990.4, volumes.get( WellMeasurementType.OIL_FLOW ), 0.01 );
+    assertEquals( 105.72, volumes.get( WellMeasurementType.GAS_FLOW ), 0.01 );
+    assertEquals( 395861.3, volumes.get( WellMeasurementType.WATER_FLOW ), 0.01 );
+
+}
+
 }

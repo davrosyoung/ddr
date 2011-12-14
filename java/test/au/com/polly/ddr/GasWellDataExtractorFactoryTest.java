@@ -20,17 +20,32 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.util.DateRange;
 import junit.framework.JUnit4TestAdapter;
+import org.apache.log4j.Logger;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Date;
+import java.util.Map;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
@@ -42,8 +57,13 @@ import static junit.framework.Assert.fail;
 @RunWith(JUnit4.class)
 public class GasWellDataExtractorFactoryTest
 {
+Logger logger = Logger.getLogger( GasWellDataExtractorFactoryTest.class );
 GasWellDataExtractorFactory factory;
-
+Workbook emptyBook;
+Sheet emptySheet;
+Sheet sheetAlpha;
+Sheet sheetBeta;
+Workbook testBook;
 
 public static junit.framework.Test suite() {
     return new JUnit4TestAdapter( GasWellDataExtractorFactoryTest.class );
@@ -58,8 +78,46 @@ public void setup()
     GasWellDataSet dataSet;
     GasWell well;
     GasWellDataEntry entry;
+    InputStream is = null;
     
     well = new GasWell( "Dave's well" );
+
+    emptyBook = new SXSSFWorkbook();
+
+    try
+    {
+        emptySheet = new SXSSFSheet((SXSSFWorkbook) emptyBook, null );
+    } catch (IOException e) {
+        logger.fatal( "What the!?!?!" );
+        logger.fatal( e.getClass().getName() + " - " + e.getMessage() );
+    }
+
+
+    try
+    {
+        is = new FileInputStream( "test_data/TestStandardized.xlsx" );
+        testBook = WorkbookFactory.create( is );
+    } catch ( Exception e ) {
+        logger.fatal("Failed to load data from test_data/TestStandardized.xlsx");
+        logger.fatal( e.getClass().getName() + " - " + e.getMessage() );
+    }
+
+    File objFile = new File( "test_data/daves_obj.obj" ); 
+    DateRange blah = new DateRange( new Date(), 3600000L );
+
+    try
+    {
+        fos = new FileOutputStream( objFile );
+        oos = new ObjectOutputStream( fos );
+        oos.writeObject( blah );
+        oos.close();
+        fos.close();
+    } catch (IOException e)
+    {
+        logger.fatal( "Failed to write data object out to test_data/daves_obj.obj" );
+        logger.fatal( e.getClass().getName() + " - " + e.getMessage()  );
+    }
+
 }
 
 @Test(expected=NullPointerException.class)
@@ -67,23 +125,112 @@ public void testConstructingJavaSerializedExtractorWithNullInputStream()
 {
     GasWellDataExtractor extractor = null;
 
-    extractor = GasWellDataExtractorFactory.getInstance().getJavaSerializedObjectExtractor(null);
+    try {
+        extractor = GasWellDataExtractorFactory.getInstance().getJavaSerializedObjectExtractor(null);
+    } catch (IOException e )  {
+        logger.error( e.getClass().getName() + " - " + e.getMessage() );
+        fail( "IO Exception trying to read object file." );
+    } catch (ClassNotFoundException e) {
+        logger.error( e.getClass().getName() + " - " + e.getMessage() );
+        fail( "Failed to locate class!!" );
+    }
+
 }
 
 @Test(expected=ClassCastException.class)
 public void testConstructingJavaSerializedExtractorWithWrongObjectType()
 {
     GasWellDataExtractor extractor = null;
+    File objFile = new File( "test_data/daves_obj.obj" );
 
-    extractor = GasWellDataExtractorFactory.getInstance().getJavaSerializedObjectExtractor( null );
+    FileInputStream fis =null;
+    ObjectInputStream ois = null;
+
+    try
+    {
+        fis = new FileInputStream( objFile );   // this file contains a serialized DateRange object!!!
+        ois = new ObjectInputStream( fis );
+    } catch (IOException e) {
+        logger.fatal( "Failed to read open serialized object file \"" + objFile.getAbsolutePath() + "\"" );
+    }
+
+    try
+    {
+        extractor = GasWellDataExtractorFactory.getInstance().getJavaSerializedObjectExtractor( ois );
+    } catch (IOException e )  {
+        logger.error( e.getClass().getName() + " - " + e.getMessage() );
+        fail( "IO Exception trying to read object file." );
+    } catch (ClassNotFoundException e) {
+        logger.error( e.getClass().getName() + " - " + e.getMessage() );
+        fail( "Failed to locate class!!" );
+
+    }
+
+    try
+    {
+        ois.close();
+    } catch (IOException whatThe) {
+        logger.error( "Failed to close object input stream!" );
+    }
 }
 
-@Test(expected=ClassCastException.class)
+@Test
 public void testConstructingJavaSerializedExtractor()
 {
     GasWellDataExtractor extractor = null;
+    Map<GasWell,GasWellDataSet>  dataMap;
+    GasWell sa11Well;
+    GasWell sa2Well;
+    GasWell dummyWell;
 
-    extractor = GasWellDataExtractorFactory.getInstance().getJavaSerializedObjectExtractor( null );
+    dummyWell = TestGasWellDataSet.getDummyDataSet().getWell();
+    sa11Well = TestGasWellDataSet.getNicksDataSet().getWell();
+    sa2Well = TestGasWellDataSet.getSAA2FragmentDataSet().getWell();
+
+    // construct a mwdm!!
+    MultipleWellDataMap mwdm = new MultipleWellDataMap();
+    mwdm.addDataSet( TestGasWellDataSet.getDummyDataSet() );
+    mwdm.addDataSet( TestGasWellDataSet.getNicksDataSet() );
+    mwdm.addDataSet( TestGasWellDataSet.getSAA2FragmentDataSet() );
+    
+    File testDataFile = null;
+    
+    FileInputStream fis;
+    FileOutputStream fos;
+    ObjectInputStream ois;
+    ObjectOutputStream oos;
+
+
+    try {
+        testDataFile = new File( "test_data/mwdm.obj" );
+        fos = new FileOutputStream( testDataFile );
+        oos = new ObjectOutputStream( fos );
+        oos.writeObject( mwdm );
+        oos.close();
+        fos.close();
+
+        fis = new FileInputStream( testDataFile );
+        ois = new ObjectInputStream( fis );
+        extractor = GasWellDataExtractorFactory.getInstance().getJavaSerializedObjectExtractor( ois );
+        
+        assertNotNull( extractor );
+        assertTrue( extractor instanceof JavaSerializedGasWellDataExtractor );
+        
+        dataMap = extractor.extract();
+        
+        assertNotNull( dataMap );
+        assertTrue(dataMap.containsKey(dummyWell));
+        assertTrue(dataMap.containsKey(sa11Well));
+        assertTrue( dataMap.containsKey( sa2Well ) );
+
+    } catch (IOException e )  {
+        logger.error( e.getClass().getName() + " - " + e.getMessage() );
+        fail( "IO Exception trying to read object file." );
+    } catch (ClassNotFoundException e) {
+        logger.error( e.getClass().getName() + " - " + e.getMessage() );
+        fail( "Failed to locate class!!" );
+    }
+
 }
 
 
@@ -91,24 +238,53 @@ public void testConstructingJavaSerializedExtractor()
 @Test(expected=NullPointerException.class)
 public void testConstructingExcelStandardizedExtractorWithNullWorkbook()
 {
+    GasWellDataExtractor extractor = null;
     
+    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( null );    
 }
 
 @Test(expected=IllegalArgumentException.class)
-public void testConstructingExcelStandardizedExtractorWithDuplicatedWellIDs()
+public void testConstructingExcelStandardizedExtractorWithEmptySpreadsheet()
 {
+    GasWellDataExtractor extractor = null;
+
+    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( emptyBook );        
+}
+
+@Test
+public void testConstructingExcelStandardizedExtractor()
+{
+    GasWellDataExtractor extractor = null;
+    Map<GasWell,GasWellDataSet> dataMap;
+    String[] wellName = new String[] { "SAA-1L", "SAA-1S", "SAA-2", "SAA-4", "SAA-5ST", "SAA-13", "SAA-7", "SAA-10ST1", "SAA-9", "SAA-11" };
+    boolean[] wellFound = new boolean[] { false, false, false, false, false, false, false, false, false, false };
     
-}
 
-@Test(expected=IllegalArgumentException.class)
-public void testConstructingExcelStandardizedExtractorWithEmptyIDArray()
-{
-
-}
-
-@Test(expected=IllegalArgumentException.class)
-public void testConstructingExcelStandardizedExtractorWithIDsSpecified()
-{
+    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( testBook );
+    dataMap = extractor.extract();
+    assertNotNull( dataMap );
+    assertEquals( 10, dataMap.size() );
+    
+    for( GasWell well : dataMap.keySet() )
+    {
+        for( int i = 0; i < wellName.length; i++ )
+        {
+            if ( well.getName().equals( wellName[ i ] ) )
+            {
+                if ( wellFound[ i ] )
+                {
+                    fail( "aarrgh!! Well \"" + wellName[ i ] + "\" is already found!!" );
+                } else {
+                    wellFound[ i ] = true;
+                }
+            }
+        }
+    }
+    
+    for( int i = 0; i < wellFound.length; i++ )
+    {
+        assertTrue( "well \"" + wellName[ i ] + "\" was NOT found!?!", wellFound[ i ] );
+    }
 
 }
 

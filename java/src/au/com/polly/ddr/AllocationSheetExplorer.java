@@ -20,21 +20,15 @@
 
 package au.com.polly.ddr;
 
-import jxl.CellType;
+import au.com.polly.util.DateRange;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.util.SystemOutLogger;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 
 
 /**
@@ -499,11 +493,11 @@ public GasWellDataSet obtainDataSet( GasWell well, GasWellDataLocator locator )
     for( int rowIdx = locator.getStartDataRow(); rowIdx <= locator.getEndDataRow(); rowIdx++ )
     {
         row = sheet.getRow(rowIdx);
-        cell = row.getCell( row.getFirstCellNum() );
+        cell = row.getCell(row.getFirstCellNum());
         currentEntry = new GasWellDataEntry();
         intervalStart = ExcelConverter.extractDateFromCell( cell );
-        currentEntry.setStartInterval( intervalStart );
-        currentEntry.setIntervalLength( 86400 );
+        DateRange range = new DateRange( intervalStart, new Date( intervalStart.getTime() + 86400000L ) );
+        currentEntry.setDateRange(range);
 
         for( WellMeasurementType wmt : WellMeasurementType.values() )
         {

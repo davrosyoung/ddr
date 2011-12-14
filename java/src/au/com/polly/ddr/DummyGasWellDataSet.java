@@ -22,6 +22,7 @@ package au.com.polly.ddr;
 
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
+import au.com.polly.util.DateRange;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -51,8 +52,7 @@ static{
     cal = dateParser.parse( "23/APR/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange("23/APR/2011", "24/APR/2011"));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1305 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7727 );
@@ -61,28 +61,28 @@ static{
     cal = dateParser.parse( "24/APR/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("24/APR/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 0 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.000 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0 );
     data.addDataEntry( entry );
+
 // 25/APR/2011 00:00:00,0,0.000,0
     cal = dateParser.parse( "25/APR/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("25/APR/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 0 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.000 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0 );
     data.addDataEntry( entry );
+
 // 26/APR/2011 00:00:00,378,0.190,2154
     cal = dateParser.parse( "26/APR/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("26/APR/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 378 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.190 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 2154 );
@@ -91,8 +91,8 @@ static{
     cal = dateParser.parse( "27/APR/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("27/APR/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1195 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.360 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7818 );
@@ -101,8 +101,8 @@ static{
     cal = dateParser.parse( "28/APR/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("28/APR/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1199 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7895 );
@@ -111,8 +111,8 @@ static{
     cal = dateParser.parse( "29/APR/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("29/APR/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1282 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7654 );
@@ -121,8 +121,8 @@ static{
     cal = dateParser.parse( "30/APR/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("30/APR/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1272 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7740 );
@@ -131,8 +131,8 @@ static{
     cal = dateParser.parse( "01/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("01/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1299 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.410 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7667 );
@@ -141,8 +141,8 @@ static{
     cal = dateParser.parse( "02/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("02/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1328 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7636 );
@@ -151,8 +151,8 @@ static{
     cal = dateParser.parse( "03/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("03/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1269 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.460 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7967 );
@@ -161,8 +161,8 @@ static{
     cal = dateParser.parse( "04/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("04/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1298 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.440 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8032 );
@@ -171,8 +171,8 @@ static{
     cal = dateParser.parse( "05/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("05/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1271 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8056 );
@@ -181,8 +181,8 @@ static{
     cal = dateParser.parse( "06/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("06/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1367 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8291 );
@@ -191,8 +191,8 @@ static{
     cal = dateParser.parse( "07/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("07/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1320 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8044 );
@@ -201,8 +201,7 @@ static{
     cal = dateParser.parse( "08/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("08/MAY/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1322 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8236 );
@@ -211,8 +210,8 @@ static{
     cal = dateParser.parse( "09/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("09/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1327 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8071 );
@@ -221,8 +220,8 @@ static{
     cal = dateParser.parse( "10/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("10/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1254 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.370 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8160 );
@@ -231,8 +230,8 @@ static{
     cal = dateParser.parse( "11/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("11/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 140 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.040 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 925 );
@@ -241,8 +240,8 @@ static{
     cal = dateParser.parse( "12/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("12/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 0 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.000 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0 );
@@ -251,8 +250,8 @@ static{
     cal = dateParser.parse( "13/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("13/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 926 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.330 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 5890 );
@@ -261,8 +260,8 @@ static{
     cal = dateParser.parse( "14/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("14/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 245 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.070 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 1709 );
@@ -271,8 +270,8 @@ static{
     cal = dateParser.parse( "15/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("15/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1271 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8270 );
@@ -281,8 +280,8 @@ static{
     cal = dateParser.parse( "16/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("16/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 794 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.200 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 4952 );
@@ -291,8 +290,8 @@ static{
     cal = dateParser.parse( "17/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("17/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 497 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.140 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 3029 );
@@ -301,8 +300,8 @@ static{
     cal = dateParser.parse( "18/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("18/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 694 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.220 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 4334 );
@@ -311,8 +310,8 @@ static{
     cal = dateParser.parse( "19/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("19/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1238 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.360 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 6816 );
@@ -321,8 +320,8 @@ static{
     cal = dateParser.parse( "20/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("20/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1560 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.430 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8470 );
@@ -331,8 +330,8 @@ static{
     cal = dateParser.parse( "21/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("21/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1570 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8350 );
@@ -341,8 +340,8 @@ static{
     cal = dateParser.parse( "22/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("22/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1580 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8296 );
@@ -351,8 +350,8 @@ static{
     cal = dateParser.parse( "23/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("23/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1530 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.440 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8304 );
@@ -361,8 +360,8 @@ static{
     cal = dateParser.parse( "24/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("24/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1502 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.410 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8257 );
@@ -371,8 +370,8 @@ static{
     cal = dateParser.parse( "25/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("25/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1491 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.430 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8178 );
@@ -381,8 +380,8 @@ static{
     cal = dateParser.parse( "26/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("26/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1368 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.410 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8263 );
@@ -391,8 +390,8 @@ static{
     cal = dateParser.parse( "27/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("27/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1011 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.310 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 6214 );
@@ -401,8 +400,8 @@ static{
     cal = dateParser.parse( "28/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("28/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1285 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.390 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8031 );
@@ -411,8 +410,8 @@ static{
     cal = dateParser.parse( "29/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("29/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1336 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8161 );
@@ -421,8 +420,8 @@ static{
     cal = dateParser.parse( "30/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("30/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1371 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8138 );
@@ -431,8 +430,8 @@ static{
     cal = dateParser.parse( "31/MAY/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("31/MAY/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1179 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8404 );
@@ -441,8 +440,8 @@ static{
     cal = dateParser.parse( "01/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("01/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1209 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8478 );
@@ -451,8 +450,8 @@ static{
     cal = dateParser.parse( "02/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("02/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1206 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.420 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8640 );
@@ -461,8 +460,8 @@ static{
     cal = dateParser.parse( "03/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("03/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1168 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.410 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8438 );
@@ -471,8 +470,8 @@ static{
     cal = dateParser.parse( "04/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("04/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1137 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.410 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8426 );
@@ -481,8 +480,8 @@ static{
     cal = dateParser.parse( "05/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("05/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1154 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8406 );
@@ -491,8 +490,8 @@ static{
     cal = dateParser.parse( "06/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("06/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1204 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8416 );
@@ -501,8 +500,8 @@ static{
     cal = dateParser.parse( "07/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("07/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1123 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.390 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8340 );
@@ -511,8 +510,8 @@ static{
     cal = dateParser.parse( "08/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("08/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1209 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.390 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8412 );
@@ -521,8 +520,8 @@ static{
     cal = dateParser.parse( "09/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("09/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1263 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8565 );
@@ -531,8 +530,8 @@ static{
     cal = dateParser.parse( "10/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("10/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1080 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8374 );
@@ -541,8 +540,8 @@ static{
     cal = dateParser.parse( "11/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("11/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1121 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.370 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8381 );
@@ -551,8 +550,8 @@ static{
     cal = dateParser.parse( "12/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("12/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1145 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.370 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8346 );
@@ -561,8 +560,8 @@ static{
     cal = dateParser.parse( "13/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("13/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1204 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8347 );
@@ -571,8 +570,8 @@ static{
     cal = dateParser.parse( "14/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("14/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1220 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7914 );
@@ -581,8 +580,8 @@ static{
     cal = dateParser.parse( "15/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("15/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1258 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.390 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7914 );
@@ -591,8 +590,8 @@ static{
     cal = dateParser.parse( "16/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("16/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1263 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.390 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7940 );
@@ -601,8 +600,8 @@ static{
     cal = dateParser.parse( "17/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("17/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1188 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.320 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8114 );
@@ -611,8 +610,8 @@ static{
     cal = dateParser.parse( "18/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("18/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1173 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.350 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7723 );
@@ -621,8 +620,8 @@ static{
     cal = dateParser.parse( "19/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("19/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1262 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.320 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8114 );
@@ -631,8 +630,7 @@ static{
     cal = dateParser.parse( "20/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("20/JUN/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1224 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.280 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7967 );
@@ -641,8 +639,8 @@ static{
     cal = dateParser.parse( "21/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("21/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1305 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.290 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8022 );
@@ -651,8 +649,8 @@ static{
     cal = dateParser.parse( "22/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("22/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1260 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.370 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 8083 );
@@ -661,8 +659,8 @@ static{
     cal = dateParser.parse( "23/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("23/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1241 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7995 );
@@ -671,8 +669,8 @@ static{
     cal = dateParser.parse( "24/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("24/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1252 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.410 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7818 );
@@ -681,8 +679,8 @@ static{
     cal = dateParser.parse( "25/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("25/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1231 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7851 );
@@ -691,8 +689,8 @@ static{
     cal = dateParser.parse( "26/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("26/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1228 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7870 );
@@ -701,8 +699,8 @@ static{
     cal = dateParser.parse( "27/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("27/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1304 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.410 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7832 );
@@ -711,8 +709,8 @@ static{
     cal = dateParser.parse( "28/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("28/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1292 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7785 );
@@ -721,8 +719,8 @@ static{
     cal = dateParser.parse( "29/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("29/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1301 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7807 );
@@ -731,8 +729,8 @@ static{
     cal = dateParser.parse( "30/JUN/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("30/JUN/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1239 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.410 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7817 );
@@ -741,8 +739,8 @@ static{
     cal = dateParser.parse( "01/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("01/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1278 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7695 );
@@ -751,8 +749,8 @@ static{
     cal = dateParser.parse( "02/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("02/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1266 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.410 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7765 );
@@ -761,8 +759,8 @@ static{
     cal = dateParser.parse( "03/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("03/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1280 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7613 );
@@ -771,8 +769,8 @@ static{
     cal = dateParser.parse( "04/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("04/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1309 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.390 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7676 );
@@ -781,8 +779,8 @@ static{
     cal = dateParser.parse( "05/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("05/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1259 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.390 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7674 );
@@ -791,8 +789,8 @@ static{
     cal = dateParser.parse( "06/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("06/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1274 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.390 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7583 );
@@ -801,8 +799,8 @@ static{
     cal = dateParser.parse( "07/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("07/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1266 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7575 );
@@ -811,8 +809,8 @@ static{
     cal = dateParser.parse( "08/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("08/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1270 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.390 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7453 );
@@ -821,8 +819,8 @@ static{
     cal = dateParser.parse( "09/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("09/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 667 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.280 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 5223 );
@@ -831,8 +829,8 @@ static{
     cal = dateParser.parse( "10/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("10/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 0 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.000 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0 );
@@ -841,8 +839,8 @@ static{
     cal = dateParser.parse( "11/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("11/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 0 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.000 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0 );
@@ -851,8 +849,8 @@ static{
     cal = dateParser.parse( "12/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("12/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 0 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.000 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0 );
@@ -861,8 +859,8 @@ static{
     cal = dateParser.parse( "13/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("13/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 0 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.000 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0 );
@@ -871,8 +869,8 @@ static{
     cal = dateParser.parse( "14/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("14/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 833 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.320 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 2524 );
@@ -881,8 +879,8 @@ static{
     cal = dateParser.parse( "15/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("15/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1231 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.350 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 4607 );
@@ -891,8 +889,8 @@ static{
     cal = dateParser.parse( "16/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("16/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1258 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.360 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 6756 );
@@ -901,8 +899,8 @@ static{
     cal = dateParser.parse( "17/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("17/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1257 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.370 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7052 );
@@ -911,8 +909,8 @@ static{
     cal = dateParser.parse( "18/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("18/JUL/2011").getTime(), 86400000L, 1000L));
+
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1262 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.370 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 6437 );
@@ -921,8 +919,7 @@ static{
     cal = dateParser.parse( "19/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("19/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1269 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 6921 );
@@ -931,8 +928,7 @@ static{
     cal = dateParser.parse( "20/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("20/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1233 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.370 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7238 );
@@ -941,8 +937,7 @@ static{
     cal = dateParser.parse( "21/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("21/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1246 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7488 );
@@ -951,8 +946,7 @@ static{
     cal = dateParser.parse( "22/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("22/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1287 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7470 );
@@ -961,8 +955,7 @@ static{
     cal = dateParser.parse( "23/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("23/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1108 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7616 );
@@ -971,8 +964,7 @@ static{
     cal = dateParser.parse( "24/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("24/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1228 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7503 );
@@ -981,8 +973,7 @@ static{
     cal = dateParser.parse( "25/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("25/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1219 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.370 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7543 );
@@ -991,8 +982,7 @@ static{
     cal = dateParser.parse( "26/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("26/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1229 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.360 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7103 );
@@ -1001,8 +991,7 @@ static{
     cal = dateParser.parse( "27/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("27/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1234 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.400 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7239 );
@@ -1011,8 +1000,7 @@ static{
     cal = dateParser.parse( "28/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("28/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1092 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7541 );
@@ -1021,8 +1009,7 @@ static{
     cal = dateParser.parse( "29/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("29/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1172 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.370 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7449 );
@@ -1031,8 +1018,7 @@ static{
     cal = dateParser.parse( "30/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("30/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1206 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.380 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7508 );
@@ -1041,8 +1027,7 @@ static{
     cal = dateParser.parse( "31/JUL/2011 00:00:00" );
     entry = new GasWellDataEntry();
     entry.setWell( well );
-    entry.setStartInterval( cal.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setDateRange(new DateRange(dateParser.parse("31/JUL/2011").getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1224 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.390 );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 7448 );

@@ -166,7 +166,7 @@ public void render( Graphics2D gfx, int width, int height )
             for( GasWellDataEntry entry : data.getData() )
             {
                 double flow = entry.getMeasurement( wmt );
-                long daysSinceStart = ( entry.getStartInterval().getTime() - data.from().getTime() ) / 86400000;
+                long daysSinceStart = ( entry.from().getTime() - data.from().getTime() ) / 86400000;
                 logger.debug( "flow(" + wmt + ")=" + flow + ", daysSinceStart=" + daysSinceStart );
                 int px = 50 + (int)Math.ceil( daysSinceStart / daysPerPixel );
                 int py = height - 100 - (int)Math.round((flow - minFlow) / flowUnitsPerPixel);

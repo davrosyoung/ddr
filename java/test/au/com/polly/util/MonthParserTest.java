@@ -210,6 +210,66 @@ public void testDecember()
     assertEquals( Calendar.DECEMBER, MonthParser.parseMonth( " 12 " ) ) ;
 }
 
+@Test( expected = IllegalArgumentException.class )
+public void testMonthNameWithNegativeValue()
+{
+    MonthParser.monthName( -1 );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testMonthNameWithTwelve()
+{
+    MonthParser.monthName( 12 );
+}
+
+@Test
+public void testValidMonthNames()
+{
+    assertEquals( "january", MonthParser.monthName( Calendar.JANUARY ) );
+    assertEquals( "february", MonthParser.monthName( Calendar.FEBRUARY ) );
+    assertEquals( "march", MonthParser.monthName( Calendar.MARCH  ) );
+    assertEquals( "april", MonthParser.monthName( Calendar.APRIL ) );
+    assertEquals( "may", MonthParser.monthName( Calendar.MAY ) );
+    assertEquals( "june", MonthParser.monthName( Calendar.JUNE ) );
+    assertEquals( "july", MonthParser.monthName( Calendar.JULY ) );
+    assertEquals( "august", MonthParser.monthName( Calendar.AUGUST ) );
+    assertEquals( "september", MonthParser.monthName( Calendar.SEPTEMBER) );
+    assertEquals( "october", MonthParser.monthName( Calendar.OCTOBER ) );
+    assertEquals( "november", MonthParser.monthName( Calendar.NOVEMBER ) );
+    assertEquals( "december", MonthParser.monthName( Calendar.DECEMBER ) );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testMonthAbbreviationWithNegativeValue()
+{
+    MonthParser.monthAbbreviation( -1 );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testMonthAbbreviationWithTwelve()
+{
+    MonthParser.monthAbbreviation( 12 );
+}
+
+
+@Test
+public void testValidMonthAbbreviations()
+{
+    assertEquals( "jan", MonthParser.monthAbbreviation( Calendar.JANUARY ) );
+    assertEquals( "feb", MonthParser.monthAbbreviation( Calendar.FEBRUARY ) );
+    assertEquals( "mar", MonthParser.monthAbbreviation( Calendar.MARCH  ) );
+    assertEquals( "apr", MonthParser.monthAbbreviation( Calendar.APRIL ) );
+    assertEquals( "may", MonthParser.monthAbbreviation( Calendar.MAY ) );
+    assertEquals( "jun", MonthParser.monthAbbreviation( Calendar.JUNE ) );
+    assertEquals( "jul", MonthParser.monthAbbreviation( Calendar.JULY ) );
+    assertEquals( "aug", MonthParser.monthAbbreviation( Calendar.AUGUST ) );
+    assertEquals( "sep", MonthParser.monthAbbreviation( Calendar.SEPTEMBER) );
+    assertEquals( "oct", MonthParser.monthAbbreviation( Calendar.OCTOBER ) );
+    assertEquals( "nov", MonthParser.monthAbbreviation( Calendar.NOVEMBER ) );
+    assertEquals( "dec", MonthParser.monthAbbreviation( Calendar.DECEMBER ) );
+}
+
+
 
 public static junit.framework.Test suite() {
     return new JUnit4TestAdapter( MonthParserTest.class );

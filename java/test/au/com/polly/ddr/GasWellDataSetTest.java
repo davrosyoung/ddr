@@ -22,6 +22,7 @@ package au.com.polly.ddr;
 
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
+import au.com.polly.util.DateRange;
 import junit.framework.JUnit4TestAdapter;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -69,19 +70,6 @@ GasWellDataSet emptyDataSet = null;
 GasWellDataSet smallDataSet = null;
 GasWell dummyWell;
 
-static private final double oilFlowRates[] = {
-        0000.0, 0000.0, 0000.0, 1567.5, 1342.1, 1152.6, 1133.6, 1132.8, 1127.6, 1128.3,
-        1129.5, 1128.6, 1153.5, 1132.4, 1129.1, 1128.5, 1131.2, 1130.0, 1131.5, 1132.1,
-        1132.7, 1133.1, 1135.8, 1138.5, 1139.1, 1142.6, 1140.7, 1141.2, 1141.8, 1140.3,
-        0320.5, 0000.0, 0000.0, 0000.0, 0000.0, 0000.0, 0762.5, 1762.4, 1482.3, 1312.5,
-        1274.7, 1082.5, 0995.7, 1127.5, 1138.5, 1137.6, 1139.6, 1140.6, 1137.8, 1137.6,
-        1138.2, 1139.1, 1142.6, 1140.7, 1135.7, 0970.5, 0790.7, 0608.2, 0432.5, 0402.2,
-        0395.7, 0403.1, 0397.5, 0399.9, 0401.5, 0400.0, 0408.2, 0405.3, 0397.5, 0401.1,
-        0402.6, 0490.0, 0580.0, 0670.0, 0760.0, 0850.0, 0940.0, 1030.0, 1120.0, 1200.0,
-        1200.0, 1203.8, 1197.6, 1199.9, 1202.0, 1205.5, 1203.2, 1202.0, 1201.0, 1200.0,
-        1203.0, 1205.0, 1207.0, 1209.0, 1211.0, 1210.0, 1210.0, 1210.0, 1210.0, 1210.1
-};
-
 
 public static junit.framework.Test suite() {
     return new JUnit4TestAdapter( GasWellDataSetTest.class );
@@ -108,9 +96,8 @@ public void setupData()
     Calendar when = dateParser.parse( "23/APRIL 2011 05:00" );
 
     GasWellDataEntry entry = new GasWellDataEntry();
-    entry.setWell( davesWell );
-    entry.setStartInterval( when.getTime() );
-    entry.setIntervalLength( 3600 );
+    entry.setWell(davesWell);
+    entry.setDateRange(new DateRange(when.getTime(), 3600000L, 1000L));
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 15.2 );
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 37.6 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.89 );
@@ -119,49 +106,44 @@ public void setupData()
 
     when.add( Calendar.HOUR_OF_DAY,  1 );
     entry = new GasWellDataEntry();
-    entry.setWell( davesWell );
-    entry.setStartInterval( when.getTime() );
-    entry.setIntervalLength( 3600 );
+    entry.setWell(davesWell);
+    entry.setDateRange(new DateRange(when.getTime(), 3600000L, 1000L));
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 15.1 );
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 37.8 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.86 );
 
-    smallDataSet.addDataEntry( entry );
+    smallDataSet.addDataEntry(entry);
     when.add( Calendar.HOUR_OF_DAY, 1 );
     entry = new GasWellDataEntry();
-    entry.setWell( davesWell );
-    entry.setStartInterval( when.getTime() );
-    entry.setIntervalLength( 3600 );
+    entry.setWell(davesWell);
+    entry.setDateRange(new DateRange(when.getTime(), 3600000L, 1000L));
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 15.3 );
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 37.9 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.87 );
 
-    smallDataSet.addDataEntry( entry );
+    smallDataSet.addDataEntry(entry);
     when.add( Calendar.HOUR_OF_DAY, 1 );
     entry = new GasWellDataEntry();
-    entry.setWell( davesWell );
-    entry.setStartInterval( when.getTime() );
-    entry.setIntervalLength( 3600 );
+    entry.setWell(davesWell);
+    entry.setDateRange(new DateRange(when.getTime(), 3600000L, 1000L));
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 15.4 );
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 37.6 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.86 );
 
-    smallDataSet.addDataEntry( entry );
+    smallDataSet.addDataEntry(entry);
     when.add( Calendar.HOUR_OF_DAY, 1 );
     entry = new GasWellDataEntry();
-    entry.setWell( davesWell );
-    entry.setStartInterval( when.getTime() );
-    entry.setIntervalLength( 3600 );
+    entry.setWell(davesWell);
+    entry.setDateRange(new DateRange(when.getTime(), 3600000L, 1000L));
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 15.6 );
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 37.7 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.85 );
 
-    smallDataSet.addDataEntry( entry );
+    smallDataSet.addDataEntry(entry);
     when.add( Calendar.HOUR_OF_DAY, 1 );
     entry = new GasWellDataEntry();
-    entry.setWell( davesWell );
-    entry.setStartInterval( when.getTime() );
-    entry.setIntervalLength( 3600 );
+    entry.setWell(davesWell);
+    entry.setDateRange(new DateRange(when.getTime(), 3600000L, 1000L));
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 15.7 );
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 37.5 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.86 );
@@ -170,9 +152,8 @@ public void setupData()
 
     when.add( Calendar.HOUR_OF_DAY, 1 );
     entry = new GasWellDataEntry();
-    entry.setWell( davesWell );
-    entry.setStartInterval( when.getTime() );
-    entry.setIntervalLength( 3600 );
+    entry.setWell(davesWell);
+    entry.setDateRange(new DateRange(when.getTime(), 3600000L, 1000L));
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 15.8 );
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 37.3 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.84 );
@@ -181,21 +162,7 @@ public void setupData()
 
        // populate some dummy data into the gas well data set....
     // --------------------------------------------------------
-    this.littleDataSet = new GasWellDataSet( dummyWell );
-    DateParser dateParser = new AussieDateParser();
-
-    when = dateParser.parse( "13/06/2011 04:00" );
-
-    for( int i = 0; i < oilFlowRates.length; i++ )
-    {
-        entry = new GasWellDataEntry();
-        entry.setWell( dummyWell );
-        entry.setStartInterval( when.getTime() );
-        when.add( Calendar.HOUR_OF_DAY, 1 );
-        entry.setIntervalLength( 3600 );
-        entry.setMeasurement( WellMeasurementType.OIL_FLOW, oilFlowRates[ i ] );
-        this.littleDataSet.addDataEntry(entry);
-    }
+    this.littleDataSet = TestGasWellDataSet.getDummyDataSet();
 }
 
 @Test( expected=NullPointerException.class )
@@ -267,7 +234,7 @@ public void testGetMinima()
 {
     GasWellDataEntry entry = this.smallDataSet.getMinima();
     assertNotNull( entry );
-    assertEquals( twentyThirdAprilFiveInTheMorning.getTime(), entry.getStartInterval() );
+    assertEquals( twentyThirdAprilFiveInTheMorning.getTime(), entry.from() );
     assertEquals( 37.3, entry.getMeasurement(WellMeasurementType.OIL_FLOW), ACCEPTABLE_ERROR );
     assertEquals( 0.84, entry.getMeasurement(WellMeasurementType.GAS_FLOW), ACCEPTABLE_ERROR );
     assertEquals( 15.1, entry.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
@@ -378,8 +345,7 @@ public void testHashCode()
 
     GasWellDataEntry entry = new GasWellDataEntry();
     entry.setWell( davesWell );
-    entry.setStartInterval(new java.util.Date());
-    entry.setIntervalLength(3600);
+    entry.setDateRange( new DateRange( new java.util.Date(), 3600000L, 1000L ) );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0.0 );
     evilTwin.addDataEntry( entry );
 
@@ -400,8 +366,7 @@ public void testEquality()
     assertEquals( evilTwin, kindTwin );
     entry = new GasWellDataEntry();
     entry.setWell( davesWell );
-    entry.setStartInterval(new java.util.Date());
-    entry.setIntervalLength(3600);
+    entry.setDateRange( new DateRange( new java.util.Date(), 3600000L, 1000L ) );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0.0 );
     evilTwin.addDataEntry(entry);
 
@@ -409,8 +374,7 @@ public void testEquality()
 
     entry = new GasWellDataEntry();
     entry.setWell( davesWell );
-    entry.setStartInterval(new java.util.Date());
-    entry.setIntervalLength(3600);
+    entry.setDateRange( new DateRange( new java.util.Date(), 3600000L, 1000L ) );
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0.0 );
     kindTwin.addDataEntry( entry );
 
@@ -588,7 +552,7 @@ public void testConsolidatingDataFirstTwoHours()
     assertEquals( ( 15.2 + 15.1 ) / 2.0, consolidated.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
     assertFalse( consolidated.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) );
 
-    assertEquals( start, consolidated.getStartInterval() );
+    assertEquals( start, consolidated.from() );
     assertEquals( 7200, consolidated.getIntervalLength() );
 }
 
@@ -611,7 +575,7 @@ public void testConsolidatingDataFirstNinetyMinutes()
     assertEquals( ( 15.2 + ( 15.1 * 0.5 ) ) / 1.5, consolidated.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
     assertFalse( consolidated.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) );
 
-    assertEquals( start, consolidated.getStartInterval() );
+    assertEquals( start, consolidated.from() );
     assertEquals( 5400, consolidated.getIntervalLength() );
 }
 
@@ -633,7 +597,7 @@ public void testConsolidatingDataFirstHundredAndFiftyMinutes()
     assertEquals( ( 15.2 + 15.1 + ( 15.3 * 0.5 ) ) / 2.5, consolidated.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
     assertFalse( consolidated.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) );
 
-    assertEquals( start, consolidated.getStartInterval() );
+    assertEquals( start, consolidated.from() );
     assertEquals( 9000, consolidated.getIntervalLength() );
 }
 
@@ -705,7 +669,7 @@ public void testExtractingReducedDataSetViaConstructor()
 
     entry = reduced.getEntry( dateParser.parse( "13/JUNE/2011 04:00").getTime() );
     assertNotNull( entry );
-    assertEquals( dateParser.parse( "13/JUNE/2011 04:00").getTime(), entry.getStartInterval() );
+    assertEquals( dateParser.parse( "13/JUNE/2011 04:00").getTime(), entry.from() );
     assertEquals( dateParser.parse( "14/JUNE/2011 03:59:59").getTime(), entry.until() );
     assertFalse( entry.containsMeasurement( WellMeasurementType.GAS_FLOW ) );
     assertFalse( entry.containsMeasurement( WellMeasurementType.WATER_FLOW ) );
@@ -716,7 +680,7 @@ public void testExtractingReducedDataSetViaConstructor()
     
     entry = reduced.getEntry( dateParser.parse( "14/JUNE/2011 04:00" ).getTime() );
     assertNotNull( entry );
-    assertEquals( dateParser.parse( "14/JUNE/2011 04:00").getTime(), entry.getStartInterval() );
+    assertEquals( dateParser.parse( "14/JUNE/2011 04:00").getTime(), entry.from() );
     assertEquals( dateParser.parse( "15/JUNE/2011 03:59:59").getTime(), entry.until() );
     assertFalse( entry.containsMeasurement( WellMeasurementType.GAS_FLOW ) );
     assertFalse( entry.containsMeasurement( WellMeasurementType.WATER_FLOW ) );

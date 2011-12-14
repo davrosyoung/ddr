@@ -81,11 +81,13 @@ public void setup()
 
     try
     {
+        logger.debug( "About to load test_data/TinyJustAllocation.xlsx" );
         excelFile = new File( "test_data/TinyJustAllocation.xlsx" );
         fis = new FileInputStream( excelFile );
         testBook = WorkbookFactory.create( fis );
         allocationSheet = testBook.getSheet( "allocation" );
-        
+
+        logger.debug( "About to load test_data/TestStandardized.xlsx" );
         excelFile = new File( "test_data/TestStandardized.xlsx" );
         fis = new FileInputStream( excelFile );
         testStandardizedBook = WorkbookFactory.create( fis );

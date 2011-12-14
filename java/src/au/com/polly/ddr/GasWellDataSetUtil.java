@@ -20,8 +20,11 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.util.DateArmyKnife;
+import au.com.polly.util.DateRange;
 import org.apache.log4j.Logger;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -103,7 +106,7 @@ public static Map<WellMeasurementType,Double> getError( GasWellDataSet alpha, Ga
     {
         // obtain a slice representing the data from 'b' for the time period within 'a'....
         // ---------------------------------------------------------------------------------
-        GasWellDataEntry bSlice = b.consolidateEntries( entry.getStartInterval(), entry.until() );
+        GasWellDataEntry bSlice = b.consolidateEntries( entry.from(), entry.until() );
 
         for( WellMeasurementType wmt : WellMeasurementType.values() )
         {
@@ -116,11 +119,78 @@ public static Map<WellMeasurementType,Double> getError( GasWellDataSet alpha, Ga
                 result.put( wmt, error + existing );
                 if ( logger.isTraceEnabled() )
                 {
-                    logger.trace( "slice[ " + entry.getStartInterval() + " - " + entry.until() + "] " + wmt + " ... error=" + error + ", existing=" + existing + ", aValue=" + aMeasurement + ", bMeasurement=" + bMeasurement );
+                    logger.trace( "slice[ " + entry.from() + " - " + entry.until() + "] " + wmt + " ... error=" + error + ", existing=" + existing + ", aValue=" + aMeasurement + ", bMeasurement=" + bMeasurement );
                 }
             }
         }
     }
+
+    return result;
+}
+
+/**
+ *
+ * @param dataSet the set of measurements for a given gas well
+ * @return
+ */
+public static Map<WellMeasurementType,Double> calculateTotalVolume( GasWellDataSet dataSet )
+{
+    return calculateTotalVolume( dataSet, null, null );
+}
+
+/**
+ *
+ * @param dataSet the set of measurements for a given gas well
+ * @param from  if not-null, then the date that the calculation should start from...
+ * @param until if not-null, then the date that the calculation should extend until.
+ * @return
+ */
+public static Map<WellMeasurementType,Double> calculateTotalVolume( GasWellDataSet dataSet, Date from, Date until )
+{
+    Map<WellMeasurementType,Double> result = new HashMap();
+    Date fromStamp;
+    Date untilStamp;
+    long overlapMS;
+
+    if ( dataSet == null )
+    {
+        throw new NullPointerException( "Must specify dataSet, you specified NULL!!" );
+    }
+    
+    fromStamp = ( from != null ) ? from : dataSet.from();
+    untilStamp = ( until != null ) ? until : dataSet.until();
+    
+    if ( fromStamp.before( dataSet.from() ) )
+    {
+        throw new IllegalArgumentException( "Start date \"" + fromStamp + "\" specified is BEFORE the measurement data starts \"" + dataSet.from() + "\"" );
+    }
+
+    if ( untilStamp.after(dataSet.until()) )
+    {
+        throw new IllegalArgumentException( "End date \"" + fromStamp + "\" specified is AFTER the measurement data ends \"" + dataSet.until() + "\"" );
+    }
+    
+    // let's add up the total volume between the dates specified...
+    // ---------------------------------------------------------------
+    for( GasWellDataEntry entry : dataSet.getData() )
+    {
+        if ( ( overlapMS = entry.getDateRange().overlap(new DateRange( fromStamp, untilStamp, 1000L ) ) ) > 0 )
+        {
+            // how many "days" do we cover within this interval??
+            // -------------------------------------------------
+            double intervalLengthDays = overlapMS / 86400000.0; // remember that flow rates are in volume units per day!!
+            
+            for( WellMeasurementType wmt : WellMeasurementType.values() )
+            {
+                if ( entry.containsMeasurement( wmt ) )
+                {
+                    double value = result.containsKey( wmt ) ? result.get( wmt ) : 0.0;
+                    value += ( intervalLengthDays * entry.getMeasurement( wmt ) );
+                    result.put( wmt, value );
+                }
+            } // end-FOR( each measurement type )
+        } // end-IF( our date range falls within this measurement entry's interval )
+    } // end-FOR( each measurement entry )
 
     return result;
 }

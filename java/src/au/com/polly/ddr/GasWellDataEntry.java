@@ -20,12 +20,12 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.util.DateRange;
 import au.com.polly.util.HashCodeUtil;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,12 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class GasWellDataEntry implements Serializable
 {
 private GasWell well;
-private Date startInterval;
-private long intervalLength;
+private DateRange range;
 private Map<WellMeasurementType,Double> measurements;
-private transient boolean intervalLengthUpdated = false;
-private transient Date until;
-private transient boolean untilStale = true;
 
 public GasWellDataEntry()
 {
@@ -53,8 +49,7 @@ public GasWellDataEntry copy()
 {
     GasWellDataEntry copy = new GasWellDataEntry();
     copy.setWell( getWell() );
-    copy.setStartInterval( getStartInterval() );
-    copy.setIntervalLength( getIntervalLength() );
+    copy.setDateRange(getDateRange());
     for( WellMeasurementType wmt : WellMeasurementType.values() )
     {
         if ( containsMeasurement( wmt ) )
@@ -76,26 +71,24 @@ public void setWell(GasWell well)
     this.well = well;
 }
 
-public Date getStartInterval()
+public DateRange getDateRange()
 {
-    return startInterval;
+    return this.range;
 }
 
-public void setStartInterval(Date startInterval)
+public Date from()
 {
-    this.startInterval = startInterval;
-    this.untilStale = true;
+    return this.range == null ? null : this.range.from();
+}
+
+public void setDateRange(DateRange range)
+{
+    this.range = range;
 }
 
 public long getIntervalLength()
 {
-    return intervalLength;
-}
-
-public void setIntervalLength(long intervalLength)
-{
-    this.intervalLength = intervalLength;
-    this.untilStale = true;
+    return this.range == null ? 0 : range.span();
 }
 
 /**
@@ -105,16 +98,7 @@ public void setIntervalLength(long intervalLength)
  */
 public Date until()
 {
-    if ( untilStale )
-    {
-        if ( startInterval != null )
-        {
-            untilStale = false;
-            until = new Date( startInterval.getTime() + ( ( intervalLength - 1 ) * 1000 ) );
-        }
-    }
-
-    return until;
+    return this.range == null ? null : this.range.until();
 }
 
 public void setMeasurement( WellMeasurementType wmt, double value )
@@ -191,20 +175,19 @@ public boolean equals( Object other )
 
         if ( !result ) { break; }
 
+        
         // check equality with accuracy of one second. date/times are stored in milliseconds. so divide by 1000 to
         // make sure we are only comparing to within one second of each other!!
         // ------------------------------------------------------------------------------------------------
-        if ( this.startInterval != null )
+        if ( this.range != null )
         {
-            result = ( otherEntry.startInterval != null ) && ( startInterval.getTime()/1000 == otherEntry.startInterval.getTime()/1000 );
+            result = ( otherEntry.range != null ) && ( this.range.equals( otherEntry.range ) );
         } else {
-            result = otherEntry.startInterval == null;
+            result = otherEntry.range == null;
         }
 
         if ( !result ) { break; }
 
-        result = ( this.intervalLength == otherEntry.intervalLength );
-        if ( ! result ) { break; }
 
         for( WellMeasurementType wmt : WellMeasurementType.values() )
         {
@@ -239,12 +222,11 @@ public int hashCode()
     {
         result = HashCodeUtil.hash( result, well.getName() );
     }
-    if ( startInterval != null )
-    {
-        result = HashCodeUtil.hash( result, startInterval );
-    }
 
-    result = HashCodeUtil.hash( result, intervalLength );
+    if ( range != null )
+    {
+        result = HashCodeUtil.hash( result, range );
+    }
     for( WellMeasurementType wmt : WellMeasurementType.values() )
     {
         if ( measurements.containsKey( wmt ) )
@@ -268,7 +250,7 @@ public String toString()
     {
         out.append( "well:" + getWell().getName() + ", " );
     }
-    out.append( "from:" + getStartInterval() + ", " );
+    out.append( "from:" + from() + ", " );
     out.append( "until:" + until() + ", " );
     for( WellMeasurementType wmt : WellMeasurementType.values() )
     {
@@ -288,8 +270,7 @@ public String toString()
 private static class SerializationProxy implements Serializable
 {
     private GasWell well;
-    private Date startInterval;
-    private long intervalLength;
+    private DateRange range;
     private double oilFlowMeasurement = 0.0;
     private double gasFlowMeasurement = 0.0;
     private double waterFlowMeasurement = 0.0;
@@ -302,8 +283,7 @@ private static class SerializationProxy implements Serializable
     SerializationProxy( GasWellDataEntry entry )
     {
         this.well = entry.well;
-        this.startInterval = entry.startInterval;
-        this.intervalLength = entry.intervalLength;
+        this.range = entry.range;
 
         if ( this.containsOilFlowMeasurement = entry.containsMeasurement( WellMeasurementType.OIL_FLOW ) )
         {
@@ -334,8 +314,7 @@ private static class SerializationProxy implements Serializable
     {
         GasWellDataEntry result = new GasWellDataEntry();
         result.setWell( well );
-        result.setStartInterval( this.startInterval );
-        result.setIntervalLength( this.intervalLength );
+        result.setDateRange( this.range );
         if ( this.containsOilFlowMeasurement )
         {
             result.setMeasurement( WellMeasurementType.OIL_FLOW, this.oilFlowMeasurement );
@@ -360,7 +339,7 @@ private static class SerializationProxy implements Serializable
     }
 
 
-    private static final long serialVersionID = 0x5826f8a8;
+    private static final long serialVersionID = 0x5826f8d4;
 }
 
 }

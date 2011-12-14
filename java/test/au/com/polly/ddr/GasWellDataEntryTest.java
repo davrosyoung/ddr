@@ -22,6 +22,7 @@ package au.com.polly.ddr;
 
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
+import au.com.polly.util.DateRange;
 import junit.framework.JUnit4TestAdapter;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,7 +78,7 @@ public void testNullConstructor()
 {
     GasWellDataEntry entry = new GasWellDataEntry();
     assertNotNull( entry );
-    assertNull( entry.getStartInterval() );
+    assertNull( entry.from() );
     assertEquals(0, entry.getIntervalLength());
     assertNull(entry.until());
     assertNull(entry.getWell());
@@ -93,9 +94,8 @@ public void testSerialization()
 {
     GasWellDataEntry entry = new GasWellDataEntry();
     GasWell davesWell = new GasWell( "Dave's Well" );
-    entry.setWell( davesWell );
-    entry.setStartInterval( twentyThirdApril.getTime() );
-    entry.setIntervalLength( 86400 );
+    entry.setWell(davesWell);
+    entry.setDateRange(new DateRange(twentyThirdApril.getTime(), 86400000L, 1000L));
     entry.setMeasurement( WellMeasurementType.WATER_FLOW, 51.6 );
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.56 );
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 73.5 );
@@ -138,8 +138,8 @@ public void testSerialization()
     assertNotNull( extract );
     assertNotNull( extract.getWell() );
     assertEquals( "Dave's Well", extract.getWell().getName() );
-    assertEquals( twentyThirdApril.getTime(), extract.getStartInterval());
-    assertEquals( 86400, extract.getIntervalLength());
+    assertEquals( twentyThirdApril.getTime(), extract.from());
+    assertEquals( 86400000, extract.getIntervalLength());
     assertEquals( 51.6, extract.getMeasurement(WellMeasurementType.WATER_FLOW), 0.0001);
     assertEquals( 73.5, extract.getMeasurement(WellMeasurementType.OIL_FLOW), 0.0001 );
     assertEquals( 0.56, extract.getMeasurement(WellMeasurementType.GAS_FLOW), 0.001 );
@@ -168,18 +168,10 @@ public void testEqualityNoMeasurements()
     beta.setWell( davesOtherWell );
     assertEquals( alpha, beta );
 
-    alpha.setStartInterval( now );
+    alpha.setDateRange(new DateRange(now, 360000L, 1000L));
     assertFalse( alpha.equals( beta ) );
-    beta.setStartInterval( now );
+    beta.setDateRange(new DateRange(now, 360000L, 1000L));
     assertEquals( alpha, beta );
-
-    alpha.setIntervalLength( 3600 );
-    assertFalse( alpha.equals( beta ) );
-    beta.setIntervalLength( 3601 );
-    assertFalse( alpha.equals( beta ) );
-    beta.setIntervalLength( 3600 );
-    assertEquals( alpha, beta );
-
 }
 
 @Test
@@ -201,16 +193,10 @@ public void testEqualityWithMeasurements()
     alpha.setWell( davesOtherWell );
     assertEquals( alpha, beta );
 
-    beta.setStartInterval( now );
-    assertFalse( alpha.equals( beta ) );
-    alpha.setStartInterval( now );
-    assertEquals( alpha, beta );
 
-    alpha.setIntervalLength( 3600 );
+    alpha.setDateRange(new DateRange(now, 360000L, 1000L));
     assertFalse( alpha.equals( beta ) );
-    beta.setIntervalLength( 3601 );
-    assertFalse( alpha.equals( beta ) );
-    beta.setIntervalLength( 3600 );
+    beta.setDateRange(new DateRange(now, 360000L, 1000L));
     assertEquals( alpha, beta );
 
     alpha.setMeasurement( WellMeasurementType.WATER_FLOW, 0.0 );

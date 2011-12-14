@@ -110,8 +110,8 @@ public GasWellDataSet reduce(GasWellDataSet original, int maxIntervals)
                     || ( ( previous < 0.1 ) && ( current >= 0.1 ) )
                     )
                 {
-                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity..." + entry.getStartInterval() );
-                    boundaries.add( entry.getStartInterval() );
+                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity..." + entry.from() );
+                    boundaries.add( entry.from() );
                     break;
                 }
 
@@ -120,8 +120,8 @@ public GasWellDataSet reduce(GasWellDataSet original, int maxIntervals)
                     ||  ( previous >= c90 ) && ( current < c90 )
                         )
                 {
-                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity... at " + entry.getStartInterval()  );
-                    boundaries.add( entry.getStartInterval() );
+                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity... at " + entry.from()  );
+                    boundaries.add( entry.from() );
                     break;
                 }
 
@@ -130,8 +130,8 @@ public GasWellDataSet reduce(GasWellDataSet original, int maxIntervals)
                     ||  ( previous >= c10 ) && ( current < c10 )
                         )
                 {
-                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity... at " + entry.getStartInterval() );
-                    boundaries.add( entry.getStartInterval() );
+                    logger.debug( "i=" + i + " .... Change from " + previous + " to " + current + " TRIGGERS discontinuity... at " + entry.from() );
+                    boundaries.add( entry.from() );
                     break;
                 }
             } while( false );

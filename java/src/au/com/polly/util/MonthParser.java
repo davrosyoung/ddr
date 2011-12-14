@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ *  All rights reserved. This code is not to be distributed in binary
+ * or source form without express consent of Polly Enterprises Pty Ltd.
+ *
+ *
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ *  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ *  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ *  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package au.com.polly.util;
 
 
@@ -8,18 +28,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 10/11/11
- * Time: 4:20 PM
- * To change this template use File | Settings | File Templates.
+ * Convert between month names and calendar month field values.
  */
 public class MonthParser
 {
-    static Map<String,Integer> monthMap =  new HashMap<String,Integer>();
-    static Map<Integer,Integer> numericMonthMap = new HashMap<Integer,Integer>();
-    static Pattern numberPattern = Pattern.compile( "\\d+" );
-
+    static protected Map<String,Integer> monthMap =  new HashMap<String,Integer>();
+    static protected Map<Integer,Integer> numericMonthMap = new HashMap<Integer,Integer>();
+    static protected String[] monthAbbreviation = { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" };
+    static protected String[] monthName = { "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december" };
+    static protected Pattern numberPattern = Pattern.compile( "\\d+" );
 
     static {
         monthMap.put( "jan", Calendar.JANUARY );
@@ -92,6 +109,35 @@ public static int parseMonth( String text )
     }
 
     return result;
+}
+
+/**
+ * 
+ * @param month the month between 0 and 11 (as per java.util.Calendar!!!)
+ * @return name of the month (in lower case)
+ */
+public static String monthName( int month )
+{
+    if ( ( month < 0 ) || ( month > 11 ) )
+    {
+        throw new IllegalArgumentException( "Month must be between 0 & 11, you specified (" + month + ")" );
+    }
+    return monthName[ month ];
+}
+
+/**
+ * 
+ * @param month the month between 0 and 11 (as per java.util.Calendar!!!)
+ * @return name of the month (in lower case)
+ */
+public static String monthAbbreviation( int month )
+{
+    if ( ( month < 0 ) || ( month > 11 ) )
+    {
+        throw new IllegalArgumentException( "Month must be between 0 & 11, you specified (" + month + ")" );
+    }
+    return monthAbbreviation[ month ];
+
 }
 
 }
