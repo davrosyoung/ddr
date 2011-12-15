@@ -78,20 +78,27 @@ public void setup()
 
     File excelFile;
     FileInputStream fis;
+    long a, b, c;
 
     try
     {
+        a = System.currentTimeMillis();
         logger.debug( "About to load test_data/TinyJustAllocation.xlsx" );
         excelFile = new File( "test_data/TinyJustAllocation.xlsx" );
         fis = new FileInputStream( excelFile );
         testBook = WorkbookFactory.create( fis );
         allocationSheet = testBook.getSheet( "allocation" );
+        
+        b = System.currentTimeMillis();
 
         logger.debug( "About to load test_data/TestStandardized.xlsx" );
         excelFile = new File( "test_data/TestStandardized.xlsx" );
         fis = new FileInputStream( excelFile );
         testStandardizedBook = WorkbookFactory.create( fis );
         
+        c = System.currentTimeMillis();
+        
+        logger.debug( "It took " + ( b - a ) + "ms to load TinyJustAllocation.xlsx, " + ( c - b ) + "ms to load TestStandardized.xlsx" );
         
     } catch ( Exception e) {
         logger.fatal( "Failed to open test_data/TinyJustAllocation.xlsx" );
@@ -184,12 +191,12 @@ public void testConstructingExcelStandardizedExplorerWithValidWorkbook()
 
     assertEquals( "SAA-1L", locations.get( 0 ).getWellName() );
     assertNotNull(locations.get(0).getCondensateCellLocation());
-    assertEquals("SAA-1L!C1", locations.get(0).getCondensateCellLocation().toString());
+    assertEquals("SAA-1L!B1", locations.get( 0 ).getCondensateCellLocation().toString());
     assertNull(locations.get(0).getOilCellLocation());
     assertNotNull(locations.get(0).getGasCellLocation());
-    assertEquals("SAA-1L!D1", locations.get(0).getGasCellLocation().toString());
+    assertEquals("SAA-1L!C1", locations.get(0).getGasCellLocation().toString());
     assertNotNull(locations.get(0).getWaterCellLocation());
-    assertEquals("SAA-1L!E1", locations.get(0).getWaterCellLocation().toString());
+    assertEquals("SAA-1L!D1", locations.get(0).getWaterCellLocation().toString());
     assertEquals( 1, locations.get(0).getStartDataRow() );
     assertEquals( 2178, locations.get( 0 ).getEndDataRow() );
 
@@ -197,22 +204,22 @@ public void testConstructingExcelStandardizedExplorerWithValidWorkbook()
     assertEquals("SAA-1S", locations.get(1).getWellName());
     assertNull(locations.get(1).getCondensateCellLocation());
     assertNotNull(locations.get(1).getOilCellLocation());
-    assertEquals("SAA-1S!C1", locations.get(1).getOilCellLocation().toString());
+    assertEquals("SAA-1S!B1", locations.get(1).getOilCellLocation().toString());
     assertNotNull( locations.get( 1 ).getGasCellLocation() );
-    assertEquals( "SAA-1S!D1", locations.get( 1 ).getGasCellLocation().toString() );
+    assertEquals( "SAA-1S!C1", locations.get( 1 ).getGasCellLocation().toString() );
     assertNotNull( locations.get( 1 ).getWaterCellLocation() );
-    assertEquals( "SAA-1S!E1", locations.get( 1 ).getWaterCellLocation().toString() );
+    assertEquals( "SAA-1S!D1", locations.get( 1 ).getWaterCellLocation().toString() );
     assertEquals( 1, locations.get( 1 ).getStartDataRow() );
     assertEquals( 2156, locations.get( 1 ).getEndDataRow() );
 
     assertEquals( "SAA-2", locations.get( 2 ).getWellName() );
     assertNull( locations.get( 2 ).getCondensateCellLocation() );
     assertNotNull( locations.get( 2 ).getOilCellLocation() );
-    assertEquals( "SAA-2!C1", locations.get( 2 ).getOilCellLocation().toString() );
+    assertEquals( "SAA-2!B1", locations.get( 2 ).getOilCellLocation().toString() );
     assertNotNull( locations.get( 2 ).getGasCellLocation() );
-    assertEquals( "SAA-2!D1", locations.get( 2 ).getGasCellLocation().toString() );
+    assertEquals( "SAA-2!C1", locations.get( 2 ).getGasCellLocation().toString() );
     assertNotNull( locations.get( 2 ).getWaterCellLocation() );
-    assertEquals( "SAA-2!E1", locations.get( 2 ).getWaterCellLocation().toString() );
+    assertEquals( "SAA-2!D1", locations.get( 2 ).getWaterCellLocation().toString() );
     assertEquals( 1, locations.get( 2 ).getStartDataRow() );
     assertEquals( 2178, locations.get( 2 ).getEndDataRow() );
 

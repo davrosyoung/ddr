@@ -316,28 +316,38 @@ protected void extractWellLocations( ExcelCellLocation wellCellLocation )
                     {
                         break;
                     }
+                    
+                    if ( ( locator.getIntervalLengthLocation() == null )
+                            && (
+                                    ( text.contains( "interval" ) && text.contains( "length" ) )
+                                ||  ( text.contains( "duration" ) )
+                                )
+                    )
+                    {
+                        locator.setIntervalLengthLocation( cursor.copy() );
+                    }
 
                     if ( ( locator.getOilCellLocation() == null ) && ( text.startsWith( "oil" ) ) )
                     {
-                        locator.setOilCellLocation( cursor.copy() );
+                        locator.setMeasurementCellLocation( WellMeasurementType.OIL_FLOW, cursor.copy() );
                         break;
                     }
 
                     if ( ( locator.getCondensateCellLocation() == null ) && ( text.startsWith( "cond" ) || ( ( text.startsWith( "gas" ) && ( text.contains( "cond" ) ) ) ) ) )
                     {
-                        locator.setCondensateCellLocation( cursor.copy() );
+                        locator.setMeasurementCellLocation( WellMeasurementType.CONDENSATE_FLOW, cursor.copy() );
                         break;
                     }
 
                     if ( ( locator.getGasCellLocation() == null ) && ( text.startsWith( "gas" ) ) )
                     {
-                        locator.setGasCellLocation( cursor.copy() );
+                        locator.setMeasurementCellLocation( WellMeasurementType.GAS_FLOW, cursor.copy() );
                         break;
                     }
 
                     if ( ( locator.getWaterCellLocation() == null ) && ( text.startsWith( "water" ) ) )
                     {
-                        locator.setWaterCellLocation( cursor.copy() );
+                        locator.setMeasurementCellLocation( WellMeasurementType.WATER_FLOW,cursor.copy() );
                         break;
                     }
                 } while( false );

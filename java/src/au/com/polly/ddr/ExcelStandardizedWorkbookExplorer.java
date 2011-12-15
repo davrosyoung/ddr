@@ -108,7 +108,10 @@ protected GasWellDataLocator interrogateSheet( Sheet sheet )
             if ( ( cell.getCellType() == Cell.CELL_TYPE_STRING )
                     && ( ( textValue = cell.getStringCellValue() ) != null ) )
             {
-                if ( textValue.toLowerCase().startsWith( "date" ) )
+                if (
+                        ( textValue.trim().toLowerCase().startsWith( "date" ) )
+                    ||  ( textValue.trim().toLowerCase().startsWith( "time" ) )
+                    )
                 {
                     result = new GasWellDataLocator();
                     result.setWellName( sheet.getSheetName() );
@@ -180,16 +183,28 @@ protected GasWellDataLocator interrogateSheet( Sheet sheet )
             {
                 if ( ( ( cell = row.getCell( i ) ) != null ) && ( cell.getCellType() == Cell.CELL_TYPE_STRING ) )
                 {
-                    textValue = cell.getStringCellValue().toLowerCase();
+                    textValue = cell.getStringCellValue().toLowerCase().trim();
                     cursor.setRow( j );
                     cursor.setColumn( i );
+                    
+                    if (
+                            ( result.getIntervalLengthLocation() == null )
+                        &&  (
+                                    ( ( textValue.contains( "interval" ) && textValue.contains( "length" ) ) )
+                               ||   ( textValue.startsWith( "duration" ) )
+                             )
+                        )
+                    {
+                        result.setIntervalLengthLocation( cursor.copy() );
+                        continue;
+                    }
 
                     if (
                             ( result.getCondensateCellLocation() == null )
                         &&  ( textValue.startsWith( "cond" ) || ( ( textValue.startsWith( "gas" ) && ( textValue.contains( "cond" ) ) ) ) ) )
 
                     {
-                        result.setCondensateCellLocation( cursor.copy() );
+                        result.setMeasurementCellLocation( WellMeasurementType.CONDENSATE_FLOW, cursor.copy() );
                         continue;
                     }
 
@@ -198,19 +213,19 @@ protected GasWellDataLocator interrogateSheet( Sheet sheet )
                         &&  ( textValue.toLowerCase().startsWith( "oil" ) )
                         )
                     {
-                        result.setOilCellLocation( cursor.copy() );
+                        result.setMeasurementCellLocation( WellMeasurementType.OIL_FLOW, cursor.copy() );
                         continue;
                     }
 
                     if ( ( result.getGasCellLocation() == null ) && ( textValue.toLowerCase().startsWith( "gas" ) ) )
                     {
-                        result.setGasCellLocation( cursor.copy() );
+                        result.setMeasurementCellLocation( WellMeasurementType.GAS_FLOW, cursor.copy() );
                         continue;
                     }
 
                     if ( ( result.getWaterCellLocation() == null ) && ( textValue.toLowerCase().startsWith( "water" ) ) )
                     {
-                        result.setWaterCellLocation( cursor.copy() );
+                        result.setMeasurementCellLocation( WellMeasurementType.WATER_FLOW, cursor.copy() );
                         continue;
                     }
                 }

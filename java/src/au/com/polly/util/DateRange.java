@@ -256,6 +256,58 @@ public long overlap( DateRange candidate )
     return result;
 }
 
+
+/**
+ *
+ * @param candidate the date range to compare against this date range.
+ * @return null if no overlap, otherwise a new date range containing the date range which is shared by both
+ * this date range and the specified date range.   The precision of this date range is applied.
+ */
+public DateRange common( DateRange candidate )
+{
+    DateRange result = null;
+    
+    if ( candidate == null )
+    {
+        throw new NullPointerException( "A null date range was specified. That simply won't work!!" );
+    }
+
+    do {
+        // if the candidate date range is totally outside of this date range, then
+        // avoid any further calculations...
+        // ------------------------------------------------------------------------
+        if (
+               ( candidate.from().getTime() >= until().getTime() )
+            || ( candidate.until().getTime() < from().getTime() )
+                )
+        {
+            break;
+        }
+        
+        // if the candidate range extends to or beyond both boundaries, then the union is simply
+        // the current date range!!
+        // -------------------------------------------------------------------------------------
+        if (
+                ( candidate.from().getTime() <= from().getTime() )
+            &&  ( candidate.until().getTime() >= until().getTime() )
+                )
+        {
+            result = this;
+            break;
+        }
+        
+        // by definition. we're going to be calculating a brand new date range, as it must straddle
+        // either the start or end boundary of this date range...
+        // -----------------------------------------------------------------------------------------
+        Date resultFrom = ( candidate.from().getTime() <= from().getTime() ) ? from() : candidate.from();
+        Date resultUntil = ( candidate.until().getTime() >= until().getTime() ) ? until() : candidate.until();
+        result = new DateRange( resultFrom, resultUntil, this.precision );
+
+    } while( false );
+
+    return result;
+}
+
 /**
  *
  * @return the number of milliseconds that this date/time range spans in milliseconds.

@@ -22,21 +22,13 @@ package au.com.polly.ddr;
 
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
-import au.com.polly.util.DateRange;
 import junit.framework.JUnit4TestAdapter;
 import org.apache.log4j.Logger;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -64,6 +56,8 @@ Calendar twentyThirdAprilJustBeforeNoon;
 Calendar endJuly;
 GasWell davesWell = null;
 GasWell dummyWell;
+GasWellDataSet smallDataSet;
+GasWellDataSet smallReducedDataSet;
 
 public static junit.framework.Test suite() {
     return new JUnit4TestAdapter( GasWellDataSetUtilTest.class );
@@ -97,6 +91,9 @@ public void setupData()
             dateParser.parse( "17/JUNE/2011 07:59:59").getTime()
     } );
 
+    smallDataSet = TestGasWellDataSet.getSmallDataSet();
+    smallReducedDataSet = TestGasWellDataSet.getSmallReducedDataSet();
+
 }
 
 @Test( expected=NullPointerException.class )
@@ -122,28 +119,61 @@ public void testErrorWithADifferentNullArg()
 @Test
 public void testErrorAgainstReducedDataSet()
 {
-    assertNotNull( littleDataSet );
-    assertNotNull( littleDataSet.getData() );
-    assertEquals( littleDataSet.getData().size(), 100 );
-    assertNotNull( littleDataSet.from() );
-    assertNotNull( littleDataSet.until() );
 
-    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, new Date[]{
-            dateParser.parse( "13/JUNE/2011 04:00").getTime(),
-            dateParser.parse( "14/JUNE/2011 04:00").getTime(),
-            dateParser.parse( "15/JUNE/2011 04:00").getTime(),
-            dateParser.parse( "16/JUNE/2011 04:00").getTime(),
-            dateParser.parse( "17/JUNE/2011 04:00").getTime(),
-            dateParser.parse( "17/JUNE/2011 07:59:59").getTime()
-    } );
-
-    Map<WellMeasurementType,Double> error = GasWellDataSetUtil.getError( littleDataSet, reducedDataSet );
+    Map<WellMeasurementType,Double> error = GasWellDataSetUtil.getError( smallDataSet, smallReducedDataSet );
     assertNotNull( error );
     assertFalse( error.containsKey( WellMeasurementType.CONDENSATE_FLOW ) );
-    assertFalse( error.containsKey( WellMeasurementType.GAS_FLOW ) );
-    assertFalse( error.containsKey( WellMeasurementType.WATER_FLOW ) );
+    assertTrue( error.containsKey( WellMeasurementType.GAS_FLOW ) );
+    assertTrue( error.containsKey( WellMeasurementType.WATER_FLOW ) );
     assertTrue( error.containsKey( WellMeasurementType.OIL_FLOW ) );
-    assertEquals( 27453.9, error.get( WellMeasurementType.OIL_FLOW), ACCEPTABLE_ERROR );
+    assertEquals( 0.9, error.get( WellMeasurementType.OIL_FLOW), ACCEPTABLE_ERROR );
+    assertEquals( 0.06, error.get( WellMeasurementType.GAS_FLOW), ACCEPTABLE_ERROR );
+    assertEquals( 0.6, error.get( WellMeasurementType.WATER_FLOW), ACCEPTABLE_ERROR );
+}
+
+@Test
+public void testCalculateVolumeAgainstSmallDataSet()
+{
+    Map<WellMeasurementType,Double> totalVolumeMap = GasWellDataSetUtil.calculateTotalVolume( smallDataSet );
+    assertNotNull( totalVolumeMap );
+    assertTrue( totalVolumeMap.containsKey( WellMeasurementType.GAS_FLOW ));
+    assertTrue( totalVolumeMap.containsKey( WellMeasurementType.WATER_FLOW ));
+    assertTrue( totalVolumeMap.containsKey( WellMeasurementType.OIL_FLOW ));
+    assertFalse( totalVolumeMap.containsKey( WellMeasurementType.CONDENSATE_FLOW ));
+
+    assertEquals( 10.975, totalVolumeMap.get( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.25125, totalVolumeMap.get( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 4.50416666, totalVolumeMap.get( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+}
+
+@Test
+public void testCalculateVolumeAgainstSmallReducedDataSet()
+{
+    Map<WellMeasurementType,Double> totalVolumeMap = GasWellDataSetUtil.calculateTotalVolume( smallReducedDataSet );
+    assertNotNull( totalVolumeMap );
+    assertTrue( totalVolumeMap.containsKey( WellMeasurementType.GAS_FLOW ));
+    assertTrue( totalVolumeMap.containsKey( WellMeasurementType.WATER_FLOW ));
+    assertTrue( totalVolumeMap.containsKey( WellMeasurementType.OIL_FLOW ));
+    assertFalse( totalVolumeMap.containsKey( WellMeasurementType.CONDENSATE_FLOW ));
+
+    assertEquals( 10.975, totalVolumeMap.get( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.25125, totalVolumeMap.get( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 4.50416666, totalVolumeMap.get( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+}
+
+@Test
+public void testDifferenceBetweenSmallAndSmallReducedDataSets()
+{
+    Map<WellMeasurementType,Double> deltaVolumeMap = GasWellDataSetUtil.getDelta(smallDataSet, smallReducedDataSet);
+    assertNotNull( deltaVolumeMap );
+    assertTrue( deltaVolumeMap.containsKey( WellMeasurementType.GAS_FLOW ));
+    assertTrue( deltaVolumeMap.containsKey( WellMeasurementType.WATER_FLOW ));
+    assertTrue( deltaVolumeMap.containsKey( WellMeasurementType.OIL_FLOW ));
+    assertFalse( deltaVolumeMap.containsKey( WellMeasurementType.CONDENSATE_FLOW ));
+
+    assertEquals( 0.0, deltaVolumeMap.get( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.0, deltaVolumeMap.get( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.0, deltaVolumeMap.get( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
 }
 
 @Test( expected=NullPointerException.class)
@@ -199,9 +229,9 @@ public void testCalculateVolumeForFirstEightDays()
     assertTrue( volumes.containsKey( WellMeasurementType.WATER_FLOW ) );
     assertFalse( volumes.containsKey( WellMeasurementType.CONDENSATE_FLOW ) );
     
-    assertEquals( 2259.44, volumes.get( WellMeasurementType.OIL_FLOW ), 0.01 );
-    assertEquals( 1.57, volumes.get( WellMeasurementType.OIL_FLOW ), 0.01 );
-    assertEquals( 7620.72, volumes.get( WellMeasurementType.OIL_FLOW ), 0.01 );
+    assertEquals( 2082.9, volumes.get( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 1.41, volumes.get( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 6879.32, volumes.get( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
 }
 
 @Test
@@ -219,9 +249,9 @@ public void testCalculateVolumeForTwelveHours()
     assertTrue(volumes.containsKey(WellMeasurementType.WATER_FLOW));
     assertFalse(volumes.containsKey(WellMeasurementType.CONDENSATE_FLOW));
 
-    assertEquals( 143.26, volumes.get( WellMeasurementType.OIL_FLOW ), 0.01 );
-    assertEquals( 0.095, volumes.get( WellMeasurementType.GAS_FLOW ), 0.01 );
-    assertEquals( 475.82, volumes.get( WellMeasurementType.WATER_FLOW ), 0.01 );
+    assertEquals( 143.255, volumes.get( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.095, volumes.get( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 475.82, volumes.get( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
 }
 
 @Test
@@ -238,7 +268,7 @@ public void testCalculateVolumeWithoutDates()
     assertFalse( volumes.containsKey( WellMeasurementType.CONDENSATE_FLOW ) );
 
     assertEquals( 278990.4, volumes.get( WellMeasurementType.OIL_FLOW ), 0.01 );
-    assertEquals( 105.72, volumes.get( WellMeasurementType.GAS_FLOW ), 0.01 );
+    assertEquals( 105.72,   volumes.get( WellMeasurementType.GAS_FLOW ), 0.01 );
     assertEquals( 395861.3, volumes.get( WellMeasurementType.WATER_FLOW ), 0.01 );
 
 }

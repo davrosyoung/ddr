@@ -23,11 +23,7 @@ package au.com.polly.ddr;
 import java.io.IOException;
 
 import java.io.File;
-import java.io.IOException;
 
-import jxl.Cell;
-import jxl.CellType;
-import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 

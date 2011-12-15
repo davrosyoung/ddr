@@ -39,6 +39,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -321,7 +322,7 @@ public void testContainsDateRangeWithDefaultAccuracy()
     assertTrue( range.contains( other ) );
     
     other = new DateRange( "13/JUN/1968 04:13:59.252", "13/JUN/1968 04:14:00.246" );
-    assertFalse( range.contains( other ) );
+    assertFalse(range.contains(other));
 }
 
 @Test
@@ -332,7 +333,108 @@ public void testContainsDateRangeWithOneSecondAccuracy()
     assertFalse(range.contains(other));
 
     other = new DateRange( "13/JUN/1968 04:13:59.252", "13/JUN/1968 04:14:00.245", 1000L );
-    assertTrue( range.contains( other ) );
+    assertTrue(range.contains(other));
+}
+
+@Test(expected = NullPointerException.class )
+public void testCommonWithNullCandidateRange()
+{
+    DateRange range = new DateRange( "13/JUN/1968 04:00", "13/JUN/1968 05:36", 1000L );
+    range.common(null);
+}
+
+@Test
+public void testCommonWithCandidateRangeBeforeThisRange()
+{
+    DateRange range = new DateRange( "13/JUN/1968 04:00", "13/JUN/1968 05:36", 1000L );
+    DateRange candidate = new DateRange( "13/JUN/1968 03:57", "13/JUN/1968 03:59:59.999" );
+    DateRange result;
+    result = range.common( candidate );
+    assertNull( result );
+}
+
+@Test
+
+public void testCommonWithCandidateRangeAfterThisRange()
+{
+    DateRange range = new DateRange( "13/JUN/1968 04:00", "13/JUN/1968 05:36", 1000L );
+    DateRange candidate = new DateRange( "13/JUN/1968 05:36", "13/JUN/1968 05:59:59.999" );
+    DateRange result;
+    result = range.common( candidate );
+    assertNull( result );
+}
+
+@Test
+public void testCommonWithCandidateRangeExtendingBeyondThisRange()
+{
+    DateRange range = new DateRange( "13/JUN/1968 04:00", "13/JUN/1968 05:36", 1000L );
+    DateRange candidate = new DateRange( "13/JUN/1968 03:00", "13/JUN/1968 05:59:59.999" );
+    DateRange result;
+    result = range.common( candidate );
+    assertNotNull( result );
+    assertEquals( parser.parse( "13/JUN/1968 04:00" ).getTime(), result.from() );
+    assertEquals( parser.parse( "13/JUN/1968 05:36" ).getTime(), result.until() );
+    assertEquals( range, result );
+}
+
+@Test
+public void testCommonWithCandidateRangeWithinThisRange()
+{
+    DateRange range = new DateRange( "13/JUN/1968 04:00", "13/JUN/1968 05:36" );
+    DateRange candidate = new DateRange( "13/JUN/1968 04:15", "13/JUN/1968 04:59:59.999" );
+    DateRange result;
+    result = range.common( candidate );
+    assertNotNull( result );
+    assertEquals( parser.parse( "13/JUN/1968 04:15" ).getTime(), result.from() );
+    assertEquals( parser.parse( "13/JUN/1968 04:59:59.999" ).getTime(), result.until() );
+}
+
+@Test
+public void testCommonWithCandidateRangeWithinThisRangeOneSecondAccuracy()
+{
+    DateRange range = new DateRange( "13/JUN/1968 04:00", "13/JUN/1968 05:36", 1000L );
+    DateRange candidate = new DateRange( "13/JUN/1968 04:15", "13/JUN/1968 04:59:59.999" );
+    DateRange result;
+    result = range.common( candidate );
+    assertNotNull( result );
+    assertEquals( parser.parse( "13/JUN/1968 04:15" ).getTime(), result.from() );
+    assertEquals( parser.parse( "13/JUN/1968 04:59:59" ).getTime(), result.until() );
+}
+
+@Test
+public void testCommonWithCandidateRangeStraddlesStartOfRangeOneSecondAccuracy()
+{
+    DateRange range = new DateRange( "13/JUN/1968 04:00", "13/JUN/1968 05:36", 1000L );
+    DateRange candidate = new DateRange( "13/JUN/1968 03:47", "13/JUN/1968 04:59:59.999" );
+    DateRange result;
+    result = range.common( candidate );
+    assertNotNull( result );
+    assertEquals( parser.parse( "13/JUN/1968 04:00" ).getTime(), result.from() );
+    assertEquals( parser.parse( "13/JUN/1968 04:59:59" ).getTime(), result.until() );
+}
+
+@Test
+public void testCommonWithCandidateRangeStraddlesStartOfRange()
+{
+    DateRange range = new DateRange( "13/JUN/1968 04:00", "13/JUN/1968 05:36" );
+    DateRange candidate = new DateRange( "13/JUN/1968 03:47", "13/JUN/1968 04:59:59.999" );
+    DateRange result;
+    result = range.common( candidate );
+    assertNotNull( result );
+    assertEquals( parser.parse( "13/JUN/1968 04:00" ).getTime(), result.from() );
+    assertEquals( parser.parse( "13/JUN/1968 04:59:59.999" ).getTime(), result.until() );
+}
+
+@Test
+public void testCommonWithCandidateRangeStraddlesEndOfRange()
+{
+    DateRange range = new DateRange( "13/JUN/1968 04:00", "13/JUN/1968 05:36", 1000L );
+    DateRange candidate = new DateRange( "13/JUN/1968 04:47", "13/JUN/1968 05:59:59.999" );
+    DateRange result;
+    result = range.common( candidate );
+    assertNotNull( result );
+    assertEquals( parser.parse( "13/JUN/1968 04:47" ).getTime(), result.from() );
+    assertEquals( parser.parse( "13/JUN/1968 05:36" ).getTime(), result.until() );
 }
 
 @Test(expected=NullPointerException.class)

@@ -20,7 +20,10 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.util.AussieDateParser;
+import au.com.polly.util.DateParser;
 import au.com.polly.util.DateRange;
+import au.com.polly.util.ProcessStatus;
 import junit.framework.JUnit4TestAdapter;
 import org.apache.log4j.Logger;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -43,9 +46,11 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
@@ -57,6 +62,7 @@ import static junit.framework.Assert.fail;
 @RunWith(JUnit4.class)
 public class GasWellDataExtractorFactoryTest
 {
+private final static double ACCEPTABLE_ERROR = 1E-6;
 Logger logger = Logger.getLogger( GasWellDataExtractorFactoryTest.class );
 GasWellDataExtractorFactory factory;
 Workbook emptyBook;
@@ -64,6 +70,7 @@ Sheet emptySheet;
 Sheet sheetAlpha;
 Sheet sheetBeta;
 Workbook testBook;
+DateParser parser;
 
 public static junit.framework.Test suite() {
     return new JUnit4TestAdapter( GasWellDataExtractorFactoryTest.class );
@@ -117,6 +124,8 @@ public void setup()
         logger.fatal( "Failed to write data object out to test_data/daves_obj.obj" );
         logger.fatal( e.getClass().getName() + " - " + e.getMessage()  );
     }
+    
+    parser = new AussieDateParser();
 
 }
 
@@ -240,30 +249,46 @@ public void testConstructingExcelStandardizedExtractorWithNullWorkbook()
 {
     GasWellDataExtractor extractor = null;
     
-    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( null );    
+    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( null, null );    
 }
+
 
 @Test(expected=IllegalArgumentException.class)
 public void testConstructingExcelStandardizedExtractorWithEmptySpreadsheet()
 {
     GasWellDataExtractor extractor = null;
+    ExcelWorkbookExplorer explorer = ExcelWorkbookExplorerFactory.getInstance().createExcelStandardizedWorkbookExplorer( testBook );
+    List<GasWellDataLocator> locations = explorer.getLocations();
 
-    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( emptyBook );        
+    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( emptyBook, locations );
 }
 
 @Test
 public void testConstructingExcelStandardizedExtractor()
 {
     GasWellDataExtractor extractor = null;
+    ExcelWorkbookExplorer explorer = null;
+    ProcessStatus status = null;
+    List<GasWellDataLocator> locations = null;
     Map<GasWell,GasWellDataSet> dataMap;
     String[] wellName = new String[] { "SAA-1L", "SAA-1S", "SAA-2", "SAA-4", "SAA-5ST", "SAA-13", "SAA-7", "SAA-10ST1", "SAA-9", "SAA-11" };
     boolean[] wellFound = new boolean[] { false, false, false, false, false, false, false, false, false, false };
     
-
-    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( testBook );
+    
+    explorer = ExcelWorkbookExplorerFactory.getInstance().createExcelStandardizedWorkbookExplorer( testBook );
+    locations = explorer.getLocations();
+    assertNotNull( locations );
+    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( testBook, locations );
+    status = extractor.getStatus();
+    assertNotNull( status );
+    assertEquals( "waiting", status.getPhase() );
+    assertEquals( 0, status.getPercentageComplete() );
     dataMap = extractor.extract();
+    assertEquals( "finished", status.getPhase() );
+    assertEquals( 100, status.getPercentageComplete() );
     assertNotNull( dataMap );
     assertEquals( 10, dataMap.size() );
+    
     
     for( GasWell well : dataMap.keySet() )
     {
@@ -285,7 +310,20 @@ public void testConstructingExcelStandardizedExtractor()
     {
         assertTrue( "well \"" + wellName[ i ] + "\" was NOT found!?!", wellFound[ i ] );
     }
+    
+    GasWellDataSet saa2DataSet = dataMap.get( new GasWell( "SAA-2" ) );
+    assertNotNull( saa2DataSet );
+    
+    assertEquals( parser.parse( "14/AUG/2005" ).getTime(), saa2DataSet.from() );
+    assertEquals( parser.parse( "01/AUG/2011" ).getTime(), saa2DataSet.until() );
 
+    Map<WellMeasurementType,Double> totalVolumes = GasWellDataSetUtil.calculateTotalVolume( saa2DataSet );
+    assertNotNull( totalVolumes );
+    
+    assertEquals( 16025830.95, totalVolumes.get( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 6105.46, totalVolumes.get( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 7162231.04, totalVolumes.get( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+    assertFalse( totalVolumes.containsKey( WellMeasurementType.CONDENSATE_FLOW ) );
 }
 
 

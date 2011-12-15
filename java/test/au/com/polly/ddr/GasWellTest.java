@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Calendar;
+import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -88,6 +89,12 @@ public void testEquality()
     assertNotNull( anotherBigAlpha );
     assertEquals( bigAlpha, anotherBigAlpha );
     assertFalse( alpha.equals( bigAlpha ) );
+}
+
+@Test
+public void testEqualityAgainstADateObject()
+{
+    assertFalse( new GasWell("alpha").equals( new Date() ) );
 }
 
 

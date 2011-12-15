@@ -20,6 +20,9 @@
 
 package au.com.polly.ddr;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * For a given gas well, specifies where the data is located within an excel worksheet.
  *
@@ -27,19 +30,17 @@ package au.com.polly.ddr;
  */
 public class GasWellDataLocator
 {
-    private ExcelCellLocation wellCellLocation = null;
-    private ExcelCellLocation oilCellLocation = null;
-    private ExcelCellLocation gasCellLocation = null;
-    private ExcelCellLocation waterCellLocation = null;
-    private ExcelCellLocation condensateCellLocation = null;
-    private String wellName = null;
-    private int dateColumn = -1;
-    private int startDataRow = -1;
-    private int endDataRow = -1;
+private Map<WellMeasurementType,ExcelCellLocation> locationMap;
+private ExcelCellLocation intervalLengthLocation = null;
+private ExcelCellLocation wellCellLocation = null;
+private String wellName = null;
+private int dateColumn = -1;
+private int startDataRow = -1;
+private int endDataRow = -1;
 
 public GasWellDataLocator()
 {
-
+    locationMap = new HashMap<WellMeasurementType,ExcelCellLocation>();
 }
 
 public ExcelCellLocation getWellCellLocation()
@@ -52,44 +53,60 @@ public void setWellCellLocation(ExcelCellLocation wellCellLocation)
     this.wellCellLocation = wellCellLocation;
 }
 
-public ExcelCellLocation getOilCellLocation()
+
+public ExcelCellLocation getIntervalLengthLocation()
 {
-    return oilCellLocation;
+    return intervalLengthLocation;
 }
 
-public void setOilCellLocation(ExcelCellLocation oilCellLocation)
+public void setIntervalLengthLocation(ExcelCellLocation intervalLengthLocation)
 {
-    this.oilCellLocation = oilCellLocation;
+    this.intervalLengthLocation = intervalLengthLocation;
 }
+
+public boolean containsMeasurementCellLocation( WellMeasurementType wmt )
+{
+    return locationMap.containsKey( wmt );
+}
+
+public ExcelCellLocation getMeasurementCellLocation( WellMeasurementType wmt )
+{
+    ExcelCellLocation result = null;
+    
+    if ( containsMeasurementCellLocation( wmt ) )
+    {
+        result = locationMap.get( wmt );    
+    }
+    
+    return result;
+}
+
+public void setMeasurementCellLocation( WellMeasurementType wmt, ExcelCellLocation location )
+{
+    ExcelCellLocation result = null;
+    
+    locationMap.put( wmt, location );
+}
+
+public ExcelCellLocation getOilCellLocation()
+{
+    return getMeasurementCellLocation( WellMeasurementType.OIL_FLOW );
+}
+
 
 public ExcelCellLocation getGasCellLocation()
 {
-    return gasCellLocation;
-}
-
-public void setGasCellLocation(ExcelCellLocation gasCellLocation)
-{
-    this.gasCellLocation = gasCellLocation;
+    return getMeasurementCellLocation( WellMeasurementType.GAS_FLOW );
 }
 
 public ExcelCellLocation getWaterCellLocation()
 {
-    return waterCellLocation;
-}
-
-public void setWaterCellLocation(ExcelCellLocation waterCellLocation)
-{
-    this.waterCellLocation = waterCellLocation;
+    return getMeasurementCellLocation( WellMeasurementType.WATER_FLOW );
 }
 
 public ExcelCellLocation getCondensateCellLocation()
 {
-    return condensateCellLocation;
-}
-
-public void setCondensateCellLocation(ExcelCellLocation condensateCellLocation)
-{
-    this.condensateCellLocation = condensateCellLocation;
+    return getMeasurementCellLocation( WellMeasurementType.CONDENSATE_FLOW );
 }
 
 public String getWellName()
@@ -151,25 +168,40 @@ public String toString()
     {
         out.append( ", dateColumn=" + dateColumn );
     }
-
-    if ( gasCellLocation != null )
+    
+    if ( intervalLengthLocation != null )
     {
-        out.append( ", gas cell location=" + gasCellLocation );
+        out.append( ", interval length location=" + intervalLengthLocation );
+    }     else {
+        out.append( ", NO interval length location" );
     }
 
-    if ( gasCellLocation != null )
+    if ( locationMap.containsKey( WellMeasurementType.GAS_FLOW ) )
     {
-        out.append( ", condensate cell location=" + condensateCellLocation );
+        out.append( ", gas cell location=" + getGasCellLocation() );
+    } else {
+        out.append( ", NO gas cell location" );
     }
 
-    if ( gasCellLocation != null )
+    if ( locationMap.containsKey( WellMeasurementType.CONDENSATE_FLOW ) )
     {
-        out.append( ", oil cell location=" + oilCellLocation );
+        out.append( ", condensate cell location=" + getCondensateCellLocation() );
+    } else {
+        out.append( ", NO condensate cell location" );
     }
 
-    if ( waterCellLocation != null )
+    if ( locationMap.containsKey( WellMeasurementType.OIL_FLOW ) )
     {
-        out.append( ", water cell location=" + waterCellLocation );
+        out.append( ", oil cell location=" + getOilCellLocation() );
+    } else {
+        out.append( ", NO oil cell location" );
+    }
+
+    if ( locationMap.containsKey( WellMeasurementType.WATER_FLOW  ) )
+    {
+        out.append( ", water cell location=" + getWaterCellLocation() );
+    } else {
+        out.append( ", NO water cell location" );
     }
 
     return out.toString();

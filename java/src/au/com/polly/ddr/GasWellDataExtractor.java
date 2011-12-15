@@ -20,6 +20,8 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.util.ProcessStatus;
+
 import java.util.Map;
 
 /**
@@ -30,6 +32,13 @@ import java.util.Map;
  */
 public interface GasWellDataExtractor
 {
+
+/**
+ *
+ *
+ * @return contains the current phase, percentage complete, info, warning and error messages.
+ */
+public ProcessStatus getStatus();
 
 /**
  * extract data for all gas wells

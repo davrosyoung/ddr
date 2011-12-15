@@ -20,6 +20,8 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.util.ProcessStatus;
+
 import java.util.Map;
 
 /**
@@ -27,6 +29,23 @@ import java.util.Map;
  */
 public abstract class BaseGasWellDataExtractor implements GasWellDataExtractor
 {
+protected ProcessStatus status;
+
+/**
+ * 
+ */
+public BaseGasWellDataExtractor()
+{
+    this.status = new ProcessStatus();
+    status.setPhase( "waiting", 0 );
+}
+
+public ProcessStatus getStatus()
+{
+    return this.status;
+}
+
+
 @Override
 public Map<GasWell, GasWellDataSet> extract()
 {

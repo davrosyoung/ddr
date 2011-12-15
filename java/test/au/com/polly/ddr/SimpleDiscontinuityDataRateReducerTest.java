@@ -65,6 +65,7 @@ public void setup()
    // populate some dummy data into the gas well data set....
     // --------------------------------------------------------
     dataSet = TestGasWellDataSet.getDummyDataSet();
+    dateParser = new AussieDateParser();
 }
 
 @Test
@@ -120,6 +121,8 @@ public void testReducingSAA2FragmentData()
     // b13 ..... 21/SEP/2009 - 25/NOV/2009 (HIGH FLOW RATES)
     // ---------------------
     assertTrue( reducedDataSet.getData().size() >= 13 );
+
+
     Date[] expectedBoundary = new Date[] {
         dateParser.parse( "30/JUL/2009 00:00" ).getTime(),
         dateParser.parse( "12/AUG/2009 00:00" ).getTime(),
@@ -133,8 +136,9 @@ public void testReducingSAA2FragmentData()
         dateParser.parse( "17/SEP/2009 00:00" ).getTime(),
         dateParser.parse( "19/SEP/2009 00:00" ).getTime(),
         dateParser.parse( "20/SEP/2009 00:00" ).getTime(),
-        dateParser.parse( "21/SEP/2009 00:00" ).getTime(),
+        dateParser.parse( "21/SEP/2009 00:00" ).getTime()
     };
+
     boolean[] boundaryFound = { false, false, false, false,false, false, false, false, false, false, false, false, false };
     
     for( GasWellDataEntry entry : reducedDataSet.getData() )

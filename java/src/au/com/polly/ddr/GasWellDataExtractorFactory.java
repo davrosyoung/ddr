@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.util.List;
 
 public class GasWellDataExtractorFactory
 {
@@ -68,7 +69,7 @@ throws IOException, ClassCastException, ClassNotFoundException
  * @param spreadsheet the spreadsheet from which the data is to be extracted.
  * @return  extractor from which the gas well data sets may be extracted.
  */
-public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( Workbook spreadsheet )
+public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( Workbook spreadsheet, List<GasWellDataLocator> locations )
 {
     if ( spreadsheet == null )
     {
@@ -80,7 +81,7 @@ public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( Workbook s
         throw new IllegalArgumentException( "Spreadsheet specified is EMPTY!!" );
     }
 
-    return new ExcelStandardizedGasWellDataExtractor( spreadsheet );
+    return new ExcelStandardizedGasWellDataExtractor( spreadsheet, locations );
 }
 
 

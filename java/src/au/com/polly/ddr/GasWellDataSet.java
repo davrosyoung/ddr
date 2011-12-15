@@ -118,7 +118,7 @@ public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
     {
         boolean lastInterval = ( i == intervalBoundaries.length - 2 );
         long untilSpecifier = intervalBoundaries[ i + 1 ].getTime();
-        if ( ! lastInterval ) { untilSpecifier-= 1000; } // end-boundary is one second before start of next boundary!!
+//        if ( ! lastInterval ) { untilSpecifier-= 1000; } // end-boundary is one second before start of next boundary!!
         Date until = new Date( untilSpecifier );
         GasWellDataEntry entry = original.consolidateEntries( intervalBoundaries[ i ], until );
         logger.debug( "Adding " + entry + " to consolidated data array" );
@@ -154,7 +154,7 @@ public void addDataEntry( GasWellDataEntry entry )
     // -----------------------------------------------------------------------------------
     if ( minimumEntry.from().getTime() > entry.from().getTime() )
     {
-        minimumEntry.setDateRange(new DateRange(entry.from(), entry.getIntervalLength(), 1000L));
+        minimumEntry.setDateRange(new DateRange(entry.from(), entry.getIntervalLengthMS(), 1000L));
     }
 
 
@@ -163,7 +163,7 @@ public void addDataEntry( GasWellDataEntry entry )
     // -----------------------------------------------------------------------------------
     if ( maximumEntry.until().getTime() < entry.until().getTime() )
     {
-        maximumEntry.setDateRange(new DateRange(entry.from(), entry.getIntervalLength(), 1000L));
+        maximumEntry.setDateRange(new DateRange(entry.from(), entry.getIntervalLengthMS(), 1000L));
     }
 
     // for each measurement type, if the flow rate specified is smaller than the previous
@@ -370,21 +370,23 @@ protected int locateEntryIndex( Date when )
 
         // simple (but slow) implementation ... just search from start to end ... smarter solution would
         // be some kind of binary search ... but later on!!
+        // todo: make this search a lot smarter.
         // -----------------------------------------------------------------------------------------------
         for( int i = 0; i < getData().size() && ( result < 0 ); i++ )
         {
             candidate = getData().get( i );
-            if ( between( when, candidate.from(), candidate.until() ) )
+            if  ( candidate.getDateRange().contains( when ) )
             {
                 if ( logger.isDebugEnabled() )
                 {
-                    logger.debug( "Found matching time interval at i=" + i + ", when=" + when + ", startInterval=" + candidate.from() + ", intervalLength=" + candidate.getIntervalLength() + "seconds" );
+                    logger.debug( "For specified date/time:" + when + " ... found matching time interval at i=" + i + ", when=" + when + ", startInterval=" + candidate.from() + ", intervalLength=" + candidate.getIntervalLengthMS() + "seconds" );
+
                 }
                 result = i;
             }
             if ( logger.isTraceEnabled() )
             {
-                logger.trace( "i=" + i + ", startInterval=" + candidate.from() + ", until=" + candidate.until() + ",result=" + result );
+                logger.trace("i=" + i + ", startInterval=" + candidate.from() + ", until=" + candidate.until() + ",result=" + result);
                 logger.trace( "i=" + i + ", startInterval.time=" + candidate.from().getTime() + ", until.time=" + candidate.until().getTime() + ", when.time=" + when.getTime() + ", result=" + result );
             }
         }
@@ -401,24 +403,6 @@ protected int locateEntryIndex( Date when )
 }
 
 /**
- * This method checks to see if a date is between two other dates, taking away the headache of
- * dealing with millisecond values...
- *
- *
- * @param candidate
- * @param from
- * @param until
- * @return whether the specified candidate is between 'from' and 'until' to within a second of accuracy.
- */
-static protected boolean between( Date candidate, Date from, Date until )
-{
-    long c = candidate.getTime() / 1000;
-    long f = from.getTime() / 1000;
-    long u = until.getTime() / 1000;
-    return ( ( c >= f ) && ( c <= u )  );
-}
-
-/**
  * Produces a single gas well data entry containing an average value across the entire date/time range
  * specified.
  *
@@ -430,70 +414,64 @@ static protected boolean between( Date candidate, Date from, Date until )
  */
 public GasWellDataEntry consolidateEntries( Date segmentStart, Date segmentEnd )
 {
+    DateRange range = new DateRange( segmentStart, segmentEnd );
+    return consolidateEntries( range );
+}
+
+/**
+ * Produces a single gas well data entry containing an average value across the entire date/time range
+ * specified.
+ *
+ *
+ * @param range the date/time range to obtain the measurements for.
+ * @return a gas well data entry which contains the combined (and averaged) measurement entries recorded
+ * for the dates provided.
+ */
+public GasWellDataEntry consolidateEntries( DateRange range )
+{
     GasWellDataEntry result = null;
     int cursor;
     long segmentLength;
+    DateRange ourRange = new DateRange( from(), until() );
 
-    if ( ( segmentStart == null ) || ( segmentEnd == null ) )
+    if ( range == null )
     {
-        StringBuilder txt = new StringBuilder( "Cannot consolidate entries when " );
-        if ( segmentStart == null )
-        {
-            txt.append( "start date/time is NULL" );
-        }
-        if ( segmentEnd == null )
-        {
-            txt.append( "end date/time is NULL" );
-        }
-        throw new NullPointerException( txt.toString() );
+        throw new NullPointerException( "null date range specified!! Unable to consolidate entries." );
+    }
+    
+    if ( ! ourRange.contains( range ) )
+    {
+        throw new IllegalArgumentException( "Requested date range " + range + " extends beyond range of measurement data " + ourRange );
     }
 
-    if ( segmentEnd.getTime() <= segmentStart.getTime() )
-    {
-        throw new IllegalArgumentException( "end date/time " + segmentEnd + " must come AFTER start date/time " + segmentStart );
-    }
-
-    logger.debug( "from=" + from()  + ", until=" + until() + ", segmentStart=" + segmentStart + ", segmentEnd=" + segmentEnd );
-
-    if ( segmentStart.getTime() < from().getTime() )
-    {
-        throw new IllegalArgumentException( "start date/time " + segmentStart + " must be on or after dataset start date of " + from() );
-    }
-
-    if ( segmentEnd.getTime() > until().getTime() )
-    {
-        throw new IllegalArgumentException( "end date/time " + segmentStart + " must be on or before dataset end date of " + until() );
-    }
-
-    // length of the requested time segment in seconds.
-    segmentLength = ( segmentEnd.getTime() / 1000 ) - ( segmentStart.getTime() / 1000 ) + 1;
+    segmentLength = ourRange.overlap( range ) / 1000;
 
     result = new GasWellDataEntry();
     result.setWell(getWell());
-    result.setDateRange(new DateRange(segmentStart, segmentLength * 1000L, 1000L));
+    result.setDateRange( range );
 
-    cursor = locateEntryIndex( segmentStart );
+    cursor = locateEntryIndex( range.from() );
 
     if ( cursor < 0 )
     {
-        logger.error( "Unable to obtain data entry index for segmentStart=" + segmentStart );
+        logger.error( "Unable to obtain data entry index for segmentStart=" + range.from() );
         logger.error( "from=" + from() + ", until=" + until() );
-        throw new IllegalArgumentException( "Unable to obtain data entry index for segmentStart=" + segmentStart );
+        throw new IllegalArgumentException( "Unable to obtain data entry index for segmentStart=" + range.from() );
     }
 
     GasWellDataEntry interval;
     double factor;
     long overlapDuration;
-    long overlapStart;
-    long overlapFinish;
     do {
         interval = getEntry( cursor++ );
-        overlapStart = ( interval.from().getTime() <= segmentStart.getTime() ) ? segmentStart.getTime() : interval.from().getTime();
-        overlapFinish = ( interval.until().getTime() >= segmentEnd.getTime() ) ? segmentEnd.getTime() : interval.until().getTime();
-        overlapDuration = ( ( overlapFinish - overlapStart ) / 1000 ) + 1;    // in seconds!!
+        DateRange intervalRange = range.common( interval.getDateRange() );
+        overlapDuration = intervalRange.span() / 1000;
         factor = (double)overlapDuration / (double)segmentLength;
 
-        logger.debug( "cursor=" + cursor + ", overlapDuration=" + overlapDuration + "seconds, factor=" + factor );
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "cursor=" + cursor + ", overlapDuration=" + overlapDuration + "seconds, factor=" + factor );
+        }
 
         for( WellMeasurementType wmt : WellMeasurementType.values() )
         {
@@ -509,7 +487,7 @@ public GasWellDataEntry consolidateEntries( Date segmentStart, Date segmentEnd )
             }
         }
 
-    } while( interval.until().getTime() < segmentEnd.getTime() );
+    } while( interval.until().getTime() < range.until().getTime() );
 
 
     return result;
@@ -545,7 +523,7 @@ public void output( PrintStream writer )
         firstEntry = list.get( 0 );
         lastEntry = list.get( list.size() - 1 );
         firstDate = firstEntry.from();
-        lastDate = new Date( lastEntry.from().getTime() + lastEntry.getIntervalLength() );
+        lastDate = new Date( lastEntry.from().getTime() + lastEntry.getIntervalLengthMS() );
         firstCal = Calendar.getInstance();
         firstCal.setTime( firstDate );
         lastCal = Calendar.getInstance();
@@ -599,7 +577,7 @@ public void output( PrintStream writer )
                         cal.get( Calendar.SECOND )
                 );
 
-                cal.add( Calendar.SECOND, (int)entry.getIntervalLength() - 1 );
+                cal.add( Calendar.SECOND, (int)entry.getIntervalLengthMS() - 1 );
 
                 formatter.format( " %02d/%3s/%04d %02d:%02d:%02d |",
                         cal.get( Calendar.DAY_OF_MONTH ),

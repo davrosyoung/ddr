@@ -42,11 +42,39 @@ private final static Logger logger = Logger.getLogger( GasWellDataSetUtil.class 
  *
  * @param alpha set of gas well data measurements
  * @param beta set of gas well data measurements
- * @return the actual difference between the measurements in alpha and beta.
+ * @return the actual difference between the measurements in alpha and beta. 
+ * 
+ * 
+ * if the datasets alpha and beta do not cover exactly the same period of time, then the
+ * result will be applied across the common period of time between them. if there is no
+ * common period of time, then an IllegalArgumentException will be raised.
  */
-public static Map<WellMeasurementType,Double> getDifference( GasWellDataSet alpha, GasWellDataSet beta )
+public static Map<WellMeasurementType,Double> getDelta(GasWellDataSet alpha, GasWellDataSet beta)
 {
-    Map<WellMeasurementType,Double> result = null;
+    DateRange commonRange;
+    if ( ( alpha == null ) || ( beta == null ) )
+    {
+        throw new NullPointerException( "Cannot calculate differences between NULL data sets!! Get real!!" );
+    }
+    
+    DateRange alphaDateRange = new DateRange( alpha.from(), alpha.until() );
+    DateRange betaDateRange = new DateRange( beta.from(), beta.until() );
+    commonRange = alphaDateRange.common( betaDateRange );
+    
+    Map<WellMeasurementType,Double> alphaVolume = calculateTotalVolume( alpha, commonRange );
+    Map<WellMeasurementType,Double> betaVolume = calculateTotalVolume( beta, commonRange );
+    
+    Map<WellMeasurementType,Double> result = new HashMap<WellMeasurementType,Double>();
+    for( WellMeasurementType wmt : WellMeasurementType.values() )
+    {
+        if ( alphaVolume.containsKey( wmt ) || ( betaVolume.containsKey( wmt ) ) )
+        {
+            double alphaValue = alphaVolume.containsValue( wmt ) ? alphaVolume.get( wmt ) : 0;
+            double betaValue = alphaVolume.containsValue( wmt ) ? alphaVolume.get( wmt ) : 0;
+            double delta = Math.abs( alphaValue - betaValue );
+            result.put( wmt, delta );
+        }
+    }
     return result;
 }
 
@@ -135,7 +163,7 @@ public static Map<WellMeasurementType,Double> getError( GasWellDataSet alpha, Ga
  */
 public static Map<WellMeasurementType,Double> calculateTotalVolume( GasWellDataSet dataSet )
 {
-    return calculateTotalVolume( dataSet, null, null );
+    return calculateTotalVolume( dataSet, new DateRange( dataSet.from(), dataSet.until() ) );
 }
 
 /**
@@ -147,6 +175,16 @@ public static Map<WellMeasurementType,Double> calculateTotalVolume( GasWellDataS
  */
 public static Map<WellMeasurementType,Double> calculateTotalVolume( GasWellDataSet dataSet, Date from, Date until )
 {
+    return calculateTotalVolume( dataSet, new DateRange( from, until ) );
+}
+/**
+ *
+ * @param dataSet the set of measurements for a given gas well
+ * @param range if non null, the period of time that the volume should be calculated for.
+ * @return
+ */
+public static Map<WellMeasurementType,Double> calculateTotalVolume( GasWellDataSet dataSet, DateRange range )
+{
     Map<WellMeasurementType,Double> result = new HashMap();
     Date fromStamp;
     Date untilStamp;
@@ -157,8 +195,8 @@ public static Map<WellMeasurementType,Double> calculateTotalVolume( GasWellDataS
         throw new NullPointerException( "Must specify dataSet, you specified NULL!!" );
     }
     
-    fromStamp = ( from != null ) ? from : dataSet.from();
-    untilStamp = ( until != null ) ? until : dataSet.until();
+    fromStamp = ( range != null ) ? range.from() : dataSet.from();
+    untilStamp = ( range != null ) ? range.until() : dataSet.until();
     
     if ( fromStamp.before( dataSet.from() ) )
     {

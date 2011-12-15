@@ -24,6 +24,8 @@ import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
 import au.com.polly.util.DateRange;
 import org.apache.log4j.Logger;
+
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -37,6 +39,8 @@ static DateParser dateParser = new AussieDateParser();
 static protected GasWellDataSet nicksDataSet = null;
 static protected GasWellDataSet saa2FragmentDataSet = null;
 static protected GasWellDataSet dummyDataSet = null;
+static protected GasWellDataSet smallDataSet = null;
+static protected GasWellDataSet smallReducedDataSet = null;
 static protected GasWell saa2Well = new GasWell( "SAA-2" );
 static protected GasWell saa11Well = new GasWell( "SAA-11" );
 static protected GasWell dummyWell = new GasWell( "Dummy" );
@@ -67,7 +71,7 @@ static final private DataSet[] nicksRawData = {
         new DataSet( dateParser.parse( "15/MAR/2009 21:40" ).getTime(), 0001.0, 0001.0, 0001.0, 0068.1833 ),
         new DataSet( dateParser.parse( "18/MAR/2009 17:51" ).getTime(), 0564.0, 0890.0, 0012.0, 3513.2000 ),
         new DataSet( dateParser.parse( "12/AUG/2009 03:03" ).getTime(), 0000.0, 0000.0, 0000.0, 0092.5000 ),
-        new DataSet( dateParser.parse( "15/AUG/2009 23:33" ).getTime(), 0564.0, 0810.0, 0007.0, 6975.8500 ),
+        new DataSet( dateParser.parse( "15/AUG/2009 23:33" ).getTime(), 0564.0, 0810.0, 0007.0, 6840.0000 ),
         new DataSet( dateParser.parse( "27/MAI/2010 23:33" ).getTime(), 0000.0, 0000.0, 0000.0, 0135.8500 ),
         new DataSet( dateParser.parse( "02/JUN/2010 15:24" ).getTime(), 0513.0, 0620.0, 0006.0, 2561.5500 ),
         new DataSet( dateParser.parse( "17/SEP/2010 08:57" ).getTime(), 0636.0, 0970.0, 0008.5, 0096.0000 ),
@@ -76,125 +80,125 @@ static final private DataSet[] nicksRawData = {
 };
 
 static final private DataSet[] saa2FragmentRawData = {
-        new DataSet( dateParser.parse( "30/JUL/09" ).getTime(), 0287.0, 0.19, 0952.0, 24.0 ),
-        new DataSet( dateParser.parse( "31/JUL/09" ).getTime(), 0277.0, 0.19, 0924.0, 24.0 ),
-        new DataSet( dateParser.parse( "01/AUG/09" ).getTime(), 0284.0, 0.19, 0927.0, 24.0 ),
-        new DataSet( dateParser.parse( "02/AUG/09" ).getTime(), 0290.0, 0.19, 0936.0, 24.0 ),
-        new DataSet( dateParser.parse( "03/AUG/09" ).getTime(), 0248.0, 0.17, 0783.0, 24.0 ),
-        new DataSet( dateParser.parse( "04/AUG/09" ).getTime(), 0249.0, 0.18, 0840.0, 24.0 ),
-        new DataSet( dateParser.parse( "05/AUG/09" ).getTime(), 0223.0, 0.15, 0764.0, 24.0 ),
-        new DataSet( dateParser.parse( "06/AUG/09" ).getTime(), 0224.0, 0.15, 0754.0, 24.0 ),
-        new DataSet( dateParser.parse( "07/AUG/09" ).getTime(), 0177.0, 0.16, 0741.0, 24.0 ),
-        new DataSet( dateParser.parse( "08/AUG/09" ).getTime(), 0217.0, 0.16, 0744.0, 24.0 ),
-        new DataSet( dateParser.parse( "09/AUG/09" ).getTime(), 0203.0, 0.15, 0699.0, 24.0 ),
-        new DataSet( dateParser.parse( "10/AUG/09" ).getTime(), 0201.0, 0.16, 0692.0, 24.0 ),
-        new DataSet( dateParser.parse( "11/AUG/09" ).getTime(), 0219.0, 0.15, 0633.0, 24.0 ),
-        new DataSet( dateParser.parse( "12/AUG/09" ).getTime(), 0000.0, 0.00, 0000.0, 24.0 ),
-        new DataSet( dateParser.parse( "13/AUG/09" ).getTime(), 0000.0, 0.00, 0000.0, 24.0 ),
-        new DataSet( dateParser.parse( "14/AUG/09" ).getTime(), 0000.0, 0.00, 0000.0, 24.0 ),
-        new DataSet( dateParser.parse( "15/AUG/09" ).getTime(), 0041.0, 0.00, 0151.0, 24.0 ),
-        new DataSet( dateParser.parse( "16/AUG/09" ).getTime(), 0192.0, 0.15, 0673.0, 24.0 ),
-        new DataSet( dateParser.parse( "17/AUG/09" ).getTime(), 0182.0, 0.14, 0633.0, 24.0 ),
-        new DataSet( dateParser.parse( "18/AUG/09" ).getTime(), 0038.0, 0.03, 0133.0, 24.0 ),
-        new DataSet( dateParser.parse( "19/AUG/09" ).getTime(), 0000.0, 0.00, 0000.0, 24.0 ),
-        new DataSet( dateParser.parse( "20/AUG/09" ).getTime(), 0012.0, 0.01, 0041.0, 24.0 ),
-        new DataSet( dateParser.parse( "21/AUG/09" ).getTime(), 0000.0, 0.00, 0000.0, 24.0 ),
-        new DataSet( dateParser.parse( "22/AUG/09" ).getTime(), 0000.0, 0.00, 0000.0, 24.0 ),
-        new DataSet( dateParser.parse( "23/AUG/09" ).getTime(), 0105.0, 0.09, 0384.0, 24.0 ),
-        new DataSet( dateParser.parse( "24/AUG/09" ).getTime(), 0690.0, 0.34, 2087.0, 24.0 ),
-        new DataSet( dateParser.parse( "25/AUG/09" ).getTime(), 0540.0, 0.31, 2043.0, 24.0 ),
-        new DataSet( dateParser.parse( "26/AUG/09" ).getTime(), 0666.0, 0.32, 2018.0, 24.0 ),
-        new DataSet( dateParser.parse( "27/AUG/09" ).getTime(), 0603.0, 0.30, 1878.0, 24.0 ),
-        new DataSet( dateParser.parse( "28/AUG/09" ).getTime(), 0621.0, 0.31, 1844.0, 24.0 ),
-        new DataSet( dateParser.parse( "29/AUG/09" ).getTime(), 0475.0, 0.26, 1637.0, 24.0 ),
-        new DataSet( dateParser.parse( "30/AUG/09" ).getTime(), 0401.0, 0.23, 1439.0, 24.0 ),
-        new DataSet( dateParser.parse( "31/AUG/09" ).getTime(), 0414.0, 0.23, 1429.0, 24.0 ),
-        new DataSet( dateParser.parse( "01/SEP/09" ).getTime(), 0367.0, 0.21, 1256.0, 24.0 ),
-        new DataSet( dateParser.parse( "02/SEP/09" ).getTime(), 0363.0, 0.21, 1242.0, 24.0 ),
-        new DataSet( dateParser.parse( "03/SEP/09" ).getTime(), 0321.0, 0.21, 1089.0, 24.0 ),
-        new DataSet( dateParser.parse( "04/SEP/09" ).getTime(), 0301.0, 0.20, 0993.0, 24.0 ),
-        new DataSet( dateParser.parse( "05/SEP/09" ).getTime(), 0530.0, 0.29, 1982.0, 24.0 ),
-        new DataSet( dateParser.parse( "06/SEP/09" ).getTime(), 0544.0, 0.30, 1962.0, 24.0 ),
-        new DataSet( dateParser.parse( "07/SEP/09" ).getTime(), 0591.0, 0.30, 1873.0, 24.0 ),
-        new DataSet( dateParser.parse( "08/SEP/09" ).getTime(), 0583.0, 0.30, 1859.0, 24.0 ),
-        new DataSet( dateParser.parse( "09/SEP/09" ).getTime(), 0559.0, 0.30, 1874.0, 24.0 ),
-        new DataSet( dateParser.parse( "10/SEP/09" ).getTime(), 0484.0, 0.26, 1627.0, 24.0 ),
-        new DataSet( dateParser.parse( "11/SEP/09" ).getTime(), 0053.0, 0.03, 0194.0, 24.0 ),
-        new DataSet( dateParser.parse( "12/SEP/09" ).getTime(), 0105.0, 0.06, 0343.0, 24.0 ),
-        new DataSet( dateParser.parse( "13/SEP/09" ).getTime(), 0080.0, 0.06, 1400.0, 24.0 ),
-        new DataSet( dateParser.parse( "14/SEP/09" ).getTime(), 0009.0, 0.01, 0153.0, 24.0 ),
-        new DataSet( dateParser.parse( "15/SEP/09" ).getTime(), 0000.0, 0.00, 0000.0, 24.0 ),
-        new DataSet( dateParser.parse( "16/SEP/09" ).getTime(), 0250.0, 0.12, 0937.0, 24.0 ),
-        new DataSet( dateParser.parse( "17/SEP/09" ).getTime(), 0000.0, 0.00, 0000.0, 24.0 ),
-        new DataSet( dateParser.parse( "18/SEP/09" ).getTime(), 0000.0, 0.00, 0000.0, 24.0 ),
-        new DataSet( dateParser.parse( "19/SEP/09" ).getTime(), 0529.0, 0.23, 1693.0, 24.0 ),
-        new DataSet( dateParser.parse( "20/SEP/09" ).getTime(), 0000.0, 0.00, 0000.0, 24.0 ),
-        new DataSet( dateParser.parse( "21/SEP/09" ).getTime(), 4466.0, 1.85, 3958.0, 24.0 ),
-        new DataSet( dateParser.parse( "22/SEP/09" ).getTime(), 5730.0, 2.26, 5157.0, 24.0 ),
-        new DataSet( dateParser.parse( "23/SEP/09" ).getTime(), 5981.0, 2.33, 5160.0, 24.0 ),
-        new DataSet( dateParser.parse( "24/SEP/09" ).getTime(), 6289.0, 2.16, 5225.0, 24.0 ),
-        new DataSet( dateParser.parse( "25/SEP/09" ).getTime(), 5541.0, 2.08, 5158.0, 24.0 ),
-        new DataSet( dateParser.parse( "26/SEP/09" ).getTime(), 5178.0, 2.04, 5159.0, 24.0 ),
-        new DataSet( dateParser.parse( "27/SEP/09" ).getTime(), 5812.0, 2.04, 5107.0, 24.0 ),
-        new DataSet( dateParser.parse( "28/SEP/09" ).getTime(), 5912.0, 2.06, 5181.0, 24.0 ),
-        new DataSet( dateParser.parse( "29/SEP/09" ).getTime(), 5489.0, 2.05, 5112.0, 24.0 ),
-        new DataSet( dateParser.parse( "30/SEP/09" ).getTime(), 5609.0, 2.05, 5094.0, 24.0 ),
-        new DataSet( dateParser.parse( "01/OKT/09" ).getTime(), 5290.0, 2.03, 5216.0, 24.0 ),
-        new DataSet( dateParser.parse( "02/OKT/09" ).getTime(), 5348.0, 1.91, 5594.0, 24.0 ),
-        new DataSet( dateParser.parse( "03/OKT/09" ).getTime(), 5167.0, 1.90, 5570.0, 24.0 ),
-        new DataSet( dateParser.parse( "04/OKT/09" ).getTime(), 5016.0, 1.89, 5537.0, 24.0 ),
-        new DataSet( dateParser.parse( "05/OKT/09" ).getTime(), 5040.0, 1.90, 5532.0, 24.0 ),
-        new DataSet( dateParser.parse( "06/OKT/09" ).getTime(), 4840.0, 1.83, 5595.0, 24.0 ),
-        new DataSet( dateParser.parse( "07/OKT/09" ).getTime(), 4968.0, 1.75, 5550.0, 24.0 ),
-        new DataSet( dateParser.parse( "08/OKT/09" ).getTime(), 4870.0, 1.51, 5573.0, 24.0 ),
-        new DataSet( dateParser.parse( "09/OKT/09" ).getTime(), 4424.0, 1.61, 5674.0, 24.0 ),
-        new DataSet( dateParser.parse( "10/OKT/09" ).getTime(), 4601.0, 1.63, 5652.0, 24.0 ),
-        new DataSet( dateParser.parse( "11/OKT/09" ).getTime(), 4475.0, 1.60, 5622.0, 24.0 ),
-        new DataSet( dateParser.parse( "12/OKT/09" ).getTime(), 4624.0, 1.59, 5553.0, 24.0 ),
-        new DataSet( dateParser.parse( "13/OKT/09" ).getTime(), 4518.0, 1.57, 5574.0, 24.0 ),
-        new DataSet( dateParser.parse( "14/OKT/09" ).getTime(), 4592.0, 1.71, 5629.0, 24.0 ),
-        new DataSet( dateParser.parse( "15/OKT/09" ).getTime(), 4246.0, 1.57, 5645.0, 24.0 ),
-        new DataSet( dateParser.parse( "16/OKT/09" ).getTime(), 4332.0, 1.57, 5450.0, 24.0 ),
-        new DataSet( dateParser.parse( "17/OKT/09" ).getTime(), 4266.0, 1.55, 5472.0, 24.0 ),
-        new DataSet( dateParser.parse( "18/OKT/09" ).getTime(), 4229.0, 1.55, 5461.0, 24.0 ),
-        new DataSet( dateParser.parse( "19/OKT/09" ).getTime(), 4212.0, 1.48, 5525.0, 24.0 ),
-        new DataSet( dateParser.parse( "20/OKT/09" ).getTime(), 4101.0, 1.45, 5333.0, 24.0 ),
-        new DataSet( dateParser.parse( "21/OKT/09" ).getTime(), 4108.0, 1.45, 5328.0, 24.0 ),
-        new DataSet( dateParser.parse( "22/OKT/09" ).getTime(), 4080.0, 1.41, 5473.0, 24.0 ),
-        new DataSet( dateParser.parse( "23/OKT/09" ).getTime(), 3917.0, 1.39, 5435.0, 24.0 ),
-        new DataSet( dateParser.parse( "24/OKT/09" ).getTime(), 3819.0, 1.38, 5422.0, 24.0 ),
-        new DataSet( dateParser.parse( "25/OKT/09" ).getTime(), 3774.0, 1.36, 5313.0, 24.0 ),
-        new DataSet( dateParser.parse( "26/OKT/09" ).getTime(), 3588.0, 1.22, 5130.0, 24.0 ),
-        new DataSet( dateParser.parse( "27/OKT/09" ).getTime(), 3774.0, 1.36, 5272.0, 24.0 ),
-        new DataSet( dateParser.parse( "28/OKT/09" ).getTime(), 3559.0, 1.37, 5269.0, 24.0 ),
-        new DataSet( dateParser.parse( "29/OKT/09" ).getTime(), 3601.0, 1.34, 5266.0, 24.0 ),
-        new DataSet( dateParser.parse( "30/OKT/09" ).getTime(), 3477.0, 1.29, 5240.0, 24.0 ),
-        new DataSet( dateParser.parse( "31/OKT/09" ).getTime(), 3638.0, 1.28, 5138.0, 24.0 ),
-        new DataSet( dateParser.parse( "01/NOV/09" ).getTime(), 3458.0, 1.26, 5160.0, 24.0 ),
-        new DataSet( dateParser.parse( "02/NOV/09" ).getTime(), 3417.0, 1.26, 5168.0, 24.0 ),
-        new DataSet( dateParser.parse( "03/NOV/09" ).getTime(), 3447.0, 1.09, 5136.0, 24.0 ),
-        new DataSet( dateParser.parse( "04/NOV/09" ).getTime(), 3302.0, 1.25, 5087.0, 24.0 ),
-        new DataSet( dateParser.parse( "05/NOV/09" ).getTime(), 3385.0, 1.20, 5033.0, 24.0 ),
-        new DataSet( dateParser.parse( "06/NOV/09" ).getTime(), 3177.0, 1.21, 5033.0, 24.0 ),
-        new DataSet( dateParser.parse( "07/NOV/09" ).getTime(), 3183.0, 1.19, 5036.0, 24.0 ),
-        new DataSet( dateParser.parse( "08/NOV/09" ).getTime(), 3111.0, 1.19, 5067.0, 24.0 ),
-        new DataSet( dateParser.parse( "09/NOV/09" ).getTime(), 3123.0, 1.18, 5028.0, 24.0 ),
-        new DataSet( dateParser.parse( "10/NOV/09" ).getTime(), 3106.0, 1.14, 4887.0, 24.0 ),
-        new DataSet( dateParser.parse( "11/NOV/09" ).getTime(), 3026.0, 1.14, 4947.0, 24.0 ),
-        new DataSet( dateParser.parse( "12/NOV/09" ).getTime(), 2931.0, 1.11, 4874.0, 24.0 ),
-        new DataSet( dateParser.parse( "13/NOV/09" ).getTime(), 2906.0, 1.09, 4854.0, 24.0 ),
-        new DataSet( dateParser.parse( "14/NOV/09" ).getTime(), 2788.0, 1.10, 4864.0, 24.0 ),
-        new DataSet( dateParser.parse( "15/NOV/09" ).getTime(), 2807.0, 1.10, 4867.0, 24.0 ),
-        new DataSet( dateParser.parse( "16/NOV/09" ).getTime(), 2984.0, 1.17, 5100.0, 24.0 ),
-        new DataSet( dateParser.parse( "17/NOV/09" ).getTime(), 2965.0, 1.21, 5256.0, 24.0 ),
-        new DataSet( dateParser.parse( "18/NOV/09" ).getTime(), 3003.0, 1.23, 5312.0, 24.0 ),
-        new DataSet( dateParser.parse( "19/NOV/09" ).getTime(), 3056.0, 1.22, 5345.0, 24.0 ),
-        new DataSet( dateParser.parse( "20/NOV/09" ).getTime(), 3100.0, 1.20, 5304.0, 24.0 ),
-        new DataSet( dateParser.parse( "21/NOV/09" ).getTime(), 3102.0, 1.21, 5332.0, 24.0 ),
-        new DataSet( dateParser.parse( "22/NOV/09" ).getTime(), 2441.0, 0.91, 5724.0, 24.0 ),
-        new DataSet( dateParser.parse( "23/NOV/09" ).getTime(), 2310.0, 0.90, 5721.0, 24.0 ),
-        new DataSet( dateParser.parse( "24/NOV/09" ).getTime(), 2237.0, 0.89, 5644.0, 24.0 ),
-        new DataSet( dateParser.parse( "25/NOV/09" ).getTime(), 2367.0, 0.90, 5474.0, 24.0 )
+        new DataSet( dateParser.parse( "30/Jul/2009 00:00:00" ).getTime(), 286.510,0.190,951.640, 24.0 ),
+        new DataSet( dateParser.parse( "31/Jul/2009 00:00:00" ).getTime(), 276.880,0.190,923.830, 24.0 ),
+        new DataSet( dateParser.parse( "01/Aug/2009 00:00:00" ).getTime(), 284.430,0.190,926.970, 24.0 ),
+        new DataSet( dateParser.parse( "02/Aug/2009 00:00:00" ).getTime(), 290.260,0.190,935.960, 24.0 ),
+        new DataSet( dateParser.parse( "03/Aug/2009 00:00:00" ).getTime(), 248.420,0.170,783.260, 24.0 ),
+        new DataSet( dateParser.parse( "04/Aug/2009 00:00:00" ).getTime(), 249.490,0.180,840.450, 24.0 ),
+        new DataSet( dateParser.parse( "05/Aug/2009 00:00:00" ).getTime(), 223.240,0.150,763.600, 24.0 ),
+        new DataSet( dateParser.parse( "06/Aug/2009 00:00:00" ).getTime(), 223.670,0.150,753.610, 24.0 ),
+        new DataSet( dateParser.parse( "07/Aug/2009 00:00:00" ).getTime(), 176.540,0.160,741.400, 24.0 ),
+        new DataSet( dateParser.parse( "08/Aug/2009 00:00:00" ).getTime(), 216.920,0.160,743.670, 24.0 ),
+        new DataSet( dateParser.parse( "09/Aug/2009 00:00:00" ).getTime(), 203.180,0.150,698.740, 24.0 ),
+        new DataSet( dateParser.parse( "10/Aug/2009 00:00:00" ).getTime(), 200.820,0.160,691.610, 24.0 ),
+        new DataSet( dateParser.parse( "11/Aug/2009 00:00:00" ).getTime(), 219.480,0.150,633.090, 24.0 ),
+        new DataSet( dateParser.parse( "12/Aug/2009 00:00:00" ).getTime(), 0.000,0.000,0.000, 24.0 ),
+        new DataSet( dateParser.parse( "13/Aug/2009 00:00:00" ).getTime(), 0.000,0.000,0.000, 24.0 ),
+        new DataSet( dateParser.parse( "14/Aug/2009 00:00:00" ).getTime(), 0.000,0.000,0.000, 24.0 ),
+        new DataSet( dateParser.parse( "15/Aug/2009 00:00:00" ).getTime(), 40.660,0.000,150.730, 24.0 ),
+        new DataSet( dateParser.parse( "16/Aug/2009 00:00:00" ).getTime(), 192.040,0.150,673.250, 24.0 ),
+        new DataSet( dateParser.parse( "17/Aug/2009 00:00:00" ).getTime(), 181.730,0.140,632.840, 24.0 ),
+        new DataSet( dateParser.parse( "18/Aug/2009 00:00:00" ).getTime(), 38.000,0.030,132.740, 24.0 ),
+        new DataSet( dateParser.parse( "19/Aug/2009 00:00:00" ).getTime(), 0.000,0.000,0.000, 24.0 ),
+        new DataSet( dateParser.parse( "20/Aug/2009 00:00:00" ).getTime(), 11.580,0.010,40.620, 24.0 ),
+        new DataSet( dateParser.parse( "21/Aug/2009 00:00:00" ).getTime(), 0.000,0.000,0.000, 24.0 ),
+        new DataSet( dateParser.parse( "22/Aug/2009 00:00:00" ).getTime(), 0.000,0.000,0.000, 24.0 ),
+        new DataSet( dateParser.parse( "23/Aug/2009 00:00:00" ).getTime(), 105.000,0.090,383.840, 24.0 ),
+        new DataSet( dateParser.parse( "24/Aug/2009 00:00:00" ).getTime(), 689.890,0.340,2087.480, 24.0 ),
+        new DataSet( dateParser.parse( "25/Aug/2009 00:00:00" ).getTime(), 539.720,0.310,2042.970, 24.0 ),
+        new DataSet( dateParser.parse( "26/Aug/2009 00:00:00" ).getTime(), 665.630,0.320,2017.700, 24.0 ),
+        new DataSet( dateParser.parse( "27/Aug/2009 00:00:00" ).getTime(), 603.340,0.300,1877.530, 24.0 ),
+        new DataSet( dateParser.parse( "28/Aug/2009 00:00:00" ).getTime(), 621.220,0.310,1843.600, 24.0 ),
+        new DataSet( dateParser.parse( "29/Aug/2009 00:00:00" ).getTime(), 475.470,0.260,1636.590, 24.0 ),
+        new DataSet( dateParser.parse( "30/Aug/2009 00:00:00" ).getTime(), 400.530,0.230,1438.690, 24.0 ),
+        new DataSet( dateParser.parse( "31/Aug/2009 00:00:00" ).getTime(), 413.890,0.230,1429.430, 24.0 ),
+        new DataSet( dateParser.parse( "01/Sep/2009 00:00:00" ).getTime(), 367.380,0.210,1256.190, 24.0 ),
+        new DataSet( dateParser.parse( "02/Sep/2009 00:00:00" ).getTime(), 362.690,0.210,1241.720, 24.0 ),
+        new DataSet( dateParser.parse( "03/Sep/2009 00:00:00" ).getTime(), 320.700,0.210,1089.110, 24.0 ),
+        new DataSet( dateParser.parse( "04/Sep/2009 00:00:00" ).getTime(), 300.720,0.200,992.560, 24.0 ),
+        new DataSet( dateParser.parse( "05/Sep/2009 00:00:00" ).getTime(), 529.740,0.290,1982.060, 24.0 ),
+        new DataSet( dateParser.parse( "06/Sep/2009 00:00:00" ).getTime(), 543.560,0.300,1962.030, 24.0 ),
+        new DataSet( dateParser.parse( "07/Sep/2009 00:00:00" ).getTime(), 590.910,0.300,1872.500, 24.0 ),
+        new DataSet( dateParser.parse( "08/Sep/2009 00:00:00" ).getTime(), 583.420,0.300,1858.520, 24.0 ),
+        new DataSet( dateParser.parse( "09/Sep/2009 00:00:00" ).getTime(), 559.420,0.300,1873.810, 24.0 ),
+        new DataSet( dateParser.parse( "10/Sep/2009 00:00:00" ).getTime(), 483.930,0.260,1626.890, 24.0 ),
+        new DataSet( dateParser.parse( "11/Sep/2009 00:00:00" ).getTime(), 52.800,0.030,194.090, 24.0 ),
+        new DataSet( dateParser.parse( "12/Sep/2009 00:00:00" ).getTime(), 104.870,0.060,343.010, 24.0 ),
+        new DataSet( dateParser.parse( "13/Sep/2009 00:00:00" ).getTime(), 80.300,0.060,1400.310, 24.0 ),
+        new DataSet( dateParser.parse( "14/Sep/2009 00:00:00" ).getTime(), 8.500,0.010,153.480, 24.0 ),
+        new DataSet( dateParser.parse( "15/Sep/2009 00:00:00" ).getTime(), 0.000,0.000,0.000, 24.0 ),
+        new DataSet( dateParser.parse( "16/Sep/2009 00:00:00" ).getTime(), 250.350,0.120,936.930, 24.0 ),
+        new DataSet( dateParser.parse( "17/Sep/2009 00:00:00" ).getTime(), 0.000,0.000,0.000, 24.0 ),
+        new DataSet( dateParser.parse( "18/Sep/2009 00:00:00" ).getTime(), 0.000,0.000,0.000, 24.0 ),
+        new DataSet( dateParser.parse( "19/Sep/2009 00:00:00" ).getTime(), 528.530,0.230,1692.980, 24.0 ),
+        new DataSet( dateParser.parse( "20/Sep/2009 00:00:00" ).getTime(), 0.000,0.000,0.000, 24.0 ),
+        new DataSet( dateParser.parse( "21/Sep/2009 00:00:00" ).getTime(), 4466.390,1.850,3958.210, 24.0 ),
+        new DataSet( dateParser.parse( "22/Sep/2009 00:00:00" ).getTime(), 5729.890,2.260,5157.110, 24.0 ),
+        new DataSet( dateParser.parse( "23/Sep/2009 00:00:00" ).getTime(), 5980.760,2.330,5160.120, 24.0 ),
+        new DataSet( dateParser.parse( "24/Sep/2009 00:00:00" ).getTime(), 6289.390,2.160,5224.700, 24.0 ),
+        new DataSet( dateParser.parse( "25/Sep/2009 00:00:00" ).getTime(), 5541.010,2.080,5158.150, 24.0 ),
+        new DataSet( dateParser.parse( "26/Sep/2009 00:00:00" ).getTime(), 5178.190,2.040,5159.420, 24.0 ),
+        new DataSet( dateParser.parse( "27/Sep/2009 00:00:00" ).getTime(), 5812.120,2.040,5107.220, 24.0 ),
+        new DataSet( dateParser.parse( "28/Sep/2009 00:00:00" ).getTime(), 5911.900,2.060,5181.130, 24.0 ),
+        new DataSet( dateParser.parse( "29/Sep/2009 00:00:00" ).getTime(), 5488.600,2.050,5111.660, 24.0 ),
+        new DataSet( dateParser.parse( "30/Sep/2009 00:00:00" ).getTime(), 5609.280,2.050,5094.460, 24.0 ),
+        new DataSet( dateParser.parse( "01/Oct/2009 00:00:00" ).getTime(), 5289.740,2.030,5215.900, 24.0 ),
+        new DataSet( dateParser.parse( "02/Oct/2009 00:00:00" ).getTime(), 5347.720,1.910,5594.210, 24.0 ),
+        new DataSet( dateParser.parse( "03/Oct/2009 00:00:00" ).getTime(), 5166.590,1.900,5570.270, 24.0 ),
+        new DataSet( dateParser.parse( "04/Oct/2009 00:00:00" ).getTime(), 5016.190,1.890,5537.160, 24.0 ),
+        new DataSet( dateParser.parse( "05/Oct/2009 00:00:00" ).getTime(), 5040.070,1.900,5531.670, 24.0 ),
+        new DataSet( dateParser.parse( "06/Oct/2009 00:00:00" ).getTime(), 4839.870,1.830,5594.580, 24.0 ),
+        new DataSet( dateParser.parse( "07/Oct/2009 00:00:00" ).getTime(), 4967.750,1.750,5550.450, 24.0 ),
+        new DataSet( dateParser.parse( "08/Oct/2009 00:00:00" ).getTime(), 4870.380,1.510,5572.850, 24.0 ),
+        new DataSet( dateParser.parse( "09/Oct/2009 00:00:00" ).getTime(), 4423.950,1.610,5673.880, 24.0 ),
+        new DataSet( dateParser.parse( "10/Oct/2009 00:00:00" ).getTime(), 4601.240,1.630,5652.240, 24.0 ),
+        new DataSet( dateParser.parse( "11/Oct/2009 00:00:00" ).getTime(), 4475.230,1.600,5622.130, 24.0 ),
+        new DataSet( dateParser.parse( "12/Oct/2009 00:00:00" ).getTime(), 4624.100,1.590,5552.920, 24.0 ),
+        new DataSet( dateParser.parse( "13/Oct/2009 00:00:00" ).getTime(), 4518.170,1.570,5573.950, 24.0 ),
+        new DataSet( dateParser.parse( "14/Oct/2009 00:00:00" ).getTime(), 4591.560,1.710,5629.070, 24.0 ),
+        new DataSet( dateParser.parse( "15/Oct/2009 00:00:00" ).getTime(), 4245.880,1.570,5645.200, 24.0 ),
+        new DataSet( dateParser.parse( "16/Oct/2009 00:00:00" ).getTime(), 4332.210,1.570,5449.550, 24.0 ),
+        new DataSet( dateParser.parse( "17/Oct/2009 00:00:00" ).getTime(), 4266.200,1.550,5472.330, 24.0 ),
+        new DataSet( dateParser.parse( "18/Oct/2009 00:00:00" ).getTime(), 4228.990,1.550,5460.580, 24.0 ),
+        new DataSet( dateParser.parse( "19/Oct/2009 00:00:00" ).getTime(), 4212.030,1.480,5525.490, 24.0 ),
+        new DataSet( dateParser.parse( "20/Oct/2009 00:00:00" ).getTime(), 4101.100,1.450,5332.770, 24.0 ),
+        new DataSet( dateParser.parse( "21/Oct/2009 00:00:00" ).getTime(), 4108.460,1.450,5328.140, 24.0 ),
+        new DataSet( dateParser.parse( "22/Oct/2009 00:00:00" ).getTime(), 4080.160,1.410,5473.070, 24.0 ),
+        new DataSet( dateParser.parse( "23/Oct/2009 00:00:00" ).getTime(), 3916.660,1.390,5435.090, 24.0 ),
+        new DataSet( dateParser.parse( "24/Oct/2009 00:00:00" ).getTime(), 3818.540,1.380,5421.750, 24.0 ),
+        new DataSet( dateParser.parse( "25/Oct/2009 00:00:00" ).getTime(), 3773.760,1.360,5313.200, 24.0 ),
+        new DataSet( dateParser.parse( "26/Oct/2009 00:00:00" ).getTime(), 3588.160,1.220,5129.600, 24.0 ),
+        new DataSet( dateParser.parse( "27/Oct/2009 00:00:00" ).getTime(), 3773.730,1.360,5271.880, 24.0 ),
+        new DataSet( dateParser.parse( "28/Oct/2009 00:00:00" ).getTime(), 3559.290,1.370,5268.750, 24.0 ),
+        new DataSet( dateParser.parse( "29/Oct/2009 00:00:00" ).getTime(), 3601.060,1.340,5266.240, 24.0 ),
+        new DataSet( dateParser.parse( "30/Oct/2009 00:00:00" ).getTime(), 3476.520,1.290,5239.820, 24.0 ),
+        new DataSet( dateParser.parse( "31/Oct/2009 00:00:00" ).getTime(), 3637.910,1.280,5138.240, 24.0 ),
+        new DataSet( dateParser.parse( "01/Nov/2009 00:00:00" ).getTime(), 3458.230,1.260,5159.600, 24.0 ),
+        new DataSet( dateParser.parse( "02/Nov/2009 00:00:00" ).getTime(), 3417.440,1.260,5168.450, 24.0 ),
+        new DataSet( dateParser.parse( "03/Nov/2009 00:00:00" ).getTime(), 3446.800,1.090,5135.850, 24.0 ),
+        new DataSet( dateParser.parse( "04/Nov/2009 00:00:00" ).getTime(), 3302.080,1.250,5087.380, 24.0 ),
+        new DataSet( dateParser.parse( "05/Nov/2009 00:00:00" ).getTime(), 3395.440,1.200,5033.310, 24.0 ),
+        new DataSet( dateParser.parse( "06/Nov/2009 00:00:00" ).getTime(), 3177.080,1.210,5033.140, 24.0 ),
+        new DataSet( dateParser.parse( "07/Nov/2009 00:00:00" ).getTime(), 3182.680,1.190,5035.830, 24.0 ),
+        new DataSet( dateParser.parse( "08/Nov/2009 00:00:00" ).getTime(), 3110.920,1.190,5066.610, 24.0 ),
+        new DataSet( dateParser.parse( "09/Nov/2009 00:00:00" ).getTime(), 3122.840,1.180,5028.100, 24.0 ),
+        new DataSet( dateParser.parse( "10/Nov/2009 00:00:00" ).getTime(), 3105.830,1.140,4886.730, 24.0 ),
+        new DataSet( dateParser.parse( "11/Nov/2009 00:00:00" ).getTime(), 3026.270,1.140,4947.180, 24.0 ),
+        new DataSet( dateParser.parse( "12/Nov/2009 00:00:00" ).getTime(), 2930.510,1.110,4874.180, 24.0 ),
+        new DataSet( dateParser.parse( "13/Nov/2009 00:00:00" ).getTime(), 2906.390,1.090,4854.310, 24.0 ),
+        new DataSet( dateParser.parse( "14/Nov/2009 00:00:00" ).getTime(), 2788.260,1.100,4864.280, 24.0 ),
+        new DataSet( dateParser.parse( "15/Nov/2009 00:00:00" ).getTime(), 2807.000,1.100,4866.570, 24.0 ),
+        new DataSet( dateParser.parse( "16/Nov/2009 00:00:00" ).getTime(), 2983.830,1.170,5099.860, 24.0 ),
+        new DataSet( dateParser.parse( "17/Nov/2009 00:00:00" ).getTime(), 2964.580,1.210,5256.240, 24.0 ),
+        new DataSet( dateParser.parse( "18/Nov/2009 00:00:00" ).getTime(), 3003.290,1.230,5311.940, 24.0 ),
+        new DataSet( dateParser.parse( "19/Nov/2009 00:00:00" ).getTime(), 3055.960,1.220,5345.120, 24.0 ),
+        new DataSet( dateParser.parse( "20/Nov/2009 00:00:00" ).getTime(), 3100.300,1.200,5304.250, 24.0 ),
+        new DataSet( dateParser.parse( "21/Nov/2009 00:00:00" ).getTime(), 3102.090,1.210,5332.120, 24.0 ),
+        new DataSet( dateParser.parse( "22/Nov/2009 00:00:00" ).getTime(), 2441.030,0.910,5723.680, 24.0 ),
+        new DataSet( dateParser.parse( "23/Nov/2009 00:00:00" ).getTime(), 2310.150,0.900,5721.170, 24.0 ),
+        new DataSet( dateParser.parse( "24/Nov/2009 00:00:00" ).getTime(), 2236.950,0.890,5643.950, 24.0 ),
+        new DataSet( dateParser.parse( "25/Nov/2009 00:00:00" ).getTime(), 2367.340,0.900,5474.260, 24.0 )
 
 };
 
@@ -291,15 +295,31 @@ static final private DataSet[] dummyRawData = {
         new DataSet( dateParser.parse( "16/06/2011 21:00" ).getTime(), 1200.0, 0.20, 4390.0, 01.0 ),
         new DataSet( dateParser.parse( "16/06/2011 22:00" ).getTime(), 1203.0, 0.20, 4385.0, 01.0 ),
         new DataSet( dateParser.parse( "16/06/2011 23:00" ).getTime(), 1205.0, 0.20, 4342.0, 01.0 ),
-        new DataSet( dateParser.parse( "17/06/2011 06:00" ).getTime(), 1207.0, 0.21, 4325.0, 01.0 ),
-        new DataSet( dateParser.parse( "17/06/2011 07:00" ).getTime(), 1209.0, 0.20, 4326.0, 01.0 ),
-        new DataSet( dateParser.parse( "17/06/2011 08:00" ).getTime(), 1211.0, 0.20, 4320.0, 01.0 ),
-        new DataSet( dateParser.parse( "17/06/2011 09:00" ).getTime(), 1210.0, 0.19, 4317.0, 01.0 ),
-        new DataSet( dateParser.parse( "17/06/2011 10:00" ).getTime(), 1210.0, 0.18, 4318.0, 01.0 ),
-        new DataSet( dateParser.parse( "17/06/2011 11:00" ).getTime(), 1210.0, 0.19, 4319.0, 01.0 ),
-        new DataSet( dateParser.parse( "17/06/2011 12:00" ).getTime(), 1210.0, 0.20, 4320.0, 01.0 ),
-        new DataSet( dateParser.parse( "17/06/2011 13:00" ).getTime(), 1210.1, 0.21, 4325.0, 01.0 )
+        new DataSet( dateParser.parse( "17/06/2011 00:00" ).getTime(), 1207.0, 0.21, 4325.0, 01.0 ),
+        new DataSet( dateParser.parse( "17/06/2011 01:00" ).getTime(), 1209.0, 0.20, 4326.0, 01.0 ),
+        new DataSet( dateParser.parse( "17/06/2011 02:00" ).getTime(), 1211.0, 0.20, 4320.0, 01.0 ),
+        new DataSet( dateParser.parse( "17/06/2011 03:00" ).getTime(), 1210.0, 0.19, 4317.0, 01.0 ),
+        new DataSet( dateParser.parse( "17/06/2011 04:00" ).getTime(), 1210.0, 0.18, 4318.0, 01.0 ),
+        new DataSet( dateParser.parse( "17/06/2011 05:00" ).getTime(), 1210.0, 0.19, 4319.0, 01.0 ),
+        new DataSet( dateParser.parse( "17/06/2011 06:00" ).getTime(), 1210.0, 0.20, 4320.0, 01.0 ),
+        new DataSet( dateParser.parse( "17/06/2011 07:00" ).getTime(), 1210.1, 0.21, 4325.0, 01.0 )
 };
+
+static final private DataSet[] smallRawData = {
+        new DataSet( dateParser.parse( "23/APR/2011 05:00" ).getTime(), 0037.6, 0.89, 0015.2, 01.0 ),
+        new DataSet( dateParser.parse( "23/APR/2011 06:00" ).getTime(), 0037.8, 0.86, 0015.1, 01.0 ),
+        new DataSet( dateParser.parse( "23/APR/2011 07:00" ).getTime(), 0037.9, 0.87, 0015.3, 01.0 ),
+        new DataSet( dateParser.parse( "23/APR/2011 08:00" ).getTime(), 0037.6, 0.86, 0015.4, 01.0 ),
+        new DataSet( dateParser.parse( "23/APR/2011 09:00" ).getTime(), 0037.7, 0.85, 0015.6, 01.0 ),
+        new DataSet( dateParser.parse( "23/APR/2011 10:00" ).getTime(), 0037.5, 0.86, 0015.7, 01.0 ),
+        new DataSet( dateParser.parse( "23/APR/2011 11:00" ).getTime(), 0037.3, 0.84, 0015.8, 01.0 )
+};
+
+static final private DataSet[] smallRawReducedData = {
+        new DataSet( dateParser.parse( "23/APR/2011 05:00" ).getTime(), 0037.725, 0.8700, 15.25, 4.0 ),
+        new DataSet( dateParser.parse( "23/APR/2011 09:00" ).getTime(), 0037.500, 0.8500, 15.70, 3.0 )
+};
+
 
 static {
     // populate some dummy data into the gas well data set....
@@ -313,6 +333,14 @@ static {
     // populate the dummy data set...
     // -----------------------------------
     dummyDataSet = populateFromRawData( dummyWell,  dummyRawData );
+
+    // populate small set of test data, used within the GasWellDataSetTest class.
+    // ---------------------------------------------------------------------------
+    smallDataSet = populateFromRawData( new GasWell( "Dave's Well" ), smallRawData );
+
+    // reduced version of the small data set ... with just two intervals..
+    // ---------------------------------------------------------------------------
+    smallReducedDataSet = populateFromRawData( new GasWell( "Dave's Well" ), smallRawReducedData );
 }
 
 /**
@@ -345,6 +373,24 @@ public static GasWellDataSet getDummyDataSet()
     return dummyDataSet;
 }
 
+/**
+ *
+ * @return small set of dummy data, with hourly intervals from 23/APR/2011 05:00 through to 23/APR/2011 11:59:59
+ */
+public static GasWellDataSet getSmallDataSet()
+{
+    return smallDataSet;
+}
+
+/**
+ *
+ * @return reduced version of the small data set with just two intervals.
+ */
+public static GasWellDataSet getSmallReducedDataSet()
+{
+    return smallReducedDataSet;
+}
+
 protected static GasWellDataSet populateFromRawData( GasWell well, DataSet[] rawData )
 {
     GasWellDataSet result;
@@ -355,8 +401,7 @@ protected static GasWellDataSet populateFromRawData( GasWell well, DataSet[] raw
     
     result = new GasWellDataSet( well );
 
-    // populate the data set representing nick's reduced data flow data set.
-    // ---------------------------------------------------------------------
+
     for( int i = 0; i < rawData.length; i++ )
     {
         entry = new GasWellDataEntry();
@@ -372,14 +417,14 @@ protected static GasWellDataSet populateFromRawData( GasWell well, DataSet[] raw
             {
                 if ( span > ( rawData[ i ].durationHours * 3600 ) )
                 {
-                    logger.error( "i=" + i + " ... duration is short by " + delta + "seconds." );
+                    logger.error( "well:" + well.getName() + " ... i=" + i + " ... duration is short by " + delta + "seconds. from=" + from + ", until=" + until  );
                 }
                 if ( span < ( rawData[ i ].durationHours * 3600 ) )
                 {
-                    logger.error( "i=" + i + " ... duration is too long by " + delta + "seconds." );
+                    logger.error( "well:" + well.getName() + " ... i=" + i + " ... duration is too long by " + delta + "seconds. from=" + from + ", until=" + until );
                 }
             }
-            until = new Date( from.getTime() + ( (long)span * 3600000L ) );
+            until = new Date( from.getTime() + ( (long)span * 1000L ) );
         } else {
             until = new Date( from.getTime () + (long)(rawData[ i ].durationHours * 3600000L ) ) ;
         }

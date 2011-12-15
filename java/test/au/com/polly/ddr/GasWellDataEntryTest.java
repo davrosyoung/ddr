@@ -79,7 +79,7 @@ public void testNullConstructor()
     GasWellDataEntry entry = new GasWellDataEntry();
     assertNotNull( entry );
     assertNull( entry.from() );
-    assertEquals(0, entry.getIntervalLength());
+    assertEquals(0, entry.getIntervalLengthMS());
     assertNull(entry.until());
     assertNull(entry.getWell());
     assertFalse(entry.containsMeasurement(WellMeasurementType.WATER_FLOW));
@@ -139,7 +139,7 @@ public void testSerialization()
     assertNotNull( extract.getWell() );
     assertEquals( "Dave's Well", extract.getWell().getName() );
     assertEquals( twentyThirdApril.getTime(), extract.from());
-    assertEquals( 86400000, extract.getIntervalLength());
+    assertEquals( 86400000, extract.getIntervalLengthMS());
     assertEquals( 51.6, extract.getMeasurement(WellMeasurementType.WATER_FLOW), 0.0001);
     assertEquals( 73.5, extract.getMeasurement(WellMeasurementType.OIL_FLOW), 0.0001 );
     assertEquals( 0.56, extract.getMeasurement(WellMeasurementType.GAS_FLOW), 0.001 );

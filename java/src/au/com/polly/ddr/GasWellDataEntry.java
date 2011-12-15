@@ -86,9 +86,9 @@ public void setDateRange(DateRange range)
     this.range = range;
 }
 
-public long getIntervalLength()
+public long getIntervalLengthMS()
 {
-    return this.range == null ? 0 : range.span();
+    return ( this.range == null ) ? 0 : range.span();
 }
 
 /**
@@ -98,7 +98,7 @@ public long getIntervalLength()
  */
 public Date until()
 {
-    return this.range == null ? null : this.range.until();
+    return ( this.range == null ) ? null : this.range.until();
 }
 
 public void setMeasurement( WellMeasurementType wmt, double value )
@@ -250,8 +250,11 @@ public String toString()
     {
         out.append( "well:" + getWell().getName() + ", " );
     }
-    out.append( "from:" + from() + ", " );
-    out.append( "until:" + until() + ", " );
+    if ( getDateRange() != null )
+    {
+        out.append( getDateRange().toString() );
+    }
+    out.append( ", " );
     for( WellMeasurementType wmt : WellMeasurementType.values() )
     {
         if ( measurements.containsKey( wmt ) )
