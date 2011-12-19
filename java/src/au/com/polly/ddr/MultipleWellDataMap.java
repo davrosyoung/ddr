@@ -24,6 +24,7 @@ import au.com.polly.util.DateRange;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,6 +67,22 @@ public void addDataSet( GasWellDataSet dataSet )
 private Object writeReplace()
 {
     return new SerializationProxy( this );
+}
+
+/**
+ *
+ * @param writer where to write all of the data out to.
+ */
+protected void outputCSV( PrintWriter writer )
+{
+    boolean firstWell = true;
+    
+    for( GasWell well : dataMap.keySet() )
+    {
+        GasWellDataSet dataSet = dataMap.get( well );
+        dataSet.outputCSV( writer, firstWell, true );
+        firstWell = false;    
+    }
 }
 
 /**

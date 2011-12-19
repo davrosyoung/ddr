@@ -44,10 +44,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.io.StringBufferInputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
@@ -73,6 +79,8 @@ Sheet sheetBeta;
 Workbook testBook;
 DateParser parser;
 StringReader testCSVReader = null;
+StringReader dummyCSVReader = null;
+StringReader saa2CSVReader = null;
 
 
 public static junit.framework.Test suite() {
@@ -98,8 +106,17 @@ public void setup()
     testCSVData.append( "16/JUN/2011 05:00:00, osho-9b, 24, 518.2, 112.2, 942.6\n" );
     testCSVData.append( "17/JUN/2011 05:00:00, osho-9b, 24, 515.3, 113.9, 917.5\n" );
     testCSVData.append( "18/JUN/2011 05:00:00, osho-9b, 24, 519.3, 110.9, 913.5\n" );
-
     testCSVReader = new StringReader( testCSVData.toString() );
+
+    StringWriter sw = new StringWriter();
+    PrintWriter writer = new PrintWriter( sw );
+    TestGasWellDataSet.getDummyDataSet().outputCSV( writer );
+    dummyCSVReader = new StringReader( sw.toString() );
+
+    sw = new StringWriter();
+    writer = new PrintWriter( sw );
+    TestGasWellDataSet.getSAA2FragmentDataSet().outputCSV( writer );
+    saa2CSVReader = new StringReader( sw.toString() );
 
     parser = new AussieDateParser();
 }
@@ -116,6 +133,7 @@ public void testResolvingFieldTypeNullArg()
     CSVGasWellDataExtractor.resolveFieldType( null );
 }
 
+@Test
 public void testResolvingFieldTypeEmptyString()
 {
     assertEquals(CSVGasWellDataExtractor.FieldType.UNKNOWN, CSVGasWellDataExtractor.resolveFieldType(""));
@@ -129,32 +147,61 @@ public void testResolvingFieldTypes()
     assertEquals( CSVGasWellDataExtractor.FieldType.WELL_NAME, CSVGasWellDataExtractor.resolveFieldType( "WELL" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.WELL_NAME, CSVGasWellDataExtractor.resolveFieldType( "well name" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.WELL_NAME, CSVGasWellDataExtractor.resolveFieldType( " well name " ) );
-    assertEquals( CSVGasWellDataExtractor.FieldType.WELL_NAME, CSVGasWellDataExtractor.resolveFieldType( "well of course" ) );
 
+}
+
+@Test
+public void testResolvingIntervalLengthFieldType()
+{
     assertEquals( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH, CSVGasWellDataExtractor.resolveFieldType( "int. length" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH, CSVGasWellDataExtractor.resolveFieldType( "length (hrs)" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH, CSVGasWellDataExtractor.resolveFieldType( "length (hrs)" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH, CSVGasWellDataExtractor.resolveFieldType( "interval length" ) );
+}
 
+@Test
+public void testResolvingTimestampFieldType()
+{
     assertEquals( CSVGasWellDataExtractor.FieldType.TIMESTAMP, CSVGasWellDataExtractor.resolveFieldType( "date/time" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.TIMESTAMP, CSVGasWellDataExtractor.resolveFieldType( "date" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.TIMESTAMP, CSVGasWellDataExtractor.resolveFieldType( "timestamp" ) );
+}
 
+@Test
+public void testResolvingOilFlowFieldType()
+{
+    assertEquals( CSVGasWellDataExtractor.FieldType.OIL_FLOW, CSVGasWellDataExtractor.resolveFieldType( "oil flow rate (bbls/hr)" ) );
+    assertEquals( CSVGasWellDataExtractor.FieldType.OIL_FLOW, CSVGasWellDataExtractor.resolveFieldType( "oil flow rate (gl/sec)" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.OIL_FLOW, CSVGasWellDataExtractor.resolveFieldType( "oil flow rate" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.OIL_FLOW, CSVGasWellDataExtractor.resolveFieldType( "oil rate" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.OIL_FLOW, CSVGasWellDataExtractor.resolveFieldType( "oil flow" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.OIL_FLOW, CSVGasWellDataExtractor.resolveFieldType( "oil" ) );
+}
 
+@Test
+public void testResolvingGasFlowFieldType()
+{
+    assertEquals( CSVGasWellDataExtractor.FieldType.GAS_FLOW, CSVGasWellDataExtractor.resolveFieldType( "gas flow rate (bbls/day)" ) );
+    assertEquals( CSVGasWellDataExtractor.FieldType.GAS_FLOW, CSVGasWellDataExtractor.resolveFieldType( "gas flow rate (km3/sec)" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.GAS_FLOW, CSVGasWellDataExtractor.resolveFieldType( "gas flow rate" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.GAS_FLOW, CSVGasWellDataExtractor.resolveFieldType( "gas rate" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.GAS_FLOW, CSVGasWellDataExtractor.resolveFieldType( "gas flow" ) );
-    assertEquals( CSVGasWellDataExtractor.FieldType.GAS_FLOW, CSVGasWellDataExtractor.resolveFieldType( "gas" ) );
-    
-    assertEquals( CSVGasWellDataExtractor.FieldType.GAS_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water flow rate" ) );
-    assertEquals( CSVGasWellDataExtractor.FieldType.GAS_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water rate" ) );
-    assertEquals( CSVGasWellDataExtractor.FieldType.GAS_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water flow" ) );
-    assertEquals( CSVGasWellDataExtractor.FieldType.GAS_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water" ) );
+}
 
+@Test
+public void testResolvingWaterFlowFieldType()
+{
+    assertEquals( CSVGasWellDataExtractor.FieldType.WATER_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water flow rate (bbls/sec)" ) );
+    assertEquals( CSVGasWellDataExtractor.FieldType.WATER_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water flow rate (ml/year)" ) );
+    assertEquals( CSVGasWellDataExtractor.FieldType.WATER_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water flow rate" ) );
+    assertEquals( CSVGasWellDataExtractor.FieldType.WATER_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water rate" ) );
+    assertEquals( CSVGasWellDataExtractor.FieldType.WATER_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water flow" ) );
+    assertEquals( CSVGasWellDataExtractor.FieldType.WATER_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water" ) );
+}
+
+@Test
+public void testResolvingCondensateFlowFieldType()
+{
     assertEquals( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW, CSVGasWellDataExtractor.resolveFieldType( "gas cond. flow rate" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW, CSVGasWellDataExtractor.resolveFieldType( "gas cond. rate" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW, CSVGasWellDataExtractor.resolveFieldType( "gas cond. flow" ) );
@@ -179,12 +226,18 @@ public void testResolvingFieldTypes()
     assertEquals( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW, CSVGasWellDataExtractor.resolveFieldType( "cond rate" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW, CSVGasWellDataExtractor.resolveFieldType( "cond flow" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW, CSVGasWellDataExtractor.resolveFieldType( "cond" ) );
+}
 
+@Test
+public void testResolvingUnknownFieldTypes()
+{
+    assertEquals( CSVGasWellDataExtractor.FieldType.UNKNOWN, CSVGasWellDataExtractor.resolveFieldType( "well of course" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.UNKNOWN, CSVGasWellDataExtractor.resolveFieldType( "unwell" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.UNKNOWN, CSVGasWellDataExtractor.resolveFieldType( "some well" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.UNKNOWN, CSVGasWellDataExtractor.resolveFieldType( "the well" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.UNKNOWN, CSVGasWellDataExtractor.resolveFieldType( "soil" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.UNKNOWN, CSVGasWellDataExtractor.resolveFieldType("H2O") );
+    assertEquals( CSVGasWellDataExtractor.FieldType.UNKNOWN, CSVGasWellDataExtractor.resolveFieldType( "gas" ) );
 }
 
 @Test
@@ -192,7 +245,7 @@ public void testProcessingColumnHeadings()
 {
     List<CSVGasWellDataExtractor.FieldType> columnHeadingList = null;
     
-    columnHeadingList = CSVGasWellDataExtractor.processColumnHeadings( "time,oil,gas,water" );
+    columnHeadingList = CSVGasWellDataExtractor.processColumnHeadings( "time,oil flow rate,gas flow rate,water flow rate" );
     assertNotNull( columnHeadingList );
     assertEquals( 4, columnHeadingList.size() );
     assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.TIMESTAMP ) );
@@ -204,7 +257,7 @@ public void testProcessingColumnHeadings()
     assertFalse( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW ) );
     
     
-    columnHeadingList = CSVGasWellDataExtractor.processColumnHeadings( "well,time,interval,cond.,gas,water" );
+    columnHeadingList = CSVGasWellDataExtractor.processColumnHeadings( "well,time,interval,cond.,gas rate,water flow" );
     assertNotNull( columnHeadingList );
     assertEquals( 6, columnHeadingList.size() );
     assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.TIMESTAMP ) );
@@ -235,7 +288,35 @@ public void testProcessingColumnHeadingsEmptyLine()
     columnHeadingList = CSVGasWellDataExtractor.processColumnHeadings( "" );
 }
 
-@Test( expected=NullPointerException.class )
+@Test
+public void testProcessingDataLine()
+{
+    List<CSVGasWellDataExtractor.FieldType> columns = new ArrayList<CSVGasWellDataExtractor.FieldType>();
+    columns.add( CSVGasWellDataExtractor.FieldType.WELL_NAME );
+    columns.add( CSVGasWellDataExtractor.FieldType.TIMESTAMP );
+    columns.add( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH );
+    columns.add( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW );
+    columns.add( CSVGasWellDataExtractor.FieldType.WATER_FLOW );
+    columns.add( CSVGasWellDataExtractor.FieldType.GAS_FLOW );
+    
+    String text = "osho2,13/JUN/2011 05:25:00,1.0,130.6,285.2,12.3";
+    GasWellDataEntry entry = CSVGasWellDataExtractor.processDataLine( text, columns, 1, null );
+    assertNotNull(entry);
+    assertTrue(entry.containsMeasurement(WellMeasurementType.CONDENSATE_FLOW));
+    assertTrue(entry.containsMeasurement(WellMeasurementType.GAS_FLOW));
+    assertTrue(entry.containsMeasurement(WellMeasurementType.WATER_FLOW));
+    assertFalse(entry.containsMeasurement(WellMeasurementType.OIL_FLOW));
+    assertNotNull( entry.getWell() );
+    assertEquals("osho2", entry.getWell().getName());
+    assertEquals( parser.parse( "13/JUN/2011 05:25" ).getTime(), entry.from() );
+    assertEquals( parser.parse( "13/JUN/2011 06:25" ).getTime(), entry.until() );
+    
+    assertEquals( 130.6, entry.getMeasurement( WellMeasurementType.CONDENSATE_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 285.2, entry.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 12.3, entry.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+}
+
+@Test
 public void testExtractingDataFromTestCSV()
 {
     CSVGasWellDataExtractor extractor = new CSVGasWellDataExtractor( testCSVReader );
@@ -248,19 +329,43 @@ public void testExtractingDataFromTestCSV()
     Map<GasWell,GasWellDataSet> dataSetMap = mwdm.getDataMap();
     assertNotNull( dataSetMap );
     assertNotNull( dataSetMap.keySet() );
-    assertEquals(2, dataSetMap.keySet().size());
-    assertTrue(dataSetMap.containsKey(osho2)) ;
-    assertTrue( dataSetMap.containsKey( osho9b )) ;
+    assertEquals(2, dataSetMap.keySet().size() );
+    assertTrue( dataSetMap.containsKey( osho2 ) ) ;
+    assertTrue( dataSetMap.containsKey( osho9b ) ) ;
     
     GasWellDataSet dataSet = dataSetMap.get( osho2 );
     assertNotNull( dataSet );
+    assertEquals( 5, dataSet.getData().size() );
     assertEquals( parser.parse( "13/JUN/2011 05:00" ).getTime(), dataSet.from() );
     assertEquals( parser.parse( "18/JUN/2011 05:00" ).getTime(), dataSet.until() );
 
     dataSet = dataSetMap.get( osho9b );
-    assertNotNull( dataSet );
+    assertNotNull(dataSet);
+    assertEquals(6, dataSet.getData().size());
     assertEquals( parser.parse( "13/JUN/2011 05:00" ).getTime(), dataSet.from() );
     assertEquals( parser.parse( "19/JUN/2011 05:00" ).getTime(), dataSet.until() );
+}
+
+@Test
+public void testExtractingDataFromSAA2CSV()
+{
+    CSVGasWellDataExtractor extractor = new CSVGasWellDataExtractor( saa2CSVReader );
+    MultipleWellDataMap mwdm = extractor.extract();
+    assertNotNull( mwdm );
+
+    GasWell saa2 = new GasWell( "SAA-2" );
+
+    Map<GasWell,GasWellDataSet> dataSetMap = mwdm.getDataMap();
+    assertNotNull( dataSetMap );
+    assertNotNull(dataSetMap.keySet());
+    assertEquals(1, dataSetMap.keySet().size());
+    assertTrue(dataSetMap.containsKey(saa2)) ;
+
+    GasWellDataSet dataSet = dataSetMap.get( saa2 );
+    assertNotNull( dataSet );
+    assertEquals( 119, dataSet.getData().size() );
+    assertEquals( parser.parse( "30/JUL/2009" ).getTime(), dataSet.from() );
+    assertEquals( parser.parse( "26/NOV/2009" ).getTime(), dataSet.until() );
 }
 
 

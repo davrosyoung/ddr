@@ -20,6 +20,7 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.util.DateArmyKnife;
 import au.com.polly.util.DateRange;
 import au.com.polly.util.HashCodeUtil;
 import org.apache.log4j.Logger;
@@ -29,14 +30,18 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Contains the set of daily average flow rates of gas, oil, condensate and water
@@ -53,6 +58,16 @@ private List<GasWellDataEntry> list;
 transient final static String[] monthNames = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
 transient private GasWellDataEntry minimumEntry;
 transient private GasWellDataEntry maximumEntry;
+transient private Map<WellMeasurementType,Boolean> containsMeasurement = new HashMap<WellMeasurementType,Boolean>();
+static private NumberFormat fiveDotFour = null;
+
+static {
+    fiveDotFour = NumberFormat.getNumberInstance();
+    fiveDotFour.setGroupingUsed( false );
+    fiveDotFour.setMinimumIntegerDigits( 5 );
+    fiveDotFour.setMinimumFractionDigits( 4 );
+    fiveDotFour.setMaximumFractionDigits( 4 );
+}
 
 /**
  *
@@ -126,6 +141,7 @@ public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
     }
 }
 
+
 /**
  * Add another set of measurements to the existing data set. It is assumed that this
  * entry comes directly after the last measurement added to the data set!!!
@@ -184,6 +200,11 @@ public void addDataEntry( GasWellDataEntry entry )
             {
                 maximumEntry.setMeasurement( wmt, flow );
             }
+            
+            if ( ( ! containsMeasurement.containsKey( wmt ) ) || ( containsMeasurement.get( wmt ) == false ) )
+            {
+                containsMeasurement.put( wmt, true );
+            }
         }
     }
 }
@@ -195,6 +216,11 @@ public String getWellName()
     result = ( well != null ) ? well.getName() : null;
 
     return result;
+}
+
+public boolean containsMeasurement( WellMeasurementType wmt )
+{
+    return containsMeasurement.containsKey( wmt ) && containsMeasurement.get( wmt );
 }
 
 public GasWell getWell()
@@ -516,8 +542,6 @@ public void output( PrintStream writer )
     long dh = 0;
     long dd = 0;
 
-
-
     if ( ( list != null ) && ( list.size() > 0 ) )
     {
         firstEntry = list.get( 0 );
@@ -567,6 +591,7 @@ public void output( PrintStream writer )
 
             for( GasWellDataEntry entry : list )
             {
+                writer.println( DateArmyKnife.formatWithMinutes( entry.from() ) + "," + entry.getDateRange().span() / 3600000.0 );
                 cal.setTime( entry.from() );
                 formatter.format( "| %02d/%3s/%04d %02d:%02d:%02d |",
                         cal.get( Calendar.DAY_OF_MONTH ),
@@ -624,8 +649,88 @@ public void output( PrintStream writer )
     } else {
         formatter.format( "| Well: %-48s  NO DATA                                             |\n", well.getName() );
     }
-
 }
+
+
+
+/**
+ * Used to output this data set to CSV file. Written a couple of weeks after output() method, and it shows!!
+ *
+ *
+ * @param writer
+ */
+public void outputCSV( PrintWriter writer )
+{
+    outputCSV(writer, true, false );
+}
+
+/**
+ * Used to output this data set to CSV file. Written a couple of weeks after output() method, and it shows!!
+ *
+ *
+ * @param writer
+ */
+public void outputCSV( PrintWriter writer, boolean outputColumnHeadings, boolean outputAllColumns )
+{
+    Formatter formatter = new Formatter( writer, Locale.UK );
+    long durationSeconds = 0;
+    long ds = 0;
+    long dm = 0;
+    long dh = 0;
+    long dd = 0;
+
+    durationSeconds = ( until().getTime() - from().getTime() ) / 1000L;
+    ds = durationSeconds % 60;
+    dm = ( durationSeconds / 60 ) % 60;
+    dh = ( durationSeconds / 3600 ) % 24;
+    dd = durationSeconds / 86400;
+
+    logger.debug( "durationSeconds=" + durationSeconds + ", ds=" + ds + ", dm=" + dm + ", dh=" + dh + ", dd=" + dd );
+
+    writer.println( "# Well:" + well.getName() );
+    writer.println( "# Date Range:" + DateArmyKnife.formatWithMinutes( from() ) + " - " + DateArmyKnife.formatWithMinutes( until() ) );
+    formatter.format( "# Duration: %4d days %2d hours %2d mins %2d seconds.   |\n", dd, dh, dm, ds );
+
+    if ( outputColumnHeadings )
+    {
+        writer.print("well,date/time,interval length (hours)");
+        for( WellMeasurementType wmt : WellMeasurementType.values() )
+        {
+            if ( containsMeasurement( wmt ) || outputAllColumns )
+            {
+                String name = wmt.name().toLowerCase();
+                String refined = name.replace( "_", " " );
+                writer.print( "," + refined );
+            }
+        }
+        writer.println();
+    }
+
+    for( GasWellDataEntry entry : list )
+    {
+        writer.print( entry.getWell().getName() + "," );
+        writer.print( DateArmyKnife.formatWithMinutes( entry.from() ) + "," + fiveDotFour.format( entry.getIntervalLengthMS() / 3600000.0 ) );
+        
+        for( WellMeasurementType wmt : WellMeasurementType.values() )
+        {
+            if ( containsMeasurement( wmt ) )
+            {
+                formatter.format( ",%012.5f", entry.getMeasurement( wmt ) );
+            } else {
+                if ( outputAllColumns )
+                {
+                    writer.println( ",------------" );
+                }
+            }
+        }
+        
+        writer.println();
+        
+    } // end-FOR( each gas well data entry )
+}
+
+
+
 
 public String toString()
 {

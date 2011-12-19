@@ -186,6 +186,33 @@ public void testGetMaxima()
 }
 
 @Test
+public void testContainsMeasurement()
+{
+    GasWellDataSet ourSet = this.smallDataSet.copy();
+    
+    assertTrue( ourSet.containsMeasurement( WellMeasurementType.OIL_FLOW ) );    
+    assertTrue( ourSet.containsMeasurement( WellMeasurementType.WATER_FLOW ) );    
+    assertTrue( ourSet.containsMeasurement( WellMeasurementType.GAS_FLOW ) );    
+    assertFalse(ourSet.containsMeasurement(WellMeasurementType.CONDENSATE_FLOW));
+    
+    GasWellDataEntry entry = new GasWellDataEntry( );
+    entry.setWell( ourSet.getWell() );
+    entry.setDateRange( new DateRange( ourSet.until(), new Date( ourSet.until().getTime() + 3600000L ) ) );
+    entry.setMeasurement( WellMeasurementType.OIL_FLOW, 0.00 );
+    entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.00 );
+    entry.setMeasurement( WellMeasurementType.CONDENSATE_FLOW, 0.00 );
+    entry.setMeasurement( WellMeasurementType.WATER_FLOW, 0.00 );
+
+    ourSet.addDataEntry( entry );
+
+    assertTrue( ourSet.containsMeasurement( WellMeasurementType.OIL_FLOW ) );
+    assertTrue( ourSet.containsMeasurement( WellMeasurementType.WATER_FLOW ) );
+    assertTrue( ourSet.containsMeasurement( WellMeasurementType.GAS_FLOW ) );
+    assertTrue(ourSet.containsMeasurement(WellMeasurementType.CONDENSATE_FLOW) );
+
+}
+
+@Test
 public void testGetDataMeasurementsAgainstDateTime()
 {
     Date when = dateParser.parse( "13/june/2011 03:59:59").getTime();

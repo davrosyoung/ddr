@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.Reader;
 import java.util.List;
 
 public class GasWellDataExtractorFactory
@@ -87,17 +88,17 @@ public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( Workbook s
 
 /**
  *
- * @param stream the input stream containing the csv data from which to extract the gas well data
+ * @param reader the input source containing the csv data from which to extract the gas well data
  * @return  extractor from which the gas well data sets may be extracted.
  */
-public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( String wellName, InputStream stream )
+public GasWellDataExtractor getCSVGasWellDataExtractor( Reader reader )
 {
-    if ( stream == null )
+    if ( reader == null )
     {
-        throw new NullPointerException( "NULL input stream specified!!" );
+        throw new NullPointerException( "NULL input reader specified!!" );
     }
     
-    return new CSVGasWellDataExtractor( wellName, stream );
+    return new CSVGasWellDataExtractor( reader );
 }
 
 
