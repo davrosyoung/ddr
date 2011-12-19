@@ -85,6 +85,22 @@ public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( Workbook s
 }
 
 
+/**
+ *
+ * @param stream the input stream containing the csv data from which to extract the gas well data
+ * @return  extractor from which the gas well data sets may be extracted.
+ */
+public GasWellDataExtractor getExcelStandardizedGasWellDataExtractor( String wellName, InputStream stream )
+{
+    if ( stream == null )
+    {
+        throw new NullPointerException( "NULL input stream specified!!" );
+    }
+    
+    return new CSVGasWellDataExtractor( wellName, stream );
+}
+
+
 
 /**
  *

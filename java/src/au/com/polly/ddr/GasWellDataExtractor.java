@@ -45,13 +45,6 @@ public ProcessStatus getStatus();
  *
  * @return a map, with the key being the gas well in question, the data being the gas well data set itself.
  */
-public Map<GasWell, GasWellDataSet> extract();
-
-/**
- * extract data for all gas wells
- * @param ids an array of ids to extract data for.
- * @return a map, with the key being the gas well in question, the data being the gas well data set itself.
- */
-public Map<GasWell, GasWellDataSet> extract(String[] ids);
+public MultipleWellDataMap extract();
 
 }

@@ -182,6 +182,8 @@ public void render( Graphics2D gfx, int width, int height )
             graphUntil = overlayData.until();
         }
     }
+    
+    logger.debug( "graphFrom=" + graphFrom + ", graphUntil=" + graphUntil + ", data.from=" + data.from() + ", data.until=" + data.until() );
 
     long days = ( graphUntil.getTime() - graphFrom.getTime() ) / 86400000L;
     dateScale = determineDateScale( days );
@@ -203,15 +205,15 @@ public void render( Graphics2D gfx, int width, int height )
             double flowUnitsPerPixel = range / ( (double)height - 100.0 );
 
 
-            logger.debug( "days=" + days + ", daysPerPixel=" + daysPerPixel );
-            logger.debug( "minOilFlow=" + minFlow + ", maxOilFlow=" + maxFlow + ", range=" + range + ", oilBarrelsPerPixel=" + flowUnitsPerPixel );
+            logger.debug( "days=" + days + ", daysPerPixel=" + daysPerPixel + ", data.size()=" + data.getData().size() );
+            logger.debug( "measurement type=" + wmt + " ... minFlow=" + minFlow + ", maxFlow=" + maxFlow + ", range=" + range + ", oilBarrelsPerPixel=" + flowUnitsPerPixel );
 
             // set back to standard stroke...
             // -------------------------
-            gfx.setStroke( originalStroke );
+            gfx.setStroke(originalStroke);
             gfx.setColor( measurementTypePlotColour.get( wmt ) );
             startIdx = data.from().before( graphFrom ) ? data.locateEntryIndex( graphFrom ) : 0;
-            endIdx = graphUntil.after( data.until() ) ? data.getData().size() - 1 : data.locateEntryIndex( graphUntil );
+            endIdx = ( graphUntil.getTime() >=  data.until().getTime() ) ? data.getData().size() - 1 : data.locateEntryIndex( graphUntil );
             logger.debug( "data; plotting from startIdx=" + startIdx + " to endIdx=" + endIdx );
             for( int i = startIdx; i < endIdx; i++ )
             {
@@ -232,14 +234,14 @@ public void render( Graphics2D gfx, int width, int height )
             // --------------------------
             if ( overlayData != null )
             {
-                gfx.setStroke( fineDashed );
+                gfx.setStroke(fineDashed);
                 gfx.setColor( measurementTypePlotColour.get( wmt ) );
                 nextEntry = null;
-                startIdx = overlayData.from().before( graphFrom ) ? overlayData.locateEntryIndex( graphFrom ) : 0;
-                endIdx = graphUntil.after( overlayData.until() ) ? overlayData.getData().size() - 1 : overlayData.locateEntryIndex( graphUntil ) + 1;
-                if( endIdx > overlayData.getData().size() -1 )
+                startIdx = overlayData.from().before(graphFrom) ? overlayData.locateEntryIndex( graphFrom ) : 0;
+                endIdx = ( graphUntil.getTime() >=  overlayData.until().getTime() ) ? overlayData.getData().size() - 1 : overlayData.locateEntryIndex( graphUntil );
+                if( endIdx > overlayData.getData().size() - 1 )
                 {
-                    endIdx = overlayData.getData().size() -1;
+                    endIdx = overlayData.getData().size() - 1;
                 }
 
                 logger.debug( "Overlay data; plotting from startIdx=" + startIdx + " to endIdx=" + endIdx );

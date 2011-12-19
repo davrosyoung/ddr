@@ -20,9 +20,10 @@
 
 package au.com.polly.ddr;
 
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -30,32 +31,25 @@ import java.util.Map;
  */
 public class JavaSerializedGasWellDataExtractor extends BaseGasWellDataExtractor implements GasWellDataExtractor
 {
-    Map<GasWell,GasWellDataSet> dataMap = null;
+private final static Logger logger = Logger.getLogger( JavaSerializedGasWellDataExtractor.class );
+private MultipleWellDataMap mwdm = null;
 
 protected JavaSerializedGasWellDataExtractor( ObjectInputStream ois ) throws ClassCastException, IOException, ClassNotFoundException
 {
     Object obj;
-    MultipleWellDataMap mwdm;
-    
     obj = ois.readObject();
     if ( obj instanceof MultipleWellDataMap )
     {
-        mwdm = (MultipleWellDataMap)obj;
-        this.dataMap = mwdm.getDataMap();
+        this.mwdm = (MultipleWellDataMap)obj;
     } else {
+        logger.error( "Object read is of class \"" + obj.getClass().getName() + "\", expected instance of MultipleWellDataMap!!" );
         throw new ClassCastException( "Input stream did NOT contain a set of gas well data (MultipleWellDataMap) as expected, but rather an object of class \"" + obj.getClass().getName() + "\"" );
     }
 }
 
-/**
- *
- * @param ids names of the gas wells for which data should be extracted.
- * @return
- */
-@Override
-public Map<GasWell, GasWellDataSet> extract(String[] ids)
+public MultipleWellDataMap extract()
 {
-    return dataMap;
+    return mwdm;
 }
 
 }

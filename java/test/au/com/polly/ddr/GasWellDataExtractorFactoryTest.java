@@ -188,6 +188,7 @@ public void testConstructingJavaSerializedExtractor()
 {
     GasWellDataExtractor extractor = null;
     Map<GasWell,GasWellDataSet>  dataMap;
+    MultipleWellDataMap mwdm;
     GasWell sa11Well;
     GasWell sa2Well;
     GasWell dummyWell;
@@ -197,7 +198,7 @@ public void testConstructingJavaSerializedExtractor()
     sa2Well = TestGasWellDataSet.getSAA2FragmentDataSet().getWell();
 
     // construct a mwdm!!
-    MultipleWellDataMap mwdm = new MultipleWellDataMap();
+    mwdm = new MultipleWellDataMap();
     mwdm.addDataSet( TestGasWellDataSet.getDummyDataSet() );
     mwdm.addDataSet( TestGasWellDataSet.getNicksDataSet() );
     mwdm.addDataSet( TestGasWellDataSet.getSAA2FragmentDataSet() );
@@ -225,12 +226,12 @@ public void testConstructingJavaSerializedExtractor()
         assertNotNull( extractor );
         assertTrue( extractor instanceof JavaSerializedGasWellDataExtractor );
         
-        dataMap = extractor.extract();
+        mwdm = extractor.extract();
         
-        assertNotNull( dataMap );
-        assertTrue(dataMap.containsKey(dummyWell));
-        assertTrue(dataMap.containsKey(sa11Well));
-        assertTrue( dataMap.containsKey( sa2Well ) );
+        assertNotNull( mwdm );
+        assertTrue( mwdm.getDataMap().containsKey(dummyWell));
+        assertTrue( mwdm.getDataMap().containsKey(sa11Well));
+        assertTrue( mwdm.getDataMap().containsKey(sa2Well) );
 
     } catch (IOException e )  {
         logger.error( e.getClass().getName() + " - " + e.getMessage() );
@@ -249,7 +250,7 @@ public void testConstructingExcelStandardizedExtractorWithNullWorkbook()
 {
     GasWellDataExtractor extractor = null;
     
-    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( null, null );    
+    extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( (Workbook)null, null );
 }
 
 
@@ -270,6 +271,7 @@ public void testConstructingExcelStandardizedExtractor()
     ExcelWorkbookExplorer explorer = null;
     ProcessStatus status = null;
     List<GasWellDataLocator> locations = null;
+    MultipleWellDataMap mwdm = null;
     Map<GasWell,GasWellDataSet> dataMap;
     String[] wellName = new String[] { "SAA-1L", "SAA-1S", "SAA-2", "SAA-4", "SAA-5ST", "SAA-13", "SAA-7", "SAA-10ST1", "SAA-9", "SAA-11" };
     boolean[] wellFound = new boolean[] { false, false, false, false, false, false, false, false, false, false };
@@ -281,9 +283,10 @@ public void testConstructingExcelStandardizedExtractor()
     extractor = GasWellDataExtractorFactory.getInstance().getExcelStandardizedGasWellDataExtractor( testBook, locations );
     status = extractor.getStatus();
     assertNotNull( status );
-    assertEquals( "waiting", status.getPhase() );
+    assertEquals("waiting", status.getPhase());
     assertEquals( 0, status.getPercentageComplete() );
-    dataMap = extractor.extract();
+    mwdm = extractor.extract();
+    dataMap = mwdm.getDataMap();
     assertEquals( "finished", status.getPhase() );
     assertEquals( 100, status.getPercentageComplete() );
     assertNotNull( dataMap );

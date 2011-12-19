@@ -186,7 +186,7 @@ protected void populateWorksheetSelectorPanel( JPanel panel )
 
     worksheetSelectionCancelButton = new JButton();
     worksheetSelectionCancelButton.addActionListener( this );
-    worksheetSelectionCancelButton.setName( "worksheetSelectionCancelButton" );
+    worksheetSelectionCancelButton.setName( "wellSelectionCancelButton" );
     worksheetSelectionCancelButton.setText( "Cancel" );
 }
 
@@ -260,7 +260,7 @@ public void actionPerformed(ActionEvent e)
             cl.show( this, SELECT_WORKSHEET );
         }
 
-        if ( source.getName().equals( "worksheetSelectionCancelButton" ) )
+        if ( source.getName().equals( "wellSelectionCancelButton" ) )
         {
             book = null;
             sheet = null;

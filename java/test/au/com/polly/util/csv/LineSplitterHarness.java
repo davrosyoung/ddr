@@ -18,36 +18,37 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.util.csv;
 
-import au.com.polly.util.ProcessStatus;
+import au.com.polly.util.ReadInput;
 
-import java.util.Map;
-
-/**
- * Provides convenience method with no id array specified.
- */
-public abstract class BaseGasWellDataExtractor implements GasWellDataExtractor
+public class LineSplitterHarness
 {
-protected ProcessStatus status;
 
-/**
- * 
- */
-public BaseGasWellDataExtractor()
+public static void main( String[] argv )
 {
-    this.status = new ProcessStatus();
-    status.setPhase( "waiting", 0 );
+	String			input		=	null;
+	LineSplitter splitter	=	null;
+	String[]		bits		=	null;
+	int				i			=	0;
+
+	splitter = new LineSplitter();
+
+	while( true )
+	{
+		input = ReadInput.readLine("your input sire", "hello,world,,there");
+		try {
+			bits	=	splitter.splitLine( input );
+			System.out.println( "There are " + bits.length + " bits." );
+			for( i  = 0; i < bits.length; i++ )
+			{
+				System.out.println( "bit[" + i + "]=[" + bits[ i ] + "]" );
+			}
+		} catch( Exception e ) {
+			System.out.println( "caught " + e.getClass().getName() + " - " + e.getMessage() );	
+			e.printStackTrace( System.out );
+		}
+	}
 }
-
-public ProcessStatus getStatus()
-{
-    return this.status;
-}
-
-
-@Override
-public abstract MultipleWellDataMap extract();
-
 
 }

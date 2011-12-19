@@ -22,7 +22,6 @@ package au.com.polly.ddr;
 
 import au.com.polly.util.DateArmyKnife;
 import au.com.polly.util.DateRange;
-import au.com.polly.util.ProcessStatus;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -30,7 +29,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,8 +39,8 @@ public class ExcelStandardizedGasWellDataExtractor extends BaseGasWellDataExtrac
 {
 private final static Logger logger = Logger.getLogger(ExcelStandardizedGasWellDataExtractor.class);
 private Workbook spreadsheet;
-protected Map<GasWell,GasWellDataSet> dataSetMap;
 protected List<GasWellDataLocator> locatorList = null;
+protected MultipleWellDataMap mwdm;
 
 /**
  *
@@ -67,10 +65,11 @@ public void process()
     long minSpan = Long.MAX_VALUE;
     long maxSpan = Long.MIN_VALUE;
 
+    mwdm = new MultipleWellDataMap();
+
+
     
     int sheetCount = 0;
-    this.dataSetMap = new HashMap<GasWell,GasWellDataSet>();
-
     Map<WellMeasurementType,Integer> measurementColumnIdxMap;
     
     status.setPhase( "processing", 0 );
@@ -247,27 +246,21 @@ public void process()
                 status.addErrorMessage( "Failed to extract date from cell " + errorCursor.toString() );
             }
         } // end-FOR( each row )
-        
-        dataSetMap.put( well, wellDataSet );
-        
+
+        mwdm.addDataSet(wellDataSet);
+
     } // end-FOR( each well/sheet)
     status.setPhase( "finished", 100 );
     
 }
 
-/**
- *
- * @param ids names of the gas wells for which data should be extracted.
- * @return
- */
-@Override
-public Map<GasWell, GasWellDataSet> extract(String[] ids)
+public MultipleWellDataMap extract()
 {
-    if ( dataSetMap == null )
+    if ( mwdm == null )
     {
         process();
     }
-    return dataSetMap;
+    return mwdm;
 }
 
 }

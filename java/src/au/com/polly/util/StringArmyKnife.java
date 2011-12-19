@@ -57,4 +57,55 @@ public static boolean areStringsEqual( String alpha, String beta )
     return result;
 }
 
+/**
+ * 
+ * @param original the string to be interrogated.
+ * @param unwanted list of unwanted characters.
+ * @return the resultant string with any of the unwanted characters deducted.
+ */
+public static String removeUnwantedCharacters( String original, String unwanted )
+{
+    boolean removed = false;
+    StringBuilder result = new StringBuilder();
+    
+    for( char khar : original.toCharArray() )
+    {
+        if ( unwanted.indexOf( khar ) >= 0 )
+        {
+            removed = true;
+        } else {
+            result.append( khar );
+        }
+    }
+    
+    return removed ? result.toString() : original;
+}
+
+
+/**
+ *
+ * @param value the string to be interrogated
+ * @param search the string to be replaced
+ * @param replacement what to replace it with.
+ * @return the resultant string.
+ */
+public static String replace( String value, String search, String replacement )
+{
+    String result = null;
+    
+    if ( ( value == null ) || ( search == null ) )
+    {
+        throw new NullPointerException( "String to search and/or search string are NULL!!" );
+    }
+    
+    if ( value.contains( search ) )
+    {
+        result = value.replaceAll( search, ( replacement != null ) ? replacement : "" );
+    } else {
+        result = value;
+    }
+
+    return result;
+}
+
 }

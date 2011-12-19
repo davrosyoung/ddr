@@ -101,26 +101,30 @@ protected GasWellDataLocator interrogateSheet( Sheet sheet )
     for( int j = 0; j < 5 && ( result == null ); j++ )
     {
         row = sheet.getRow( cursor.getRow() );
-        cursor.setColumn( row.getFirstCellNum() );
-        for( int i = 0; i < 5 && ( result == null ); i++ )
+        if ( row != null )
         {
-            cell = row.getCell( cursor.getColumn() );
-            if ( ( cell.getCellType() == Cell.CELL_TYPE_STRING )
-                    && ( ( textValue = cell.getStringCellValue() ) != null ) )
+            cursor.setColumn( row.getFirstCellNum() );
+            for( int i = 0; i < 5 && ( result == null ); i++ )
             {
-                if (
-                        ( textValue.trim().toLowerCase().startsWith( "date" ) )
-                    ||  ( textValue.trim().toLowerCase().startsWith( "time" ) )
-                    )
+                cell = row.getCell( cursor.getColumn() );
+                if ( ( cell.getCellType() == Cell.CELL_TYPE_STRING )
+                        && ( ( textValue = cell.getStringCellValue() ) != null ) )
                 {
-                    result = new GasWellDataLocator();
-                    result.setWellName( sheet.getSheetName() );
-                    result.setDateColumn( cursor.getColumn() );
-                    dateCellRow = cursor.getRow();
+                    if (
+                            ( textValue.trim().toLowerCase().startsWith( "date" ) )
+                        ||  ( textValue.trim().toLowerCase().startsWith( "time" ) )
+                        )
+                    {
+                        result = new GasWellDataLocator();
+                        result.setWellName( sheet.getSheetName() );
+                        result.setDateColumn( cursor.getColumn() );
+                        dateCellRow = cursor.getRow();
+                    }
                 }
+                cursor.moveRight();
             }
-            cursor.moveRight();
         }
+
         cursor.moveDown();
     }
     

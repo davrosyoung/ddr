@@ -36,10 +36,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -51,23 +51,25 @@ public class Liberator extends JPanel implements ActionListener
 private final static Logger logger = Logger.getLogger( Liberator.class );
 private final static String CHOOSE_FILE = "chooseFilePanel";
 private final static String LOADING_FILE = "loadingFilePanel";
-private final static String SELECT_WORKSHEET = "worksheetSelectorPanel";
+//private final static String SELECT_WORKSHEET = "worksheetSelectorPanel";
 private final static String SELECT_WELLS = "wellSelectorPanel";
 private final static NumberFormat percentageFormatter = NumberFormat.getPercentInstance();
 
-
-
 JPanel chooseFilePanel;
 JPanel loadingFilePanel;
-JPanel worksheetSelectorPanel;
 JPanel wellSelectorPanel;
 JPanel overlordPanel;
 
 CardLayout cl;
 
+// since the file loading happens in a separate thread, the UI thread needs to know
+// when the file has actually been loaded...
+// ---------------------------------------------------------------------------------
 Date fileLoaded = null;
 boolean fileLoadAborted = false;
 Object fileLoadedLock = new Date();
+
+
 Workbook book;
 String[] wellNames;
 
@@ -88,13 +90,13 @@ JFileChooser spreadsheetFileChooser;
 JLabel memoryUsedLabel;
 JTextField memoryUsedField;
 
-// Components for selecting worksheet
+// Components for selecting wells
 //------------------------------------
-ButtonGroup worksheetButtonGroup;
-Map<String,JRadioButton> worksheetButtons = new HashMap<String,JRadioButton>();
+ButtonGroup wellButtonGroup;
+//Map<String,JRadioButton> wellButtons = new HashMap<String,JRadioButton>();
 JLabel headingLabel;
 JButton extractButton;
-JButton worksheetSelectionCancelButton;
+JButton wellSelectionCancelButton;
 
 // Components for selecting wells
 // -------------------------------
@@ -117,12 +119,10 @@ public Liberator()
 
     chooseFilePanel = createChooseFilePanel();
     loadingFilePanel = createLoadingFilePanel();
-    worksheetSelectorPanel  = createWorksheetSelectorPanel();
     wellSelectorPanel = createWellSelectorPanel();
-    add(chooseFilePanel, CHOOSE_FILE);
-    add(loadingFilePanel, LOADING_FILE);
-    add(worksheetSelectorPanel, SELECT_WORKSHEET);
-    add(wellSelectorPanel, SELECT_WELLS);
+    add( chooseFilePanel, CHOOSE_FILE );
+    add( loadingFilePanel, LOADING_FILE );
+    add( wellSelectorPanel, SELECT_WELLS );
 
 
     cl.show( this, CHOOSE_FILE );
@@ -181,46 +181,20 @@ protected JPanel createLoadingFilePanel()
     return result;
 }
 
-protected JPanel createWorksheetSelectorPanel()
+protected JPanel createWellSelectorPanel()
 {
     JPanel result = new JPanel();
-    headingLabel = new JLabel( "Please choose a worksheet to extract from" );
+    headingLabel = new JLabel( "Please choose wells to extract from" );
     extractButton = new JButton();
     extractButton.addActionListener( this );
     extractButton.setName( "extract" );
     extractButton.setText( "Extract" );
 
-    worksheetSelectionCancelButton = new JButton();
-    worksheetSelectionCancelButton.addActionListener( this );
-    worksheetSelectionCancelButton.setName( "worksheetSelectionCancelButton" );
-    worksheetSelectionCancelButton.setText( "Cancel" );
+    wellSelectionCancelButton = new JButton();
+    wellSelectionCancelButton.addActionListener( this );
+    wellSelectionCancelButton.setName("wellSelectionCancelButton");
+    wellSelectionCancelButton.setText("Cancel");
     
-    return result;
-}
-
-protected JPanel createWellSelectorPanel()
-{
-    JPanel result = new JPanel();
-    result.setLayout(new GridBagLayout());
-    GridBagConstraints gbc = new GridBagConstraints();
-
-    wellSelectionHeadingLabel = new JLabel( "Select one or more wells..." );
-
-    extractWellDataButton = new JButton( "save data" );
-    extractWellDataButton.setName( "extractWellData" );
-    extractWellDataButton.setText("save");
-    extractWellDataButton.addActionListener( this );
-
-    displayWellDataButton = new JButton( "display data" );
-    displayWellDataButton.setName( "displayWellData" );
-    displayWellDataButton.setText( "display data" );
-    displayWellDataButton.addActionListener( this );
-
-    cancelWellExtractionButton = new JButton();
-    cancelWellExtractionButton.setName( "cancelWellExtraction" );
-    cancelWellExtractionButton.setText( "cancel" );
-    cancelWellExtractionButton.addActionListener( this );
-
     return result;
 }
 
@@ -250,28 +224,16 @@ public void actionPerformed(ActionEvent e)
 
         if ( source.getName().equals( "spreadsheetFileChooser" ) )
         {
-            processSpreadsheetChooser( e );
+            handleSpreadsheetChooser( e );
         } // end-IF ( spreadsheet file chooser )
 
         if( source.getName().equals( "extract" ) )
         {
-            handleExtractSpreadsheetButton( e );
+            handleExtractButton(e);
         }
 
-        if ( source.getName().startsWith("extractWellData") )
+        if ( source.getName().startsWith( "wellSelectionCancelButton" ) )
         {
-            processWellExtraction( e );
-        }
-
-        if ( source.getName().startsWith( "cancelWellExtraction" ) )
-        {
-            cl.show( this, SELECT_WORKSHEET );
-        }
-
-        if ( source.getName().equals( "worksheetSelectionCancelButton" ) )
-        {
-            book = null;
-            sheet = null;
             cl.show( this, CHOOSE_FILE );
         }
 
@@ -283,7 +245,7 @@ public void actionPerformed(ActionEvent e)
  *
  * @param evt
  */
-protected void processSpreadsheetChooser( ActionEvent evt )
+protected void handleSpreadsheetChooser( ActionEvent evt )
 {
     File file;
 
@@ -325,15 +287,29 @@ protected void processSpreadsheetChooser( ActionEvent evt )
                         SwingUtilities.invokeAndWait( new Runnable() {
                             public void run()
                             {
-                                showAvailableSheets( book );
+                                if ( ( locations = showAvailableWells( book ) ) != null )
+                                {
+                                    cl.show( overlordPanel, SELECT_WELLS );
+                                } else {
+                                    JOptionPane.showMessageDialog( overlordPanel, "No gas well data available", "No data available", JOptionPane.ERROR_MESSAGE );
+                                    cl.show( overlordPanel, CHOOSE_FILE );
+                                }
                             }
                         });
 
 
                     } catch ( Throwable error ) {
+                        
+                        // an invovation target exception means that ... well ... what does it actually mean???
+                        // ------------------------------------------------------------------------------------
+                        if ( error instanceof InvocationTargetException )
+                        {
+                            
+                        }
 
                         logger.error( "Runtime exception trying to load spreadsheet \"" + fileArray[ 0 ].getAbsolutePath() + "\"" );
                         logger.error( error.getClass().getName() + " - " + error.getMessage() );
+                        error.printStackTrace( System.err);
                         final Throwable[] errArray = new Throwable[] { error };
 
                         try
@@ -367,8 +343,6 @@ protected void processSpreadsheetChooser( ActionEvent evt )
             // start reading the excel spreadsheet in a separate thread!!
             Thread anotherRunner = new Thread( task );
             anotherRunner.start();
-
-
         }
     }
 
@@ -379,83 +353,44 @@ protected void processSpreadsheetChooser( ActionEvent evt )
     }
 }
 
-protected void handleExtractSpreadsheetButton( ActionEvent e )
-{
-    String selectedSheetName = null;
 
-    // determine which radio button has been selected...
-    // --------------------------------------------------
-    for( String label : worksheetButtons.keySet() )
-    {
-        JRadioButton candidate = worksheetButtons.get( label );
-        logger.debug( "Examining button for sheet \"" + label + "\". selected=" + candidate.isSelected() );
-
-        if ( candidate.isSelected() )
-        {
-            logger.debug( "Worksheet \"" + label + "\" has been selected!!" );
-            selectedSheetName = label;
-            break;
-        }
-    }
-
-    if ( selectedSheetName != null )
-    {
-        sheet = book.getSheet( selectedSheetName );
-        explorer = new AllocationSheetExplorer( sheet );
-        ((AllocationSheetExplorer)explorer).process();
-
-        locations = explorer.getLocations();
-        if ( ( locations != null ) && ( locations.size() > 0 ) )
-        {
-            logger.info( "Found " + locations.size() + " data sets for gas/oil wells.");
-            Iterator<GasWellDataLocator> iterator = locations.iterator();
-            while( iterator.hasNext() )
-            {
-                GasWellDataLocator locator = iterator.next();
-                logger.info( locator );
-            }
-        }
-        this.wellNames = new String[ locations.size()  ];
-        for( int i = 0; i < locations.size(); i++ )
-        {
-            this.wellNames[ i ] = locations.get( i ).getWellName();
-        }
-        showAvailableWells( this.wellNames );
-    }
-}
-
-protected void processWellExtraction( ActionEvent evt )
+protected void handleExtractButton(ActionEvent evt)
 {
     StringBuilder msg = new StringBuilder( "Wrote out data files " );
+    extractorFactory = GasWellDataExtractorFactory.getInstance();
+    extractor = extractorFactory.getExcelStandardizedGasWellDataExtractor( book, locations );
+
+    MultipleWellDataMap mwdm = extractor.extract();
+    Map<GasWell,GasWellDataSet> dataMap = mwdm.getDataMap();
+    
     // let's extract the data sets one by one ....
     // --------------------------------------------
-    for( GasWellDataLocator location : locations )
+    for( GasWell well : dataMap.keySet() )
     {
-        GasWell well = new GasWell( location.getWellName() );
-
         // is this gas well selected??
         // ---------------------------
         if ( ( wellCheckboxMap.containsKey( well.getName() ) ) && wellCheckboxMap.get( well.getName() ).isSelected() )
         {
-            GasWellDataSet data = ((AllocationSheetExplorer)explorer).obtainDataSet(well, location);
-            String outputFilename = "data" + File.separator + location.getWellName().toLowerCase().replaceAll( "\\s+\\-_\\(\\)", "" ) + ".txt";
+            
+            GasWellDataSet data = dataMap.get( well );
+            String mangled = well.getName().toLowerCase().replaceAll( "\\s+\\-_\\(\\)", "" );
+            String outputFilename = "data" + File.separator + mangled + ".txt";
             try
             {
-                logger.debug( "About to open file '" + outputFilename + "' for writing data for well \"" + location.getWellName() );
+                logger.debug( "About to open file '" + outputFilename + "' for writing data for well \"" + well.getName() );
                 FileOutputStream fos = new FileOutputStream( outputFilename );
                 PrintWriter writer = new PrintWriter( fos );
                 writer.print( data );
                 writer.close();
                 fos.close();
 
-                outputFilename = "data" + File.separator + location.getWellName().toLowerCase() .replaceAll( "\\s+\\-_\\(\\)", "" ) + ".obj";
+                outputFilename = "data" + File.separator + mangled + ".obj";
                 msg.append( "\n" + outputFilename );
                 fos = new FileOutputStream( outputFilename );
                 ObjectOutputStream oos = new ObjectOutputStream( fos );
                 oos.writeObject( data );
                 oos.close();
-            } catch (IOException e)
-            {
+            } catch ( IOException e ) {
                 logger.error( "Failed to write out data file " + outputFilename );
                 logger.error(e);
             }
@@ -467,14 +402,16 @@ protected void processWellExtraction( ActionEvent evt )
     JOptionPane.showMessageDialog( this, msg.toString(), "Wrote out data files", JOptionPane.INFORMATION_MESSAGE );
 }
 
-protected void showAvailableSheets( Workbook book )
+protected List<GasWellDataLocator> showAvailableWells( Workbook book )
 {
-    JRadioButton button = null;
-    int numberSheets;
+    JCheckBox checkBox = null;
+    List<GasWellDataLocator> result = null;
+    int numberWells;
     int i;
-    worksheetSelectorPanel.removeAll();
-    worksheetSelectorPanel.setLayout( new GridBagLayout() );
-    worksheetButtonGroup = new ButtonGroup();
+    wellSelectorPanel.removeAll();
+    wellSelectorPanel.setLayout( new GridBagLayout() );
+    wellButtonGroup = new ButtonGroup();
+    wellCheckboxMap = new HashMap<String,JCheckBox>();
     Sheet sheet;
     GridBagConstraints gbc = new GridBagConstraints();
     gbc.gridx = 0;
@@ -486,91 +423,58 @@ protected void showAvailableSheets( Workbook book )
     gbc.fill = GridBagConstraints.BOTH;
     gbc.anchor = GridBagConstraints.PAGE_START;
 
-    worksheetSelectorPanel.add(headingLabel, gbc);
+    wellSelectorPanel.add(headingLabel, gbc);
     gbc.gridy++;
 
-    numberSheets = book.getNumberOfSheets();
-    for( i = 0; i < numberSheets; i++ )
+
+    explorer = ExcelWorkbookExplorerFactory.getInstance().createExcelStandardizedWorkbookExplorer( book );
+    if ( explorer != null )
     {
-        gbc.gridx = i % 2;
-        sheet = book.getSheetAt( i );
-        button = new JRadioButton( sheet.getSheetName() );
-        button.setName( sheet.getSheetName() );
-        button.addActionListener( this );
-        worksheetButtons.put( sheet.getSheetName(), button );
-        worksheetSelectorPanel.add( button, gbc );
-        if ( ( i% 2 ) == 1 )
+        result = explorer.getLocations();
+        if ( ( result != null ) && ( result.size() > 0 )  )
         {
-            gbc.gridy++;
+            // we can extract the data and proceed to the save file selection page...
+            // -----------------------------------------------------------------------
+            numberWells = result.size();
+            for( i = 0; i < numberWells; i++ )
+            {
+                gbc.gridx = i % 2;
+                GasWellDataLocator locator = result.get( i );
+                checkBox = new JCheckBox( locator.getWellName() );
+                wellCheckboxMap.put( locator.getWellName(), checkBox );
+                checkBox.setName( locator.getWellName() );
+                checkBox.addActionListener( this );
+//                    wellButtons.put(locator.getWellName(), checkBox);
+                wellSelectorPanel.add( checkBox, gbc );
+                if ( ( i% 2 ) == 1 )
+                {
+                    gbc.gridy++;
+                }
+            }
+
+
+            gbc.gridx = 1;
+            gbc.gridwidth = 1;
+            wellSelectorPanel.add( extractButton, gbc );
+
+            gbc.gridx = 2;
+            wellSelectorPanel.add(wellSelectionCancelButton, gbc );
+
+            cl.show( this, SELECT_WELLS );
+
+        } else {
+            // if we didn't find any data, then display an error message and take the
+            // user back to the file chooser pane.
+            // --------------------------------------------------------------------
+            JOptionPane.showMessageDialog( this, "No gas well data found in spreadsheet.", "No data found", JOptionPane.ERROR_MESSAGE );
+            cl.show( this, CHOOSE_FILE );
         }
     }
 
-    gbc.gridx = 1;
-    gbc.gridwidth = 1;
-    worksheetSelectorPanel.add( extractButton, gbc );
-
-    gbc.gridx = 2;
-    worksheetSelectorPanel.add( worksheetSelectionCancelButton, gbc );
-
-    cl.show( this, SELECT_WORKSHEET );
+    return result;
 }
 
-protected void showAvailableWells( String[] wellNames )
-{
-    JCheckBox button = null;
-    int numberSheets;
-    int i;
-    wellSelectorPanel.removeAll();
-    wellSelectorPanel.setLayout( new GridBagLayout() );
-    GridBagConstraints gbc = new GridBagConstraints();
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    gbc.gridwidth = 2;
-    gbc.gridheight = 1;
-    gbc.weightx = 0.5;
-    gbc.weighty = 0.9;
-    gbc.fill = GridBagConstraints.BOTH;
-    gbc.anchor = GridBagConstraints.PAGE_START;
-
-
-    wellSelectorPanel.add( wellSelectionHeadingLabel, gbc);
-    gbc.gridy++;
-
-    wellCheckboxMap = new HashMap<String,JCheckBox>();
-
-    for( i = 0; i < wellNames.length; i++ )
-    {
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-
-        button = new JCheckBox();
-        button.setName( "well=" + wellNames[ i ] );
-        button.setText(wellNames[ i ]);
-        button.addActionListener(this);
-        wellSelectorPanel.add(button, gbc);
-        wellCheckboxMap.put(wellNames[i], button);
-
-        gbc.gridx = 1;
-        JButton displayButton = new JButton();
-        displayButton.setName( "display(well=" + i + ")" );
-        displayButton.setText("view data");
-        displayButton.addActionListener( this );
-        wellSelectorPanel.add( displayButton, gbc );
-        gbc.gridy++;
-    }
-
-    gbc.gridx = 0;
-    gbc.gridwidth = 1;
-
-    wellSelectorPanel.add( extractWellDataButton, gbc );
-
-    gbc.gridx = 1;
-    wellSelectorPanel.add( cancelWellExtractionButton, gbc );
-
-    cl.show( this, SELECT_WELLS );
-}
-
-public static void main( String... args )
+public static void main( String[] argv )
 {
 
     Runnable doCreateAndShowGUI = new Runnable() {

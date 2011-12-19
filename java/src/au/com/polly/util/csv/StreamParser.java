@@ -18,36 +18,49 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.util.csv;
 
-import au.com.polly.util.ProcessStatus;
+import java.io.File;
+import java.io.InputStream;
 
-import java.util.Map;
-
-/**
- * Provides convenience method with no id array specified.
- */
-public abstract class BaseGasWellDataExtractor implements GasWellDataExtractor
+public class StreamParser extends Parser
 {
-protected ProcessStatus status;
-
-/**
- * 
- */
-public BaseGasWellDataExtractor()
-{
-    this.status = new ProcessStatus();
-    status.setPhase( "waiting", 0 );
-}
-
-public ProcessStatus getStatus()
-{
-    return this.status;
-}
+	/**
+	  * @param in input stream to extract data from.
+	  * @param aliases specifies how the columns are named...
+	  */
+	public StreamParser(
+				InputStream		in,
+				FieldAliases[]	aliases
+			)
+	{
+		this( in, aliases, null, null );
+	}
 
 
-@Override
-public abstract MultipleWellDataMap extract();
+	/**
+	  * @param in data stream to extract data from.
+	  * @param aliases specifies how the columns are named...
+	  * @param listener somebody to call whenever a line is ready...
+	  * @param auxillary will be passed to the listener when they are called.
+	  */
+	public StreamParser(
+				InputStream		in,
+				FieldAliases[]		aliases,
+				ParserListener listener,
+				Object				auxillary
+		)
+	{
+		super( in, aliases );
 
 
+		if ( listener != null )
+		{
+			addListener( listener, auxillary );
+		}
+	}
+
+	public File getFile() {
+		return null;
+	}
 }

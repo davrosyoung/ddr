@@ -291,6 +291,8 @@ public void actionPerformed(ActionEvent evt)
                                 availableDateLabel.setText(dateAvailabilityText.toString());
                                 fromDateField.setText( dateFormatter.format(from) );
                                 untilDateField.setText( dateFormatter.format( until ) );
+                                
+                                logger.debug( "Loaded data set from \"" + file.getAbsolutePath() + "\", contains " + newData.getData().size() + " entries from " + newData.from() + " until " + newData.until() );
                             }
                         } catch ( Exception e )
                         {
@@ -302,6 +304,7 @@ public void actionPerformed(ActionEvent evt)
                 }
                 break;
             }
+
             if( button.getName().equals( "openOverlayFileButton" ) )
             {
                 int retval = loadOverlayFileBox.showOpenDialog( this );
