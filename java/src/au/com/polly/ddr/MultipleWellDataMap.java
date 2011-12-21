@@ -21,13 +21,17 @@
 package au.com.polly.ddr;
 
 import au.com.polly.util.DateRange;
+import au.com.polly.util.HashCodeUtil;
+import org.apache.log4j.Logger;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +45,7 @@ import java.util.Map;
  */
 public class MultipleWellDataMap implements Serializable
 {
+private final static Logger logger = Logger.getLogger( MultipleWellDataMap.class );
 transient Map<GasWell,GasWellDataSet> dataMap;
 
 public MultipleWellDataMap()
@@ -55,7 +60,45 @@ protected Map<GasWell,GasWellDataSet> getDataMap()
 
 public void addDataSet( GasWellDataSet dataSet )
 {
+    if ( dataSet == null )
+    {
+        throw new NullPointerException( "NULL dataSet specified!! Unable to add it to this multiple well data set!!");
+    }
     this.dataMap.put( dataSet.getWell(), dataSet );
+}
+
+/**
+ *
+ * @return the wells as a list.  will be in alphabetical order.
+ */
+public List<GasWell> getWellList()
+{
+    List<GasWell> result = new ArrayList<GasWell>();
+    Iterator<GasWell> i = dataMap.keySet().iterator();
+    while( i.hasNext() )
+    {
+        GasWell well = i.next();
+        result.add( well );
+    }
+    Collections.sort( result );
+    return result;
+}
+
+/**
+ * 
+ * @return the gas well data sets as  a list.... returned alphabetically by gas well name
+ */
+public List<GasWellDataSet> getDataSetList()
+{
+    List<GasWellDataSet> result = new ArrayList<GasWellDataSet>();
+    List<GasWell> wellList = getWellList();
+    
+    for( GasWell well : wellList )
+    {
+        result.add( dataMap.get( well ) );
+    }
+
+    return result;
 }
 
 /**
@@ -84,6 +127,103 @@ protected void outputCSV( PrintWriter writer )
         firstWell = false;    
     }
 }
+
+
+@Override
+public boolean equals( Object other )
+{
+    boolean result = true;
+    MultipleWellDataMap otherMwdm;
+
+    do {
+        if ( ! ( other instanceof MultipleWellDataMap ) )
+        {
+            result = false;
+            break;
+        }
+
+        otherMwdm = (MultipleWellDataMap)other;
+        
+        if ( dataMap.size() != otherMwdm.dataMap.size() )
+        {
+            result = false;
+            break;
+        }
+        
+        List<GasWell> wellList = getWellList();
+        List<GasWell> otherWellList = otherMwdm.getWellList();
+        
+        if ( ( ( wellList == null ) && ( otherWellList != null ) )
+            || ( ( wellList != null ) && ( otherWellList == null ) )
+            )
+        {
+            result = false;
+            break;
+        }
+        
+        if ( ( wellList != null ) && ( otherWellList != null ) )
+        {
+            if ( wellList.size() != otherWellList.size() )
+            {
+                result = false;
+                break;
+            }
+            
+            for( int i = 0; ( i < wellList.size() ) && result; i++ )
+            {
+                result = ( wellList.get( i ).equals( otherWellList.get( i ) ) );
+            }
+        }
+        
+        if ( result == false ) { break; }
+        
+        List<GasWellDataSet> dataSetList = getDataSetList();
+        List<GasWellDataSet> otherDataSetList = otherMwdm.getDataSetList();
+
+        if ( ( ( dataSetList == null ) && ( otherDataSetList != null ) )
+                || ( ( dataSetList != null ) && ( otherDataSetList == null ) )
+                )
+        {
+            result = false;
+            break;
+        }
+
+        if ( ( dataSetList != null ) && ( otherDataSetList != null ) )
+        {
+            if ( dataSetList.size() != otherDataSetList.size() )
+            {
+                result = false;
+                break;
+            }
+
+            for( int i = 0; ( i < dataSetList.size() ) && result ; i++ )
+            {
+                result = ( dataSetList.get( i ).equals( otherDataSetList.get( i ) ) );
+            }
+        }
+
+    } while( false );
+
+    logger.debug( "method returns with result=" + result );
+
+    return result;
+}
+
+
+@Override
+public int hashCode()
+{
+    int result = HashCodeUtil.SEED;
+    if ( getDataSetList() != null )
+    {
+        for( GasWellDataSet dataSet : getDataSetList() )
+        {
+            result = HashCodeUtil.hash( result, dataSet );
+        }
+    }
+    return result;
+}
+
 
 /**
  *

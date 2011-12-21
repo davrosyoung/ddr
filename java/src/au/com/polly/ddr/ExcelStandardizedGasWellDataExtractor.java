@@ -196,6 +196,8 @@ public void process()
             if ( ( stamp = ExcelConverter.extractDateFromCell( cell ) ) != null )
             {
                 entry = new GasWellDataEntry();
+                entry.setWell( well );
+                
                 // if there is an interval length column, then use the length value from that...
                 // ----------------------------------------------------------------------------
                 if ( locator.getIntervalLengthLocation() != null )

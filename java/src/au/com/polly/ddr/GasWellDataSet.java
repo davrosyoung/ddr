@@ -50,7 +50,7 @@ import java.util.Map;
  *
  *
  */
-public class GasWellDataSet implements Serializable
+public class GasWellDataSet implements Serializable, Comparable
 {
 final static Logger logger = Logger.getLogger( GasWellDataSet.class );
 private GasWell well;
@@ -141,6 +141,19 @@ public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
     }
 }
 
+/**
+ *
+ * @param o the other gas well data set.
+ * @return in which order to present gas well data sets.
+ *
+ * compare well data sets by their well names. in this way we can return a list of gas wells in the
+ * same order by sorting them :-)
+ */
+@Override
+public int compareTo(Object o)
+{
+    return ( o instanceof GasWellDataSet ) ? getWell().compareTo( ((GasWellDataSet)o).getWell() ) : 0;
+}
 
 /**
  * Add another set of measurements to the existing data set. It is assumed that this
@@ -719,7 +732,7 @@ public void outputCSV( PrintWriter writer, boolean outputColumnHeadings, boolean
             } else {
                 if ( outputAllColumns )
                 {
-                    writer.println( ",------------" );
+                    writer.print(",------------");
                 }
             }
         }
@@ -773,7 +786,7 @@ public GasWellDataSet copy()
 public boolean equals( Object other )
 {
     boolean result = true;
-    GasWellDataSet otherSet;
+    GasWellDataSet otherSet = null;
 
     do {
         if ( ! ( other instanceof GasWellDataSet ) )
@@ -828,11 +841,11 @@ public boolean equals( Object other )
                 GasWellDataEntry beta = otherSet.list.get( i );
                 result = alpha.equals( beta );
             }
-
         }
 
-
     } while( false );
+    
+    logger.debug( "returning with result=" + result + ", this.well=" + getWellName() + ", other.well="+ ( ( otherSet != null ) ? otherSet.getWellName() : "<null>" ) );
 
     return result;
 }

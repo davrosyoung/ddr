@@ -171,6 +171,13 @@ protected static GasWellDataEntry processDataLine( String line, List<FieldType> 
     {
         String text = fields[ i ].trim();
         Double numeric;
+
+        // ignore fields which are marked with ------
+        // -------------------------------------------
+        if ( text.startsWith( "----" ) )
+        {
+            continue;
+        }
         
         switch( columnHeadings.get( i ) )
         {
@@ -220,7 +227,7 @@ protected static GasWellDataEntry processDataLine( String line, List<FieldType> 
     
     if ( ( intervalStart != null ) && ( intervalLengthHours > 0.0 ) )
     {
-        result.setDateRange( new DateRange( intervalStart, (long)Math.round( intervalLengthHours * 3600000.0 ) ) );
+        result.setDateRange( new DateRange( intervalStart, (long)Math.round( intervalLengthHours * 3600.0 ) * 1000, 1000L ) );
     } else {
         logger.error( "Failed to obtain date range for entry at line=" + lineCount );
     }

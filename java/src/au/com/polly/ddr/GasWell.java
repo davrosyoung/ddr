@@ -29,7 +29,7 @@ import java.io.Serializable;
  *
  *
  */
-public final class GasWell implements Serializable
+public final class GasWell implements Serializable, Comparable
 {
 private final String name;
 
@@ -79,6 +79,11 @@ public boolean equals( Object other )
     return result;
 }
 
+@Override
+public int compareTo(Object o)
+{
+    return ( o instanceof GasWell ) ? getName().compareTo( ((GasWell)o).getName() ) : 0;
+}
 
 @Override
 public int hashCode()

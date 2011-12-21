@@ -23,7 +23,6 @@ package au.com.polly.ddr;
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
 import org.apache.log4j.Logger;
-import sun.java2d.pipe.SpanShapeRenderer;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -32,15 +31,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-
-import static javax.swing.JOptionPane.*;
 
 /**
  * Controls to allow the operator to change the measurements type
@@ -54,27 +55,43 @@ static private Logger logger = Logger.getLogger( GraphControlPanel.class );
 SimpleDateFormat dateFormatter = new SimpleDateFormat( "dd/MMM/yyyy HH:mm:ss" );
 DateParser dateParser = new AussieDateParser();
 
-    JButton oilFlowButton;
-    JButton gasFlowButton;
-    JButton condensateFlowButton;
-    JButton waterFlowButton;
-    JButton loadFileButton;
-    JButton loadOverlayFileButton;
-    JButton saveOverlayFileButton;
-    JFileChooser loadFileBox;
-    JFileChooser loadOverlayFileBox;
-    JFileChooser saveOverlayFileBox;
-    JLabel  availableDateLabel;
-    JLabel  fromDateLabel;
-    JLabel  untilDateLabel;
-    JTextField fromDateField;
-    JTextField untilDateField;
-    JButton updateGraphFromDatesButton;
-    JButton generateOverlayButton;
+private static File dataDirectory;
 
-    PlotGrapher grapher;
-    Date from = null;
-    Date until = null;
+static {
+    String text = null;
+    if ( ( text = System.getProperty( "ddr.data.directory" ) ) != null )
+    {
+        dataDirectory = new File( text );
+        if ( ! dataDirectory.isDirectory() )
+        {
+            dataDirectory = null;
+        } else {
+            logger.info( "Just set dataDirectory to [" +dataDirectory.getAbsolutePath() + "]" );
+        }
+    }
+}
+
+JButton oilFlowButton;
+JButton gasFlowButton;
+JButton condensateFlowButton;
+JButton waterFlowButton;
+JButton loadFileButton;
+JButton loadOverlayFileButton;
+JButton saveOverlayFileButton;
+JFileChooser loadFileBox;
+JFileChooser loadOverlayFileBox;
+JFileChooser saveOverlayFileBox;
+JLabel  availableDateLabel;
+JLabel  fromDateLabel;
+JLabel  untilDateLabel;
+JTextField fromDateField;
+JTextField untilDateField;
+JButton updateGraphFromDatesButton;
+JButton generateOverlayButton;
+
+PlotGrapher grapher;
+Date from = null;
+Date until = null;
 
 public GraphControlPanel( Date from, Date until )
 {
@@ -131,14 +148,26 @@ public GraphControlPanel( Date from, Date until )
 
     loadFileBox = new JFileChooser();
     loadFileBox.setDialogTitle( "Open Background Data File" );
-    loadFileBox.setFileFilter( new ObjectFileFilter() );
+    loadFileBox.setFileFilter( new DataSourceFileFilter() );
+    if ( dataDirectory != null )
+    {
+        loadFileBox.setCurrentDirectory( dataDirectory );
+    }
 
     loadOverlayFileBox = new JFileChooser();
-    loadOverlayFileBox.setDialogTitle( "Open Overlay Data File" );
-    loadOverlayFileBox.setFileFilter( new ObjectFileFilter() );
+    loadOverlayFileBox.setDialogTitle("Open Overlay Data File" );
+    loadOverlayFileBox.setFileFilter(new DataSourceFileFilter());
+    if ( dataDirectory != null )
+    {
+        loadOverlayFileBox.setCurrentDirectory( dataDirectory );
+    }
 
     saveOverlayFileBox = new JFileChooser();
     saveOverlayFileBox.setDialogTitle( "Save Overlay Data File" );
+    if ( dataDirectory != null )
+    {
+        saveOverlayFileBox.setCurrentDirectory( dataDirectory );
+    }
 
     fromDateLabel = new JLabel( "from:" );
     untilDateLabel = new JLabel( "until:" );
@@ -258,87 +287,30 @@ public void actionPerformed(ActionEvent evt)
 
             if( button.getName().equals( "openFileButton" ) )
             {
-                int retval = loadFileBox.showOpenDialog( this );
-                if ( retval == JFileChooser.APPROVE_OPTION )
+                GasWellDataSet newData = loadDataFromFileChooser( loadFileBox );
+                if ( newData != null )
                 {
-                    File file = loadFileBox.getSelectedFile();
-                    if ( file != null )
-                    {
-                        // load the file!!
-                        // ---------------------------
-                        GasWellDataSet newData = null;
-                        FileInputStream fis = null;
-                        ObjectInputStream ois = null;
-                        Object blah = null;
-                        try
-                        {
-                            fis = new FileInputStream( file );
-                            ois = new ObjectInputStream( fis );
-                            blah = ois.readObject();
-                            if ( ! ( blah instanceof GasWellDataSet ) )
-                            {
-                                JOptionPane.showMessageDialog( this, "File \"" + file.getAbsolutePath() + "\" does not contain gas well data.", "Error loading data", JOptionPane.ERROR_MESSAGE );
-                            } else {
-                                newData = (GasWellDataSet)blah;
-                                from = newData.from();
-                                until = newData.until();
-                                grapher.setDisplayDateRange( from, until );
-                                grapher.loadData( newData );
-                                StringBuilder dateAvailabilityText = new StringBuilder( "from:" );
-                                dateAvailabilityText.append( ( from != null ) ? dateFormatter.format( from ) : "unavailable" );
-                                dateAvailabilityText.append( " until:" );
-                                dateAvailabilityText.append( ( until != null ) ? dateFormatter.format( until ) : "unavailable" );
-                                availableDateLabel.setText(dateAvailabilityText.toString());
-                                fromDateField.setText( dateFormatter.format(from) );
-                                untilDateField.setText( dateFormatter.format( until ) );
-                                
-                                logger.debug( "Loaded data set from \"" + file.getAbsolutePath() + "\", contains " + newData.getData().size() + " entries from " + newData.from() + " until " + newData.until() );
-                            }
-                        } catch ( Exception e )
-                        {
-                            logger.error( "Failed to load gas well data set from file \"" + file.getAbsolutePath() + "\" - " + e.getClass().getName() + "  - " + e.getMessage() );
-                            JOptionPane.showMessageDialog( this, "Failed to load gas well data from \"" + file.getAbsolutePath() + "\"", "Error loading data", JOptionPane.ERROR_MESSAGE );
-                        }
-                    }
-
+                    from = newData.from();
+                    until = newData.until();
+                    grapher.setDisplayDateRange( from, until );
+                    grapher.loadData( newData );
+                    StringBuilder dateAvailabilityText = new StringBuilder( "from:" );
+                    dateAvailabilityText.append( ( from != null ) ? dateFormatter.format( from ) : "unavailable" );
+                    dateAvailabilityText.append( " until:" );
+                    dateAvailabilityText.append( ( until != null ) ? dateFormatter.format( until ) : "unavailable" );
+                    availableDateLabel.setText(dateAvailabilityText.toString());
+                    fromDateField.setText( dateFormatter.format(from) );
+                    untilDateField.setText( dateFormatter.format( until ) );
                 }
                 break;
             }
 
             if( button.getName().equals( "openOverlayFileButton" ) )
             {
-                int retval = loadOverlayFileBox.showOpenDialog( this );
-                if ( retval == JFileChooser.APPROVE_OPTION )
+                GasWellDataSet newData = loadDataFromFileChooser( loadOverlayFileBox );
+                if ( newData != null )
                 {
-                    File file = loadFileBox.getSelectedFile();
-                    if ( file != null )
-                    {
-                        // load the file!!
-                        // ---------------------------
-                        GasWellDataSet newData = null;
-                        FileInputStream fis = null;
-                        ObjectInputStream ois = null;
-                        Object blah = null;
-                        try
-                        {
-                            fis = new FileInputStream( file );
-                            ois = new ObjectInputStream( fis );
-                            blah = ois.readObject();
-                            if ( ! ( blah instanceof GasWellDataSet ) )
-                            {
-                                JOptionPane.showMessageDialog( this, "File \"" + file.getAbsolutePath() + "\" does not contain gas well data.", "Error loading data", JOptionPane.ERROR_MESSAGE );
-                            } else {
-                                newData = (GasWellDataSet)blah;
-                                grapher.loadOverlayData( newData );
-                                StringBuilder dateAvailabilityText = new StringBuilder( "from:" );
-                            }
-                        } catch ( Exception e )
-                        {
-                            logger.error( "Failed to load gas well data set from file \"" + file.getAbsolutePath() + "\" - " + e.getClass().getName() + "  - " + e.getMessage() );
-                            JOptionPane.showMessageDialog( this, "Failed to load gas well data from \"" + file.getAbsolutePath() + "\"", "Error loading data", JOptionPane.ERROR_MESSAGE );
-                        }
-                    }
-
+                    grapher.loadOverlayData( newData );
                 }
                 break;
             }
@@ -354,16 +326,11 @@ public void actionPerformed(ActionEvent evt)
                         File file = saveOverlayFileBox.getSelectedFile();
                         if ( file != null )
                         {
-                            FileOutputStream fos = null;
-                            ObjectOutputStream oos = null;
-
-                            try
-                            {
-                                fos = new FileOutputStream( file );
-                                oos = new ObjectOutputStream( fos );
-                                oos.writeObject( grapher.getOverlayData() );
-                            } catch (IOException e)
-                            {
+                            try {
+                                FileWriter writer = new FileWriter( file );
+                                grapher.getOverlayData().outputCSV( new PrintWriter( writer ) );
+                                writer.close();
+                            } catch (IOException e) {
                                 JOptionPane.showMessageDialog( this, "Failed to save overlay data to \"" + file.getAbsolutePath() + "\"" );
                                 logger.error( "Failed to save overlay data to file \"" + file.getAbsolutePath() + "\"" );
                                 logger.error( e.getClass().getName() + " - " + e.getMessage() );
@@ -445,9 +412,103 @@ public void actionPerformed(ActionEvent evt)
     }
 }
 
+/**
+ * Loads a gas well data set from an external file using a file chooser. handles both .obj and .csv files.
+ * todo: add LAS suport.
+ * 
+ * @param chooser the file chooser to be used.
+ * @return gas well data set, or null if an error happened or the user chickened out.
+ */
+protected GasWellDataSet loadDataFromFileChooser( JFileChooser chooser )
+{
+    GasWellDataSet result = null;
+    int retval = chooser.showOpenDialog( this );
+    if ( retval == JFileChooser.APPROVE_OPTION )
+    {
+        File file = chooser.getSelectedFile();
+        if ( file != null )
+        {
+            // is it a csv or a .obj file??
+            // -----------------------------
+            GasWellDataExtractor extractor = null;
+            GasWellDataExtractorFactory factory = GasWellDataExtractorFactory.getInstance();
+            if ( file.getName().toLowerCase().endsWith( ".csv" ) )
+            {
+                try
+                {
+                    FileReader fr = new FileReader( file );
+                    extractor = factory.getCSVGasWellDataExtractor( fr );
+                } catch ( FileNotFoundException e ) {
+                    // almost impossible!!! we've just chosen the file!!
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+
+            if ( file.getName().toLowerCase().endsWith( ".obj") )
+            {
+                try
+                {
+                    FileInputStream fis = new FileInputStream( file );
+                    ObjectInputStream ois = new ObjectInputStream( fis );
+                    extractor = factory.getJavaSerializedObjectExtractor( ois );
+                } catch ( Exception e ) {
+                    JOptionPane.showMessageDialog( this, "Failed to load gas well data from \"" + file.getAbsolutePath() + "\"", "Error loading data", JOptionPane.ERROR_MESSAGE );
+                }
+            }
+
+            GasWellDataSet newData = null;
+
+            if ( extractor != null )
+            {
+                logger.debug( "extractor is of class \""+ extractor.getClass().getName() + "\"" );
+                MultipleWellDataMap mwdm = extractor.extract();
+                if ( mwdm.dataMap.keySet().size() > 1 )
+                {
+                    // need to get the operator to select a single well from the multiple
+                    // wells which are available.
+                    // -------------------------------------------------------------------
+                    GasWell[] wells = new GasWell[ mwdm.dataMap.keySet().size() ];
+                    mwdm.dataMap.keySet().toArray( wells );
+                    String[] wellNames = new String[ wells.length ];
+                    for( int i = 0; i < wells.length; i++ )
+                    {
+                        wellNames[ i ] = wells[ i ].getName();
+                    }
+
+                    String s = (String)JOptionPane.showInputDialog(
+                            this,
+                            "Select a well to plot",
+                            "Well Selection",
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            wellNames,
+                            wellNames[ 0 ]);
+
+                    if ( (s != null) && (s.length() > 0) )
+                    {
+                        GasWell well = new GasWell( s );
+                        logger.debug( "About to obtain data for well \"" + well.getName() + "\"" );
+                        result = mwdm.dataMap.get( well );
+                    } else {
+                        result = null;
+                    }
+
+                } else {
+                    GasWell well = (GasWell)mwdm.dataMap.keySet().toArray()[ 0 ];
+                    result = mwdm.dataMap.get( well );
+                }
+            }
+        }  else {
+            logger.debug( "NO file selected from open dialog" );
+        }
+    }
+
+    return result;
+}
+
 
 /* ImageFilter.java is used by FileChooserDemo2.java. */
-public class ObjectFileFilter extends FileFilter
+public class DataSourceFileFilter extends FileFilter
 {
     //Accept all directories and all gif, jpg, tiff, or png files.
     public boolean accept(File f) {
@@ -455,7 +516,7 @@ public class ObjectFileFilter extends FileFilter
             return true;
         }
 
-        return f.getName().endsWith( ".obj" );
+        return f.getName().endsWith( ".obj" ) || f.getName().toLowerCase().endsWith( ".csv" );
     }
 
     //The description of this filter

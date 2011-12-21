@@ -34,9 +34,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -54,6 +52,33 @@ private final static String LOADING_FILE = "loadingFilePanel";
 //private final static String SELECT_WORKSHEET = "worksheetSelectorPanel";
 private final static String SELECT_WELLS = "wellSelectorPanel";
 private final static NumberFormat percentageFormatter = NumberFormat.getPercentInstance();
+private static File dataDirectory;
+private static File sourceDirectory;
+
+static {
+    String text = null;
+    if ( ( text = System.getProperty( "ddr.data.directory" ) ) != null )
+    {
+        dataDirectory = new File( text );
+        if ( ! dataDirectory.isDirectory() )
+        {
+            dataDirectory = null;
+        } else {
+            logger.info( "Just set dataDirectory to [" +dataDirectory.getAbsolutePath() + "]" );
+        }
+    }
+
+    if ( ( text = System.getProperty( "ddr.source.directory" ) ) != null )
+    {
+        sourceDirectory = new File( text );
+        if ( ! sourceDirectory.isDirectory() )
+        {
+            sourceDirectory = ( dataDirectory != null ) ? dataDirectory : null;
+        } else {
+            logger.info( "Just set sourceDirectory to [" + sourceDirectory.getAbsolutePath() + "]" );
+        }
+    }
+}
 
 JPanel chooseFilePanel;
 JPanel loadingFilePanel;
@@ -146,6 +171,10 @@ protected JPanel createChooseFilePanel()
     spreadsheetFileChooser.setFileFilter( new ExcelFileFilter() );
     spreadsheetFileChooser.addActionListener( this );
     spreadsheetFileChooser.setName( "spreadsheetFileChooser" );
+    if ( sourceDirectory != null )
+    {
+        spreadsheetFileChooser.setCurrentDirectory( sourceDirectory );
+    }
 
     result.add( spreadsheetFileChooser, gbc );
     
@@ -264,7 +293,8 @@ protected void handleSpreadsheetChooser( ActionEvent evt )
 
             Runnable task = new Runnable()
             {
-                public void run() {
+                public void run()
+                {
                     FileInputStream fis;
                     long then;
                     long now;
@@ -300,13 +330,6 @@ protected void handleSpreadsheetChooser( ActionEvent evt )
 
                     } catch ( Throwable error ) {
                         
-                        // an invovation target exception means that ... well ... what does it actually mean???
-                        // ------------------------------------------------------------------------------------
-                        if ( error instanceof InvocationTargetException )
-                        {
-                            
-                        }
-
                         logger.error( "Runtime exception trying to load spreadsheet \"" + fileArray[ 0 ].getAbsolutePath() + "\"" );
                         logger.error( error.getClass().getName() + " - " + error.getMessage() );
                         error.printStackTrace( System.err);
@@ -338,8 +361,6 @@ protected void handleSpreadsheetChooser( ActionEvent evt )
                 }
             }; // end-runnable(definition)
 
-
-
             // start reading the excel spreadsheet in a separate thread!!
             Thread anotherRunner = new Thread( task );
             anotherRunner.start();
@@ -356,50 +377,85 @@ protected void handleSpreadsheetChooser( ActionEvent evt )
 
 protected void handleExtractButton(ActionEvent evt)
 {
-    StringBuilder msg = new StringBuilder( "Wrote out data files " );
+    File file = null;
+
     extractorFactory = GasWellDataExtractorFactory.getInstance();
     extractor = extractorFactory.getExcelStandardizedGasWellDataExtractor( book, locations );
 
     MultipleWellDataMap mwdm = extractor.extract();
     Map<GasWell,GasWellDataSet> dataMap = mwdm.getDataMap();
-    
-    // let's extract the data sets one by one ....
-    // --------------------------------------------
-    for( GasWell well : dataMap.keySet() )
+    JFileChooser chooser = new JFileChooser();
+    if ( dataDirectory != null )
     {
-        // is this gas well selected??
-        // ---------------------------
-        if ( ( wellCheckboxMap.containsKey( well.getName() ) ) && wellCheckboxMap.get( well.getName() ).isSelected() )
-        {
-            
-            GasWellDataSet data = dataMap.get( well );
-            String mangled = well.getName().toLowerCase().replaceAll( "\\s+\\-_\\(\\)", "" );
-            String outputFilename = "data" + File.separator + mangled + ".txt";
-            try
-            {
-                logger.debug( "About to open file '" + outputFilename + "' for writing data for well \"" + well.getName() );
-                FileOutputStream fos = new FileOutputStream( outputFilename );
-                PrintWriter writer = new PrintWriter( fos );
-                writer.print( data );
-                writer.close();
-                fos.close();
+        chooser.setCurrentDirectory( dataDirectory );
+    }
 
-                outputFilename = "data" + File.separator + mangled + ".obj";
-                msg.append( "\n" + outputFilename );
-                fos = new FileOutputStream( outputFilename );
-                ObjectOutputStream oos = new ObjectOutputStream( fos );
-                oos.writeObject( data );
-                oos.close();
-            } catch ( IOException e ) {
-                logger.error( "Failed to write out data file " + outputFilename );
-                logger.error(e);
+    // choose directory to save files in...
+    // ------------------------------------
+    int returnVal = chooser.showSaveDialog( this );
+
+    if ( returnVal == JFileChooser.APPROVE_OPTION )
+    {
+        file = chooser.getSelectedFile();
+        if ( ! file.getName().toLowerCase().endsWith( ".csv" ) )
+        {
+            Object[] options = { "Yes I am sure", "Whoops!! No thank you" };
+            if ( JOptionPane.showOptionDialog(
+                    overlordPanel,
+                    "You have chosen to save the data to a non .csv file. This is not recommended. Are you sure you wish to proceed?",
+                    "Dubious file suffix",
+                    JOptionPane.WARNING_MESSAGE,
+                    JOptionPane.OK_CANCEL_OPTION,
+                    (Icon)null,
+                    options,
+                    options[1]
+            ) == JOptionPane.CANCEL_OPTION )
+            {
+                file = null;
             }
-        } else {
-            logger.debug( "Well \"" + well.getName() + "\" isn't selected." );
+        }
+        //This is where a real application would open the file.
+        logger.debug( "Opening: " + file.getName() + "." );
+    } else {
+        logger.warn( "Open command cancelled by user." );
+    }
+    
+    if ( file != null )
+    {
+        MultipleWellDataMap setsToSave = new MultipleWellDataMap();
+        
+        // copy just the wells which have been selected to be saved.
+        // ---------------------------------------------------------
+        for( GasWell well : dataMap.keySet() )
+        {
+            // is this gas well selected??
+            // ---------------------------
+            if ( ( wellCheckboxMap.containsKey( well.getName() ) ) && wellCheckboxMap.get( well.getName() ).isSelected() )
+            {
+                setsToSave.addDataSet( mwdm.getDataMap().get( well ) );
+            }
+        }
+        
+        try
+        {
+            long then = System.currentTimeMillis();
+            logger.debug( "About to open file '" + file.getAbsolutePath() + "' for saving data" );
+            FileOutputStream fos = new FileOutputStream( file );
+            PrintWriter writer = new PrintWriter( fos );
+            setsToSave.outputCSV( writer );
+            writer.close();
+            fos.close();
+            long now = System.currentTimeMillis();
+            logger.info( "It took " + ( now - then ) + "ms to save data to [" + file.getAbsolutePath() + "]" );
+            JOptionPane.showMessageDialog( this, "Saved data to file \"" + file.getAbsolutePath() + "\"", "Gas data saved", JOptionPane.INFORMATION_MESSAGE );
+        } catch ( IOException e ) {
+            logger.error( "Failed to write out data file " + file.getAbsolutePath() );
+            logger.error(e);
+            String errorMsg = "Failed to save data to file \"" +file.getAbsolutePath() + "\" - " + e.getMessage();
+            JOptionPane.showMessageDialog( overlordPanel, errorMsg, "Oh dear!!", JOptionPane.ERROR_MESSAGE );
         }
     }
 
-    JOptionPane.showMessageDialog( this, msg.toString(), "Wrote out data files", JOptionPane.INFORMATION_MESSAGE );
 }
 
 protected List<GasWellDataLocator> showAvailableWells( Workbook book )
@@ -441,6 +497,7 @@ protected List<GasWellDataLocator> showAvailableWells( Workbook book )
                 gbc.gridx = i % 2;
                 GasWellDataLocator locator = result.get( i );
                 checkBox = new JCheckBox( locator.getWellName() );
+                checkBox.setSelected( true );
                 wellCheckboxMap.put( locator.getWellName(), checkBox );
                 checkBox.setName( locator.getWellName() );
                 checkBox.addActionListener( this );
@@ -501,7 +558,7 @@ protected static class ExcelFileFilter extends FileFilter
     public boolean accept(File f)
     {
         boolean result = false;
-        result = f.isDirectory() || f.getName().toLowerCase().endsWith( ".xls" ) || f.getName().toLowerCase().endsWith( ".xlsx" );
+        result = f.isDirectory() || f.getName().toLowerCase().endsWith( ".xls" ) || f.getName().toLowerCase().endsWith( ".xlsx" ) || f.getName().toLowerCase().endsWith( ".csv" );
         return result;
     }
 

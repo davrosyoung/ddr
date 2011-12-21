@@ -317,6 +317,33 @@ public void testProcessingDataLine()
 }
 
 @Test
+public void testProcessingDataLineWithNullValue()
+{
+    List<CSVGasWellDataExtractor.FieldType> columns = new ArrayList<CSVGasWellDataExtractor.FieldType>();
+    columns.add( CSVGasWellDataExtractor.FieldType.WELL_NAME );
+    columns.add( CSVGasWellDataExtractor.FieldType.TIMESTAMP );
+    columns.add( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH );
+    columns.add( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW );
+    columns.add( CSVGasWellDataExtractor.FieldType.WATER_FLOW );
+    columns.add( CSVGasWellDataExtractor.FieldType.GAS_FLOW );
+
+    String text = "osho2,13/JUN/2011 05:25:00,1.0,130.6,------,12.3";
+    GasWellDataEntry entry = CSVGasWellDataExtractor.processDataLine( text, columns, 1, null );
+    assertNotNull(entry);
+    assertTrue(entry.containsMeasurement(WellMeasurementType.CONDENSATE_FLOW));
+    assertTrue(entry.containsMeasurement(WellMeasurementType.GAS_FLOW));
+    assertFalse(entry.containsMeasurement(WellMeasurementType.WATER_FLOW));
+    assertFalse(entry.containsMeasurement(WellMeasurementType.OIL_FLOW));
+    assertNotNull( entry.getWell() );
+    assertEquals("osho2", entry.getWell().getName());
+    assertEquals( parser.parse( "13/JUN/2011 05:25" ).getTime(), entry.from() );
+    assertEquals( parser.parse( "13/JUN/2011 06:25" ).getTime(), entry.until() );
+
+    assertEquals( 130.6, entry.getMeasurement( WellMeasurementType.CONDENSATE_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 12.3, entry.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+}
+
+@Test
 public void testExtractingDataFromTestCSV()
 {
     CSVGasWellDataExtractor extractor = new CSVGasWellDataExtractor( testCSVReader );

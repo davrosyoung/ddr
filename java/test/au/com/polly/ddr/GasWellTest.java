@@ -22,6 +22,7 @@ package au.com.polly.ddr;
 
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
+import com.sun.tools.javac.resources.javac;
 import junit.framework.JUnit4TestAdapter;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +42,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -116,6 +118,17 @@ public void testHashCode()
     assertNotNull( anotherBigAlpha );
     assertEquals( bigAlpha.hashCode(), anotherBigAlpha.hashCode() );
     assertFalse( alpha.hashCode() == bigAlpha.hashCode() );
+}
+
+@Test
+public void testCompareTo()
+{
+     assertTrue( (new GasWell( "alpha" )).compareTo( new GasWell( "alpha" ) ) == 0);
+     assertTrue( (new GasWell( "alpha" )).compareTo( new GasWell( "alpha0" ) ) < 0);
+     assertTrue( (new GasWell( "alpha" )).compareTo( new GasWell( "beta" ) ) < 0);
+     assertTrue( (new GasWell( "alpha" )).compareTo( new Date()) == 0);
+     assertTrue( (new GasWell( "beta" )).compareTo( new GasWell( "alpha" ) ) > 0);
+
 }
 
 

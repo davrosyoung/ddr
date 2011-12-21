@@ -22,6 +22,7 @@ package au.com.polly.ddr;
 
 import au.com.polly.util.DateRange;
 import au.com.polly.util.HashCodeUtil;
+import org.apache.log4j.Logger;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
@@ -36,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class GasWellDataEntry implements Serializable
 {
+private final static Logger logger = Logger.getLogger( GasWellDataEntry.class );
 private GasWell well;
 private DateRange range;
 private Map<WellMeasurementType,Double> measurements;
@@ -186,7 +188,14 @@ public boolean equals( Object other )
             result = otherEntry.range == null;
         }
 
-        if ( !result ) { break; }
+        if ( !result )
+        {
+            if ( ( this.range != null ) && ( otherEntry.range != null ) )
+            {
+                logger.debug( "this.range=[" + this.range + "], otherEntry.range=" + otherEntry.range );
+            }
+            break;
+        }
 
 
         for( WellMeasurementType wmt : WellMeasurementType.values() )

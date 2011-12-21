@@ -26,6 +26,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.ObjectInputStream;
 import java.util.Date;
 
@@ -35,12 +36,11 @@ import java.util.Date;
  */
 public class SimplePlotGrapherHarness extends JPanel
 {
-    private static Logger logger = Logger.getLogger( SimplePlotGrapherHarness.class );
-    SimplePlotGrapher grapher = null;
-    SimpleOverlayPlotGrapher overlayGrapher = null;
-    GraphControlPanel controlPanel = null;
-    static GasWellDataSet dataSet = null;
-    static GasWellDataSet overlayDataSet = null;
+private static Logger logger = Logger.getLogger( SimplePlotGrapherHarness.class );
+SimpleOverlayPlotGrapher overlayGrapher = null;
+GraphControlPanel controlPanel = null;
+static GasWellDataSet dataSet = null;
+static GasWellDataSet overlayDataSet = null;
 
 
 public SimplePlotGrapherHarness()
@@ -109,8 +109,12 @@ public static void main( String... args )
     {
         String filename = args[ 0 ];
         File file = new File( filename );
+        FileReader reader = null;
         FileInputStream fis;
         ObjectInputStream ois;
+        GasWellDataExtractorFactory factory = GasWellDataExtractorFactory.getInstance();
+        GasWellDataExtractor extractor;
+                
 
         if ( ( ! file.exists() ) || ( ! file.isFile() ) || ( ! file.canRead() ) )
         {
@@ -120,44 +124,16 @@ public static void main( String... args )
 
         try
         {
-            fis = new FileInputStream( file );
-            ois = new ObjectInputStream( fis );
-            dataSet = (GasWellDataSet)ois.readObject();
+            reader = new FileReader( file );
+            extractor = factory.getCSVGasWellDataExtractor( reader );
+            MultipleWellDataMap mwdm = extractor.extract();
+            dataSet = mwdm.getDataSetList().get( 0 );
             logger.info( "Extracted data set for well \"" + dataSet.getWellName() + "\", contains " + dataSet.getData().size() + " entries." );
-        } catch( Exception e )
-        {
+        } catch( Exception e ) {
             logger.error( "Failed to extract gas well data set from \"" + filename + "\"" );
             e.printStackTrace( System.err );
             System.exit( 1 );
         }
-
-        // was a second file specified??
-        // ------------------------------
-        if ( args.length > 1 )
-        {
-            filename = args[ 1 ];
-            file = new File( filename );
-
-            if ( ( ! file.exists() ) || ( ! file.isFile() ) || ( ! file.canRead() ) )
-            {
-                System.err.println( "Unable to open \"" + filename + "\" for reading!!" );
-                System.exit( 1 );
-            }
-
-            try
-            {
-                fis = new FileInputStream( file );
-                ois = new ObjectInputStream( fis );
-                overlayDataSet = (GasWellDataSet)ois.readObject();
-                logger.info( "Extracted overlay data set for well \"" + overlayDataSet.getWellName() + "\", contains " + overlayDataSet.getData().size() + " entries." );
-            } catch( Exception e )
-            {
-                logger.error( "Failed to extract gas well data set from \"" + filename + "\"" );
-                e.printStackTrace( System.err );
-                System.exit( 1 );
-            }
-        }
-
     }
 
     Runnable doCreateAndShowGUI = new Runnable() {

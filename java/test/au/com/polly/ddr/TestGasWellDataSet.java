@@ -424,7 +424,7 @@ protected static GasWellDataSet populateFromRawData( GasWell well, DataSet[] raw
                     logger.error( "well:" + well.getName() + " ... i=" + i + " ... duration is too long by " + delta + "seconds. from=" + from + ", until=" + until );
                 }
             }
-            until = new Date( from.getTime() + ( (long)span * 1000L ) );
+//            until = new Date( from.getTime() + ( (long)span * 1000L ) );
         } else {
             until = new Date( from.getTime () + (long)(rawData[ i ].durationHours * 3600000L ) ) ;
         }

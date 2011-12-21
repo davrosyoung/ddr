@@ -359,6 +359,16 @@ public void testEquality()
 }
 
 @Test
+public void testCompareTo()
+{
+     assertTrue( (new GasWellDataSet( new GasWell( "alpha" ) ) ).compareTo( new GasWellDataSet( new GasWell( "alpha" ) ) ) == 0);
+     assertTrue( (new GasWellDataSet( new GasWell( "alpha" ) ) ).compareTo( new Date() ) == 0);
+     assertTrue( (new GasWellDataSet( new GasWell( "alpha" ) ) ).compareTo( new GasWellDataSet( new GasWell( "alpha00" ) ) ) < 0);
+     assertTrue( (new GasWellDataSet( new GasWell( "alpha" ) ) ).compareTo( new GasWellDataSet( new GasWell( "beta" ) ) ) < 0);
+     assertTrue( (new GasWellDataSet( new GasWell( "beta" ) ) ).compareTo( new GasWellDataSet( new GasWell( "alpga" ) ) ) > 0);
+}
+
+@Test
 public void testSerializingEmptyDataSet()
 {
     ObjectOutputStream oos = null;
