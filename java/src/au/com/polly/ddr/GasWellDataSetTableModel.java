@@ -20,7 +20,10 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.util.DateArmyKnife;
+
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -94,7 +97,6 @@ public GasWellDataSetTableModel(GasWellDataSet actualData)
             columnList.add( columnTypeLUT.get( wmt ) );
         }
     }
-    
 }
 
 @Override
@@ -173,5 +175,18 @@ public boolean isCellEditable(int rowIndex, int columnIndex)
 public void setValueAt(Object value, int row, int col) {
 //    data[row][col] = value;
     fireTableCellUpdated(row, col);
+}
+
+
+/**
+ * Let's render dates we like them :-)
+ */
+static class MyDateRenderer extends DefaultTableCellRenderer
+{
+	public MyDateRenderer() { super(); }
+
+	public void setValue(Object value) {
+		setText(  ( value == null ) || ( ! ( value instanceof Date ) ) ? "" : DateArmyKnife.formatWithSeconds( (Date)value ) );
+	}
 }
 }
