@@ -20,7 +20,11 @@
 
 package au.com.polly.ddr;
 
+import org.apache.log4j.Logger;
+
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,12 +35,14 @@ import java.awt.event.ActionListener;
  * @author Dave Young
  * 
  */
-public class IntervalEditorPane extends JPanel implements ActionListener
+public class IntervalEditorPane extends JPanel implements ActionListener, TableModelListener
 {
+private final static Logger logger = Logger.getLogger(  IntervalEditorPane.class  );
 protected GasWellDataSet dataSet = null;
 
 protected JButton saveButton;
 protected JButton cancelButton;
+protected JScrollPane scrollPane;
 protected JTable dataDisplayTable;
 protected GasWellDataSetTableModel dataTableModel;
 
@@ -44,6 +50,7 @@ protected GasWellDataSetTableModel dataTableModel;
 protected IntervalEditorPane( GasWellDataSet dataSet )
 {
     dataTableModel = new GasWellDataSetTableModel( dataSet );
+	scrollPane = new JScrollPane();
     populate();    
 }
 
@@ -64,7 +71,9 @@ protected void populate()
     dataDisplayTable.setEnabled( true );
     dataDisplayTable.setVisible( true );
     dataDisplayTable.setName( "dataTable" );
-    JScrollPane scrollPane = new JScrollPane( dataDisplayTable );
+	dataTableModel.addTableModelListener( this );
+
+	scrollPane.add( dataDisplayTable );
     dataDisplayTable.setFillsViewportHeight( true );
 
     setLayout(new GridBagLayout());
@@ -78,14 +87,19 @@ protected void populate()
     gbc.anchor = GridBagConstraints.PAGE_START;
     gbc.fill = GridBagConstraints.HORIZONTAL;
 
+	gbc.gridheight = 1;
+	gbc.gridwidth = 10;
+	add( dataDisplayTable.getTableHeader(), gbc );
+
+	gbc.gridy = 1;
     gbc.gridwidth = 10;
-    gbc.gridheight = 10;
+    gbc.gridheight = 9;
     add( dataDisplayTable, gbc );
 
     gbc.gridwidth = 1;
     gbc.gridheight = 1;
     gbc.gridx = 8;
-    gbc.gridy = 10;
+    gbc.gridy = 11;
     
     add( saveButton, gbc );
     
@@ -98,6 +112,49 @@ protected void populate()
 @Override
 public void actionPerformed(ActionEvent e)
 {
+	logger.debug(  "received action, command=\"" + e.getActionCommand() + "\", source=\"" + e.getSource() + "\"" );
+	
+	if ( e.getActionCommand().equals(  "cancel" ) )
+	{
+		// close down this panel!!! How to do this?!?
+		// todo: close down this panel
+		this.setVisible(  false );
+	}
     //To change body of implemented methods use File | Settings | File Templates.
 }
+
+	@Override
+	public void tableChanged( TableModelEvent tableModelEvent )
+	{
+		logger.debug(
+				"source=" + tableModelEvent.getSource() + ", "
+			+	"type=" + getTableModelEventTypeText( tableModelEvent.getType() ) + ", "
+			+	"column=" + tableModelEvent.getColumn() + ", "
+			+	"firstRow=" + tableModelEvent.getFirstRow() + ", "
+			+	"lastRow=" + tableModelEvent.getLastRow()
+		);
+
+
+	}
+	
+	protected static String getTableModelEventTypeText( int type )
+	{           
+		String result = "unbekannt (" + type + ")";
+		switch( type )
+		{
+			case TableModelEvent.DELETE:
+				result = "DELETE";
+				break;
+
+			case TableModelEvent.INSERT:
+				result="INSERT";
+				break;
+
+			case TableModelEvent.UPDATE:
+				result="UPDATE";
+				break;
+		}
+				
+		return result;
+	}
 }
