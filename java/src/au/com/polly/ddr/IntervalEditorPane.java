@@ -37,10 +37,13 @@ protected GasWellDataSet dataSet = null;
 
 protected JButton saveButton;
 protected JButton cancelButton;
+protected JTable dataDisplayTable;
+protected GasWellDataSetTableModel dataTableModel;
 
 
 protected IntervalEditorPane( GasWellDataSet dataSet )
 {
+    dataTableModel = new GasWellDataSetTableModel( dataSet );
     populate();    
 }
 
@@ -56,6 +59,13 @@ protected void populate()
     cancelButton.setName( "cancel" );
     cancelButton.setText("cancel");
     cancelButton.addActionListener( this );
+    
+    dataDisplayTable = new JTable( dataTableModel );
+    dataDisplayTable.setEnabled( true );
+    dataDisplayTable.setVisible( true );
+    dataDisplayTable.setName( "dataTable" );
+    JScrollPane scrollPane = new JScrollPane( dataDisplayTable );
+    dataDisplayTable.setFillsViewportHeight( true );
 
     setLayout(new GridBagLayout());
     GridBagConstraints gbc = new GridBagConstraints();
@@ -67,10 +77,19 @@ protected void populate()
     gbc.weighty = 0.5;
     gbc.anchor = GridBagConstraints.PAGE_START;
     gbc.fill = GridBagConstraints.HORIZONTAL;
+
+    gbc.gridwidth = 10;
+    gbc.gridheight = 10;
+    add( dataDisplayTable, gbc );
+
+    gbc.gridwidth = 1;
+    gbc.gridheight = 1;
+    gbc.gridx = 8;
+    gbc.gridy = 10;
     
     add( saveButton, gbc );
     
-    gbc.gridx++;
+    gbc.gridx=9;
     
     add( cancelButton, gbc );
     setVisible( true );

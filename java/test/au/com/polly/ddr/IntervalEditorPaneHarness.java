@@ -75,25 +75,27 @@ public static void main( String... args )
             if ( dataSetList.size() > 0 )
             {
                 IntervalEditorPaneHarness.dataSet = mwdm.getDataSetList().get( 0 );
-                
-                Runnable doCreateAndShowGUI = new Runnable() {
-                    public void run() {
-                        createAndShowGUI();
-                    }
-                };
-    
-                SwingUtilities.invokeLater( doCreateAndShowGUI );
             } else {
-                logger.fatal( "NO gas well data sets retrieved from CSV file \"" + filename + "\"" );
+                logger.error("NO gas well data sets retrieved from CSV file \"" + filename + "\"");
             }
         } catch (FileNotFoundException e) {
-            logger.fatal( "Failed to load data set from \"" + args[ 0 ] + "\"." );
-            logger.fatal(e.getClass().getName() + " - " + e.getMessage());
+            logger.error("Failed to load data set from \"" + args[0] + "\".");
+            logger.error(e.getClass().getName() + " - " + e.getMessage());
         }
-
-    } else {
-        logger.fatal( "No csv input file specified!!" );
     }
+
+    if ( IntervalEditorPaneHarness.dataSet == null )
+    {
+        IntervalEditorPaneHarness.dataSet = TestGasWellDataSet.getNicksDataSet();
+    }
+
+    Runnable doCreateAndShowGUI = new Runnable() {
+        public void run() {
+            createAndShowGUI();
+        }
+    };
+
+    SwingUtilities.invokeLater( doCreateAndShowGUI );
 
 }
 
