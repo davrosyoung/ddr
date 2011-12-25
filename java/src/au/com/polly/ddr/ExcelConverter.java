@@ -23,6 +23,7 @@ package au.com.polly.ddr;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,8 +34,51 @@ import java.util.regex.Pattern;
  */
 public class ExcelConverter
 {
-private final static Pattern dateFormatPattern = Pattern.compile( "^mm\\/dd\\/yy(yy)?.*" );
+//private final static Pattern dateFormatPattern = Pattern.compile( "^mm\\/dd\\/yy(yy)?.*" );
 
+protected static Calendar dayDot;
+
+static {
+    dayDot = Calendar.getInstance();
+    dayDot.set( Calendar.YEAR, 1899 );
+    dayDot.set( Calendar.MONTH, Calendar.DECEMBER  );
+    dayDot.set( Calendar.DAY_OF_MONTH, 31 );
+    dayDot.set( Calendar.HOUR_OF_DAY, 0 );
+    dayDot.set( Calendar.MINUTE, 0 );
+    dayDot.set( Calendar.SECOND, 0 );
+    dayDot.set( Calendar.MILLISECOND, 0 );
+}
+
+protected static Date convert( double xlDate )
+{
+    Calendar cal;
+    Date result;
+
+    cal = convertToCalendar( xlDate );
+    result = cal.getTime();
+    return result;
+}
+
+protected static Calendar convertToCalendar( double xlDate )
+{
+    int days =(int) Math.floor( xlDate );
+    int seconds = (int)Math.round( ( xlDate - days ) * 86400 );
+
+    // excel incorrectly considers 1900 a leap year. which means that it incorrectly
+    // matches serial day 60 as february 29th 1900, when it should be 1st march 1900.
+    // so, if we've been given a day after 29th february 1900, we need to subtract
+    // one day to make it match the real calendar, rather than bill gate's version.
+    // ------------------------------------------------------------------------------
+    if ( days > 60 ) { days--; }
+
+    Calendar result = (Calendar) dayDot.clone();
+    result.add( Calendar.DATE, days );
+    result.add( Calendar.SECOND, seconds );
+    // force recomputation of fields...
+    result.getTime();
+
+    return result;
+}
 /**
  *
  * @param type the type of cell
@@ -121,13 +165,20 @@ public static Date extractDateFromCell( Cell cell )
     if ( ( cell != null ) && ( cell.getCellType() == Cell.CELL_TYPE_NUMERIC ) )
     {
         CellStyle style = cell.getCellStyle();
-        String format = style.getDataFormatString();
+        String format = style.getDataFormatString().toLowerCase();
+        if ( format.contains( "mm" ) && format.contains( "dd" ) && format.contains( "yy" ) )
+        {
+            result = ExcelConverter.convert( cell.getNumericCellValue() );
+        }
+    }
+
+        /* old way
         dateFormatMatcher = dateFormatPattern.matcher( format );
         if ( dateFormatMatcher.matches() )
         {
-            result = ExcelDateConverter.getInstance().convert( cell.getNumericCellValue() );
         }
-    }
+        */
+
     return result;
 }
 

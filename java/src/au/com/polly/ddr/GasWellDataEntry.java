@@ -22,6 +22,7 @@ package au.com.polly.ddr;
 
 import au.com.polly.util.DateRange;
 import au.com.polly.util.HashCodeUtil;
+import au.com.polly.util.StringArmyKnife;
 import org.apache.log4j.Logger;
 
 import java.io.InvalidObjectException;
@@ -41,6 +42,7 @@ private final static Logger logger = Logger.getLogger( GasWellDataEntry.class );
 private GasWell well;
 private DateRange range;
 private Map<WellMeasurementType,Double> measurements;
+private String comment;
 
 public GasWellDataEntry()
 {
@@ -58,6 +60,10 @@ public GasWellDataEntry copy()
         {
             copy.setMeasurement( wmt, getMeasurement( wmt ));
         }
+    }
+    if ( getComment() != null )
+    {
+        setComment( getComment() );
     }
 
     return copy;
@@ -126,6 +132,19 @@ public double getMeasurement( WellMeasurementType wmt )
     return result;
 }
 
+
+public String getComment()
+{
+    return comment;
+}
+
+public void setComment(String comment)
+{
+    if ( ( comment != null ) && ( comment.trim().length() > 0 ) )
+    {
+        this.comment = comment.trim();
+    }
+}
 
 /**
  * Instead of serializing this object, we serialize a proxy representation of it instead :-)
@@ -218,6 +237,10 @@ public boolean equals( Object other )
             }
         }
 
+        if ( !result ) { break; }
+
+        result = StringArmyKnife.areStringsEqual( this.comment, otherEntry.comment );
+
     } while( false );
 
     return result;
@@ -244,6 +267,7 @@ public int hashCode()
         }
 
     }
+    result = HashCodeUtil.hash(result, comment);
     return result;
 }
 
@@ -273,6 +297,10 @@ public String toString()
             out.append( "no " + wmt + " ");
         }
     }
+    if ( getComment() != null )
+    {
+        out.append( "comment=\"" + getComment() + "\"" );
+    }
     return out.toString();
 }
 
@@ -291,6 +319,7 @@ private static class SerializationProxy implements Serializable
     private boolean containsGasFlowMeasurement;
     private boolean containsWaterFlowMeasurement;
     private boolean containsCondensateFlowMeasurement;
+    private String comment;
     
     SerializationProxy( GasWellDataEntry entry )
     {
@@ -316,6 +345,7 @@ private static class SerializationProxy implements Serializable
         {
             this.waterFlowMeasurement = entry.getMeasurement( WellMeasurementType.WATER_FLOW );
         }
+        this.comment = entry.getComment();
     }
 
     /**
@@ -346,12 +376,14 @@ private static class SerializationProxy implements Serializable
         {
             result.setMeasurement( WellMeasurementType.WATER_FLOW, this.waterFlowMeasurement );
         }
+        
+        result.setComment( this.comment );
 
         return result;
     }
 
 
-    private static final long serialVersionID = 0x5826f8d4;
+    private static final long serialVersionID = 0x5826f8d6;
 }
 
 }

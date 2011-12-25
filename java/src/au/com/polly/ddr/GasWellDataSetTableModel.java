@@ -20,7 +20,10 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.plotter.DataSeriesTest;
 import au.com.polly.util.DateArmyKnife;
+import au.com.polly.util.DateRange;
+import org.apache.log4j.Logger;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -46,44 +49,68 @@ import java.util.Map;
  */
 public class GasWellDataSetTableModel extends AbstractTableModel
 {
+Logger logger = Logger.getLogger( GasWellDataSetTableModel.class );
 protected GasWellDataSet actualData = null;
-enum ColumnType {START_TIMESTAMP, UNTIL_TIMESTAMP, INTERVAL_LENGTH, OIL_FLOW, CONDENSATE_FLOW, GAS_FLOW, WATER_FLOW };
+enum ColumnType {
+    START_TIMESTAMP( 150, Date.class, true, "Start date" ),
+    UNTIL_TIMESTAMP( 150, Date.class, true, "End date" ),
+    INTERVAL_LENGTH( 80, Double.class, true, "Interval length" ),
+    OIL_FLOW( 80, Double.class, false, "Oil Flow Rate", true, WellMeasurementType.OIL_FLOW ),
+    CONDENSATE_FLOW( 80, Double.class, false, "Cond. Flow Rate", WellMeasurementType.CONDENSATE_FLOW ),
+    GAS_FLOW( 80, Double.class, false, "Gas Flow Rate", WellMeasurementType.GAS_FLOW ),
+    WATER_FLOW( 80, Double.class, false, "Water Flow Rate", WellMeasurementType.WATER_FLOW ),
+    COMMENT( 300, String.class, false, "Comment" );
+    
+    protected int width = 5;
+    protected Class klass = null;
+    protected String columnHeading = null;
+    protected boolean editable = false;
+    protected boolean isWellMeasurement = false;
+    protected WellMeasurementType wmt = null;
+            
+    ColumnType( int width, Class klass, boolean editable, String columnHeading )
+    {
+        this( width, klass, editable, columnHeading, false, null );
+    }
+
+    ColumnType( int width, Class klass, boolean editable, String columnHeading, WellMeasurementType wmt )
+    {
+        this( width, klass, editable, columnHeading, true, wmt );
+    }
+
+    ColumnType( int width, Class klass, boolean editable, String columnHeading, boolean isWellMeasurement, WellMeasurementType wmt )
+    {
+        this.width = width;
+        this.klass = klass;
+        this.columnHeading = columnHeading;
+        this.editable = editable;
+        this.isWellMeasurement = isWellMeasurement;
+        if ( this.isWellMeasurement )
+        {
+            this.wmt = wmt;
+        }
+    }
+};
 List<ColumnType> columnList = null;
-protected static Map<WellMeasurementType,ColumnType> columnTypeLUT = new HashMap<WellMeasurementType,ColumnType>();
-protected static Map<ColumnType,WellMeasurementType> wmtLUT = new HashMap<ColumnType,WellMeasurementType>();
-protected static Map<ColumnType,String> columnHeadingLUT = new HashMap<ColumnType,String>();
-protected static Map<ColumnType,Class> columnClassLUT = new HashMap<ColumnType,Class>();
+protected static Map<WellMeasurementType,ColumnType> wmtColumnTypeLUT = new HashMap<WellMeasurementType,ColumnType>();
+protected static Map<ColumnType,WellMeasurementType> columnTypeWmtLUT = new HashMap<ColumnType,WellMeasurementType>();
+protected Map<ColumnType,Integer> columnTypeIndexLUT = new HashMap<ColumnType,Integer>();
+protected String[] columnNameArray;
+
 
 static {
-    columnTypeLUT.put( WellMeasurementType.CONDENSATE_FLOW, ColumnType.CONDENSATE_FLOW );
-    columnTypeLUT.put( WellMeasurementType.WATER_FLOW, ColumnType.WATER_FLOW );
-    columnTypeLUT.put( WellMeasurementType.GAS_FLOW, ColumnType.GAS_FLOW );
-    columnTypeLUT.put( WellMeasurementType.OIL_FLOW, ColumnType.OIL_FLOW );
-    
-    wmtLUT.put( ColumnType.CONDENSATE_FLOW, WellMeasurementType.CONDENSATE_FLOW );
-    wmtLUT.put( ColumnType.GAS_FLOW, WellMeasurementType.GAS_FLOW );
-    wmtLUT.put( ColumnType.WATER_FLOW, WellMeasurementType.WATER_FLOW );
-    wmtLUT.put( ColumnType.OIL_FLOW, WellMeasurementType.OIL_FLOW );
-    
-    columnHeadingLUT.put( ColumnType.START_TIMESTAMP, "Start Date/Time" );
-    columnHeadingLUT.put( ColumnType.UNTIL_TIMESTAMP, "End Date/Time" );
-    columnHeadingLUT.put( ColumnType.INTERVAL_LENGTH, "Interval Length" );
-    columnHeadingLUT.put( ColumnType.OIL_FLOW, "Oil Flow" );
-    columnHeadingLUT.put( ColumnType.GAS_FLOW, "Gas Flow" );
-    columnHeadingLUT.put( ColumnType.WATER_FLOW, "Water Flow" );
-    columnHeadingLUT.put( ColumnType.CONDENSATE_FLOW, "Condensate Flow" );
-    
-    columnClassLUT.put(ColumnType.START_TIMESTAMP, Date.class);
-    columnClassLUT.put(ColumnType.UNTIL_TIMESTAMP, Date.class);
-    columnClassLUT.put(ColumnType.INTERVAL_LENGTH, Double.class);
-    columnClassLUT.put(ColumnType.OIL_FLOW, Double.class);
-    columnClassLUT.put(ColumnType.GAS_FLOW, Double.class);
-    columnClassLUT.put(ColumnType.WATER_FLOW, Double.class);
-    columnClassLUT.put(ColumnType.CONDENSATE_FLOW, Double.class);
+    // enable lookup from column type  to well measurement type and vice versa
+    for( ColumnType ct : ColumnType.values() )
+    {
+        if ( ct.isWellMeasurement )
+        {
+            columnTypeWmtLUT.put(ct, ct.wmt);
+            wmtColumnTypeLUT.put(ct.wmt, ct);
+        }
+    }
 }
         
-
-public GasWellDataSetTableModel(GasWellDataSet actualData)
+public GasWellDataSetTableModel( GasWellDataSet actualData )
 {
     this.actualData = actualData;
     columnList = new ArrayList<ColumnType>();
@@ -92,11 +119,30 @@ public GasWellDataSetTableModel(GasWellDataSet actualData)
     columnList.add( ColumnType.INTERVAL_LENGTH );
     for( WellMeasurementType wmt : WellMeasurementType.values() )
     {
+        logger.debug( "containsMeasurement( " + wmt + ")=" + actualData.containsMeasurement( wmt ) );
         if ( actualData.containsMeasurement( wmt ) )
         {
-            columnList.add( columnTypeLUT.get( wmt ) );
+            columnList.add(wmtColumnTypeLUT.get(wmt));
         }
     }
+    columnList.add( ColumnType.COMMENT );
+    
+    columnTypeIndexLUT = new HashMap<ColumnType,Integer>();
+    for( int i = 0; i < columnList.size(); i++ )
+    {
+        columnTypeIndexLUT.put( columnList.get( i ), i );
+    }
+
+    List<String> columnNameList = new ArrayList<String>();
+    String[] result;
+
+    for( ColumnType ct : columnList )
+    {
+        columnNameList.add( ct.columnHeading );
+    }
+
+    columnNameArray = new String[ columnNameList.size() ];
+    columnNameList.toArray( columnNameArray );
 }
 
 @Override
@@ -111,13 +157,47 @@ public int getColumnCount()
     return columnList.size();
 }
 
+/**
+ *
+ * @param ct the type of column to interrogate
+ * @return whether or not the table contains this type of column
+ */
+public boolean containsColummnType( ColumnType ct )
+{
+    return columnTypeIndexLUT.containsKey( ct );
+}
+
+
+/**
+ *
+ * @param ct the type of column to interrogate
+ * @return the index of the column type in the table.
+ */
+public int getColumnIndex( ColumnType ct )
+{
+    int result = -1;
+    result = containsColummnType( ct ) ? columnTypeIndexLUT.get( ct ) : -1;
+    return result;
+}
+
+/**
+ *
+ * @param i the index of the column into the table.
+ * @return description of the type of column at index i
+ */
+protected ColumnType getColumnType( int i )
+{
+    return columnList.get( i );
+}
+
 @Override
-public Object getValueAt(int rowIndex, int columnIndex)
+public Object getValueAt( int rowIndex, int columnIndex )
 {
     Object result = null;
     GasWellDataEntry entry = actualData.getData().get( rowIndex );
+    ColumnType ct = columnList.get( columnIndex );
     
-    switch( columnList.get( columnIndex ) )
+    switch( ct )
     {
         case START_TIMESTAMP:
             result = entry.getDateRange().from();
@@ -132,8 +212,11 @@ public Object getValueAt(int rowIndex, int columnIndex)
         case GAS_FLOW:
         case OIL_FLOW:
         case CONDENSATE_FLOW:
-            WellMeasurementType wmt = wmtLUT.get( columnList.get( columnIndex ) );
+            WellMeasurementType wmt = columnTypeWmtLUT.get( columnList.get( columnIndex ) );
             result = new Double( entry.getMeasurement( wmt ) );
+            break;
+        case COMMENT:
+            result = entry.getComment();
             break;
     }
     return result;
@@ -142,37 +225,108 @@ public Object getValueAt(int rowIndex, int columnIndex)
 @Override
 public String getColumnName( int column )
 {
-    return columnHeadingLUT.get( columnList.get( column ) );
+    String result = null;
+    
+    if ( ( column >= 0 ) && ( column < getColumnCount() ) )
+    {
+        result = columnList.get( column ).columnHeading;
+    }
+    return result;
 }
 
 public String[] getColumnNames()
 {
-    List<String> columnNameList = new ArrayList<String>();
-    String[] result;
-    
-    for( ColumnType ct : columnList )
-    {
-        columnNameList.add( columnHeadingLUT.get( ct ) );
-    }
-    
-    result = new String[ columnNameList.size() ];
-    columnNameList.toArray( result );
-
-    return result;
+    return columnNameArray;
 }
 
 public Class getColumnClass( int column )
 {
-    return columnClassLUT.get( columnList.get( column ) );
+    Class result = null;
+    if ( ( column >= 0 ) && ( column < getColumnCount() ) )
+    {
+        result = columnList.get( column ).klass;
+    }
+    return result;
 }
 
 @Override
-public boolean isCellEditable(int rowIndex, int columnIndex)
+public boolean isCellEditable( int rowIndex, int columnIndex )
 {
-    return ( ( rowIndex > 0 ) && ( ( columnIndex == 0 ) || ( columnIndex == 2 ) ) );
+    return (
+                ( rowIndex >= 0 )
+            &&  ( rowIndex < getRowCount() )
+            &&  ( columnIndex >= 0 )
+            &&  ( columnIndex < getColumnCount() )
+            &&  columnList.get( columnIndex ).editable
+    );
 }
 
-public void setValueAt(Object value, int row, int col) {
+public void setValueAt( Object value, int row, int col)
+{
+    Date stamp;
+    long span;
+    DateRange range;
+    Double intervalLengthHours;
+    WellMeasurementType wmt;
+    Double measurement;
+    String text;
+    
+    if (
+            ( col >= 0)
+       &&   ( col < getColumnCount() )
+       &&   ( row >= 0 )
+       &&   ( row < getRowCount() ) )
+    {
+        GasWellDataEntry entry = actualData.getEntry( row );
+        ColumnType ct = getColumnType( col );
+        switch( ct )
+        {
+            case START_TIMESTAMP:
+                stamp = (Date)value;
+                range = new DateRange( stamp, entry.until() );
+                span = range.span();
+                entry.setDateRange( range );
+                fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH ));
+                break;
+            
+            case UNTIL_TIMESTAMP:
+                stamp = (Date)value;
+                range = new DateRange( entry.from(), stamp );
+                span = range.span();
+                entry.setDateRange(range);
+                fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH ));
+                break;
+            
+            case INTERVAL_LENGTH:
+                intervalLengthHours = (Double)value;
+                span = (long)Math.round( intervalLengthHours * 3600.0 ) * 1000L;
+                range = new DateRange( entry.from(), new Date( entry.from().getTime() + span ) );
+                entry.setDateRange( range );
+                fireTableCellUpdated(row, getColumnIndex(ColumnType.INTERVAL_LENGTH));
+                fireTableCellUpdated(row, getColumnIndex(ColumnType.START_TIMESTAMP));
+                fireTableCellUpdated( row, getColumnIndex( ColumnType.UNTIL_TIMESTAMP ));
+                break;
+            
+            case OIL_FLOW:
+            case GAS_FLOW:
+            case WATER_FLOW:
+            case CONDENSATE_FLOW:
+                if ( ( ct.isWellMeasurement ) && ( ct.wmt != null ) )
+                {
+                    measurement = (Double)value;
+                    entry.setMeasurement( ct.wmt, measurement );
+                }
+                break;
+            
+            case COMMENT:
+                text = (String)value;
+                if ( ( text != null ) && ( text.trim().length() > 0 ) )
+                {
+                    entry.setComment(text.trim());
+                }
+                break;
+        }
+    }
 //    data[row][col] = value;
     fireTableCellUpdated(row, col);
 }

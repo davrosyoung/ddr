@@ -35,6 +35,7 @@ import java.util.Map;
 /**
  * Initial naive implementation of a data rate reducer...
  */
+@Deprecated
 public class SimpleBestFitDataRateReducer implements DataRateReducer
 {
 static Logger logger = Logger.getLogger( SimpleBestFitDataRateReducer.class );

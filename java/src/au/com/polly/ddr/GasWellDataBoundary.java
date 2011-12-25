@@ -3,7 +3,7 @@
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
- *
+ *  
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -20,10 +20,29 @@
 
 package au.com.polly.ddr;
 
+import java.util.Date;
+
 /**
- * The types of measurement types that we wish to reduce the data rate for...
+ * Represents a boundary to be superimposed upon a gas well data set. Used in the data rate reduction process.
  */
-public enum WellMeasurementType
+public class GasWellDataBoundary
 {
-    OIL_FLOW, CONDENSATE_FLOW, GAS_FLOW, WATER_FLOW
+protected Date when;
+protected String comment;
+
+GasWellDataBoundary(Date when, String comment)
+{
+    this.when = when;
+    this.comment = comment;
+}
+
+public Date getTimestamp()
+{
+    return when;
+}
+
+public String getComment()
+{
+    return comment;
+}
 }

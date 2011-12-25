@@ -51,7 +51,7 @@ protected IntervalEditorPane( GasWellDataSet dataSet )
 {
     dataTableModel = new GasWellDataSetTableModel( dataSet );
 	scrollPane = new JScrollPane();
-    populate();    
+    populate();
 }
 
 protected void populate()
@@ -72,6 +72,12 @@ protected void populate()
     dataDisplayTable.setVisible( true );
     dataDisplayTable.setName( "dataTable" );
 	dataTableModel.addTableModelListener( this );
+
+    for( int i = 0; i < dataTableModel.getColumnCount(); i++ )
+    {
+        dataDisplayTable.getColumnModel().getColumn( i ).setPreferredWidth( dataTableModel.getColumnType( i ).width );
+    }
+
 
 	scrollPane.add( dataDisplayTable );
     dataDisplayTable.setFillsViewportHeight( true );

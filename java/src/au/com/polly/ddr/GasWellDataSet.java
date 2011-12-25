@@ -90,9 +90,27 @@ public GasWellDataSet( GasWell well )
  * @param intervalBoundaries date/time boundaries. must be ascending. need to have more boundaries than in
  * the original data set!!
  */
+@Deprecated
 public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
 {
-    this(original.getWell());
+    this( original, convertDateArrayToBoundaryList( intervalBoundaries ) );
+}
+
+
+
+/**
+ * Creates a new set of gas well data measurements, given an original set of measurements and a list of
+ * date/time boundaries (must be in ascending order) from which to construct the boundaries in the
+ * resultant data set.
+ *
+ *
+ * @param original data to base new data set upon.
+ * @param intervalBoundaries date/time boundaries. must be ascending. need to have more boundaries than in
+ * the original data set!!
+ */
+public GasWellDataSet( GasWellDataSet original, List<GasWellDataBoundary> intervalBoundaries )
+{
+    this( original.getWell());
     if( original == null )
     {
         throw new NullPointerException( "Need non-NULL well to extract data from!!");
@@ -103,25 +121,25 @@ public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
         throw new NullPointerException( "Need non-NULL array of dates to specify interval boundaries." );
     }
 
-    if ( intervalBoundaries.length < 2 )
+    if ( intervalBoundaries.size() < 2 )
     {
-        throw new IllegalArgumentException( "Need an array of at least TWO dates." );
+        throw new IllegalArgumentException( "Need an list of at least TWO dates." );
     }
 
-    if( intervalBoundaries[ 0 ].before( original.from() ) )
+    if( intervalBoundaries.get( 0 ).getTimestamp().before(original.from()) )
     {
-        throw new IllegalArgumentException( "Initial date/time (" + intervalBoundaries[ 0 ] + ") precedes start of specified data set (" + original.from() + ")" );
+        throw new IllegalArgumentException( "Initial date/time (" + intervalBoundaries.get( 0 ).getTimestamp() +  ") precedes start of specified data set (" + original.from() + ")" );
     }
 
-    if( intervalBoundaries[ intervalBoundaries.length - 1 ].after(original.until()) )
+    if( intervalBoundaries.get( intervalBoundaries.size() - 1 ).getTimestamp().after(original.until()) )
     {
-        throw new IllegalArgumentException( "Terminal date/time (" + intervalBoundaries[ intervalBoundaries.length - 1 ] + ") beyond end of specified data set (" + original.until() + ")" );
+        throw new IllegalArgumentException( "Terminal date/time (" + intervalBoundaries.get( intervalBoundaries.size() - 1 ).getTimestamp() + ") beyond end of specified data set (" + original.until() + ")" );
     }
 
 
-    for( int i = 0; i < intervalBoundaries.length - 1; i++ )
+    for( int i = 0; i < intervalBoundaries.size() - 1; i++ )
     {
-        if ( intervalBoundaries[ i ].getTime() >=  intervalBoundaries[ i + 1 ].getTime() )
+        if ( intervalBoundaries.get( i ).getTimestamp().getTime() >=  intervalBoundaries.get( i + 1 ).getTimestamp().getTime() )
         {
             throw new IllegalArgumentException( "interval boundary array must contain date/times which get larger from start to finish." );
         }
@@ -129,13 +147,24 @@ public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
 
     // all params checked ... let's get going through these intervals....
     // -------------------------------------------------------------------
-    for( int i = 0; i < intervalBoundaries.length - 1; i++ )
+    for( int i = 0; i < intervalBoundaries.size() - 1; i++ )
     {
-        boolean lastInterval = ( i == intervalBoundaries.length - 2 );
-        long untilSpecifier = intervalBoundaries[ i + 1 ].getTime();
+        GasWellDataBoundary boundary = intervalBoundaries.get( i );
+        GasWellDataBoundary nextBoundary = intervalBoundaries.get( i + 1 );
+        boolean lastInterval = ( i == intervalBoundaries.size() - 2 );
+        long untilSpecifier = nextBoundary.getTimestamp().getTime();
 //        if ( ! lastInterval ) { untilSpecifier-= 1000; } // end-boundary is one second before start of next boundary!!
         Date until = new Date( untilSpecifier );
-        GasWellDataEntry entry = original.consolidateEntries( intervalBoundaries[ i ], until );
+        GasWellDataEntry entry = original.consolidateEntries( boundary.getTimestamp(), until );
+        if ( boundary.getComment() != null )
+        {
+            entry.setComment( boundary.getComment() );
+        } else {
+            if ( nextBoundary.getComment() != null )
+            {
+                entry.setComment( nextBoundary.getComment() );
+            }
+        }
         logger.debug( "Adding " + entry + " to consolidated data array" );
         addDataEntry( entry );
     }
@@ -716,7 +745,7 @@ public void outputCSV( PrintWriter writer, boolean outputColumnHeadings, boolean
                 writer.print( "," + refined );
             }
         }
-        writer.println();
+        writer.println( ",comment" );
     }
 
     for( GasWellDataEntry entry : list )
@@ -726,7 +755,7 @@ public void outputCSV( PrintWriter writer, boolean outputColumnHeadings, boolean
         
         for( WellMeasurementType wmt : WellMeasurementType.values() )
         {
-            if ( containsMeasurement( wmt ) )
+            if ( entry.containsMeasurement( wmt ) )
             {
                 formatter.format( ",%012.5f", entry.getMeasurement( wmt ) );
             } else {
@@ -735,6 +764,15 @@ public void outputCSV( PrintWriter writer, boolean outputColumnHeadings, boolean
                     writer.print(",------------");
                 }
             }
+        }
+        
+        if ( entry.getComment() != null )
+        {
+            String raw = entry.getComment();
+            String refined = raw.replace( "\"", "\\\"" );
+            writer.print( ",\"" + refined + "\"" );
+        } else {
+            writer.print( ",\"\"" );
         }
         
         writer.println();
@@ -867,6 +905,34 @@ public int hashCode()
 
     return result;
 }
+
+/**
+ *
+ * @param intervalBoundaries
+ * @return
+ *
+ * Utility method to enable us to support the old deprecated constructor which takes an array of dates.
+ */
+protected static List<GasWellDataBoundary> convertDateArrayToBoundaryList( Date[] intervalBoundaries )
+{
+    List<GasWellDataBoundary> result = new ArrayList<GasWellDataBoundary>();
+
+    if ( intervalBoundaries != null )
+    {
+        result = new ArrayList<GasWellDataBoundary>();
+
+        for( int i = 0; i < intervalBoundaries.length; i++ )
+        {
+            String comment = null;
+            if ( i == 0 ) { comment="Start of data"; }
+            if ( i == intervalBoundaries.length - 1 ) { comment="End of data"; }
+            result.add(new GasWellDataBoundary(intervalBoundaries[i], comment));
+        }
+    }
+
+    return result;
+}
+
 
 /**
  * Instead of serializing this object, we serialize a proxy representation of it instead :-)

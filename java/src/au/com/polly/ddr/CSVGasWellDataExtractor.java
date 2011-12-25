@@ -50,7 +50,7 @@ public class CSVGasWellDataExtractor extends BaseGasWellDataExtractor implements
 {
 private final static Logger logger = Logger.getLogger( CSVGasWellDataExtractor.class );
 protected MultipleWellDataMap mwdm = null;
-enum FieldType { OIL_FLOW, GAS_FLOW, WATER_FLOW, CONDENSATE_FLOW, TIMESTAMP, INTERVAL_LENGTH, WELL_NAME, UNKNOWN };
+enum FieldType { OIL_FLOW, GAS_FLOW, WATER_FLOW, CONDENSATE_FLOW, TIMESTAMP, INTERVAL_LENGTH, WELL_NAME, COMMENT, UNKNOWN };
 enum ProcessMode { BEFORE_HEADINGS, AFTER_HEADINGS };
 protected ProcessMode mode = ProcessMode.BEFORE_HEADINGS;
 protected GasWellDataSet dataSet = null;
@@ -67,6 +67,7 @@ static {
   headingPatterns.put( FieldType.CONDENSATE_FLOW, new Pattern[] { Pattern.compile( "^(gas\\s+)?cond[^\\w\\.]*(\\s+flow)?(\\s+rate)?.*$" ) } );
   headingPatterns.put( FieldType.WATER_FLOW, new Pattern[] { Pattern.compile( "^water.*" ) } );
   headingPatterns.put( FieldType.WELL_NAME, new Pattern[] { Pattern.compile( "^well" ), Pattern.compile( "^well\\s+name$") } );
+  headingPatterns.put( FieldType.COMMENT, new Pattern[] { Pattern.compile( "^comment" ), Pattern.compile( "^explan.*"), Pattern.compile( "^descr.*$") } );
 };
 
 // if any of the input lines matches this regexp, then it identifies a well to extract data for;
@@ -219,6 +220,13 @@ protected static GasWellDataEntry processDataLine( String line, List<FieldType> 
                     result.setWell( lastWell );
                 } else {
                     result.setWell( new GasWell( text ) );
+                }
+                break;
+            
+            case COMMENT:
+                if ( ( text != null ) && ( text.trim().length() > 0 ) )
+                {
+                    result.setComment( text.trim() );
                 }
                 break;
         }

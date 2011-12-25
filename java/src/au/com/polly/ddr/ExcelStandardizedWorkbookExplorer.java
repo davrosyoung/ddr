@@ -91,14 +91,18 @@ protected GasWellDataLocator interrogateSheet( Sheet sheet )
     Date lastDate = null;
     Date when = null;
     
+
     cursor = new ExcelCellLocation( sheet.getSheetName(), sheet.getFirstRowNum(), 0 );
 
-    // look in the first five rows for a column heading which starts with
+    logger.debug( "method invoked for sheet \"" + sheet.getSheetName() + "\",cursor=" + cursor );
+
+
+    // look in the first ten rows for a column heading which starts with
     // date .... expect the date column identifier within the first five
     // columns ....
     //
     // ----------------------------------------------------------------------
-    for( int j = 0; j < 5 && ( result == null ); j++ )
+    for( int j = 0; j < 10 && ( result == null ); j++ )
     {
         row = sheet.getRow( cursor.getRow() );
         if ( row != null )
@@ -107,8 +111,11 @@ protected GasWellDataLocator interrogateSheet( Sheet sheet )
             for( int i = 0; i < 5 && ( result == null ); i++ )
             {
                 cell = row.getCell( cursor.getColumn() );
-                if ( ( cell.getCellType() == Cell.CELL_TYPE_STRING )
-                        && ( ( textValue = cell.getStringCellValue() ) != null ) )
+                if (
+                        ( cell != null )
+                    && ( cell.getCellType() == Cell.CELL_TYPE_STRING )
+                    && ( ( textValue = cell.getStringCellValue() ) != null )
+                )
                 {
                     if (
                             ( textValue.trim().toLowerCase().startsWith( "date" ) )
@@ -150,7 +157,9 @@ protected GasWellDataLocator interrogateSheet( Sheet sheet )
                 logger.debug( "found first date " + firstDate + " at location " + cursor );
             }
             cursor.moveDown();
-        } while( stillSearchingForDates );
+        } while( stillSearchingForDates && ( cursor.getRow() <= sheet.getLastRowNum() ) );
+        
+        if ( stillSearchingForDates ) { logger.debug( "Did not find the first date!! cursor=" + cursor ); };
 
         // ok, now let's look for the first row which isn't a date....
         // -------------------------------------------------------------
@@ -166,8 +175,11 @@ protected GasWellDataLocator interrogateSheet( Sheet sheet )
                 }
                 cursor.moveDown();
             }
-        } while( ( row != null ) && ( when != null ) );
+        } while( ( row != null ) && ( when != null ) && ( cursor.getRow() <= sheet.getLastRowNum() ) );
         
+        logger.debug( "firstDateRow=" + lastDateRow );
+        logger.debug( "lastDate=" + lastDate + ", lastDateRow=" + lastDateRow );
+
         // ok ... now locate the gas, oil, water and condensate flow column headings...
         // ------------------------------------------------------------------------------
         cursor.setRow( dateCellRow );

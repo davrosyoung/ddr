@@ -552,6 +552,22 @@ public static double getPercentageMemoryUsed()
     return (double)usedMemory / (double)totalMemory;
 }
 
+public static long getMemoryUsed()
+{
+    Runtime rt = Runtime.getRuntime();
+    long totalMemory = rt.totalMemory();
+    long freeMemory = rt.freeMemory();
+    long usedMemory = totalMemory - freeMemory;
+    return usedMemory;
+
+}
+
+public static long getMemoryFree()
+{
+    Runtime rt = Runtime.getRuntime();
+    return rt.freeMemory();
+}
+
 protected static class ExcelFileFilter extends FileFilter
 {
     @Override
@@ -607,7 +623,7 @@ public class MemoryUsedUpdater implements Runnable
                 public void run()
                 {
                     field.setText( percentageFormatter.format( getPercentageMemoryUsed()));
-                    logger.debug( "Just updated memory used percentage to " + getPercentageMemoryUsed() );
+                    logger.debug( "Just updated memory used percentage to " + getPercentageMemoryUsed() + ", memory used=" + getMemoryUsed() + ", memoryFree=" + getMemoryFree() );
                 }
             }
             );
