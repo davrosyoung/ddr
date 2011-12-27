@@ -111,6 +111,10 @@ public GasWellDataSet( GasWellDataSet original, Date[] intervalBoundaries )
 public GasWellDataSet( GasWellDataSet original, List<GasWellDataBoundary> intervalBoundaries )
 {
     this( original.getWell());
+
+    GasWellDataBoundary nextBoundary = null;
+    GasWellDataBoundary boundary = null;
+
     if( original == null )
     {
         throw new NullPointerException( "Need non-NULL well to extract data from!!");
@@ -147,20 +151,38 @@ public GasWellDataSet( GasWellDataSet original, List<GasWellDataBoundary> interv
 
     // all params checked ... let's get going through these intervals....
     // -------------------------------------------------------------------
-    for( int i = 0; i < intervalBoundaries.size() - 1; i++ )
+    for( int i = 0; ( i < intervalBoundaries.size() ) && ( ( nextBoundary == null ) || ( nextBoundary.getBoundaryType() != GasWellDataBoundary.BoundaryType.END ) ); i++ )
     {
-        GasWellDataBoundary boundary = intervalBoundaries.get( i );
-        GasWellDataBoundary nextBoundary = intervalBoundaries.get( i + 1 );
-        boolean lastInterval = ( i == intervalBoundaries.size() - 2 );
-        long untilSpecifier = nextBoundary.getTimestamp().getTime();
-//        if ( ! lastInterval ) { untilSpecifier-= 1000; } // end-boundary is one second before start of next boundary!!
+        boundary = intervalBoundaries.get( i );
+        nextBoundary = null;
+
+        long untilSpecifier;
+        boolean lastInterval = ( i == intervalBoundaries.size() - 1 );
+        if ( lastInterval )
+        {
+            untilSpecifier = original.until().getTime();
+        } else {
+            nextBoundary = intervalBoundaries.get( i + 1 );
+            untilSpecifier = nextBoundary.getTimestamp().getTime();
+        }
+
         Date until = new Date( untilSpecifier );
+
+        // if the last interval boundary is the same as the last date of the data range,
+        // then we don't need to worry about adding the "last" interval!! It'll be zero
+        // length....
+        //-----------------------------------------------------------------------------------
+        if ( ( lastInterval ) && ( boundary.getTimestamp().getTime() == untilSpecifier ) )
+        {
+            continue;
+        }
+
         GasWellDataEntry entry = original.consolidateEntries( boundary.getTimestamp(), until );
         if ( boundary.getComment() != null )
         {
             entry.setComment( boundary.getComment() );
         } else {
-            if ( nextBoundary.getComment() != null )
+            if ( ( nextBoundary != null ) && ( nextBoundary.getComment() != null ) )
             {
                 entry.setComment( nextBoundary.getComment() );
             }
@@ -923,7 +945,7 @@ protected static List<GasWellDataBoundary> convertDateArrayToBoundaryList( Date[
 
         for( int i = 0; i < intervalBoundaries.length; i++ )
         {
-            String comment = null;
+            String comment = "unknown";
             if ( i == 0 ) { comment="Start of data"; }
             if ( i == intervalBoundaries.length - 1 ) { comment="End of data"; }
             result.add(new GasWellDataBoundary(intervalBoundaries[i], comment));

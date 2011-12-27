@@ -41,7 +41,7 @@ public SimpleDiscontinuityDataRateReducer()
 }
 
 @Override
-public GasWellDataSet reduce(GasWellDataSet original, int maxIntervals)
+public GasWellDataSet reduce(GasWellDataSet original)
 {
     GasWellDataSet result;
     List<Double> unsorted = new ArrayList<Double>();

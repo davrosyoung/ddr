@@ -23,8 +23,12 @@ package au.com.polly.ddr;
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
 import junit.framework.JUnit4TestAdapter;
+import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -56,7 +60,10 @@ import static junit.framework.Assert.assertTrue;
 @RunWith(JUnit4.class)
 public class ExcelConverterTest
 {
+private final static Logger logger = Logger.getLogger( ExcelConverterTest.class );
+static protected DateParser parser = new AussieDateParser();
 
+@Test
 public void testConstructor()
 {
     assertNotNull(new ExcelConverter());
@@ -95,15 +102,247 @@ public void testGetCellContents()
     row.createCell(4).setCellValue( (String)null );
     row.createCell(5).setCellValue( false );
 
-
     assertEquals("NUMERIC - 1.0", ExcelConverter.cellContents( row.getCell( 0 ) ) );
     assertEquals( "NUMERIC - 1.2", ExcelConverter.cellContents( row.getCell( 1 ) ) );
     assertEquals( "STRING - \"Hello World!\"", ExcelConverter.cellContents( row.getCell( 2 ) ) );
     assertEquals( "BOOLEAN - <TRUE>", ExcelConverter.cellContents( row.getCell( 3 ) ) );
     assertEquals( "BLANK - <NULL>", ExcelConverter.cellContents( row.getCell( 4 ) ) );
     assertEquals( "BOOLEAN - <FALSE>", ExcelConverter.cellContents( row.getCell( 5 ) ) );
+    
+}
+
+@Test
+public void testExtractDateFromCellMMDDYYHMM()
+{
+    Workbook wb = new XSSFWorkbook();
+    CreationHelper createHelper = wb.getCreationHelper();
+    Date stamp = parser.parse( "01/JAN/2012 05:14:26" ).getTime();
+    Sheet sheet = wb.createSheet("new sheet");
+    Date extracted = null;
+
+    // Create a row and put some cells in it. Rows are 0 based.
+    Row row = sheet.createRow((short)0);
+    // Create a cell and put a value in it.
+    Cell cell = row.createCell(0);
+    CellStyle cellStyle = wb.createCellStyle();
+    cellStyle.setDataFormat(
+            createHelper.createDataFormat().getFormat("mm/dd/yy h:mm"));
+    cell = row.createCell(1);
+    cell.setCellValue( stamp );
+    cell.setCellStyle(cellStyle);
+    
+    
+    extracted = ExcelConverter.extractDateFromCell( cell );
+    assertNotNull( extracted );
+    
+    assertEquals( stamp, extracted );
+}
+
+@Test
+public void testExtractDateFromCellMMminusDDminusYYHMM()
+{
+    Workbook wb = new XSSFWorkbook();
+    CreationHelper createHelper = wb.getCreationHelper();
+    Date stamp = parser.parse( "01/JAN/2012 05:14:26" ).getTime();
+    Sheet sheet = wb.createSheet("new sheet");
+    Date extracted = null;
+
+    // Create a row and put some cells in it. Rows are 0 based.
+    Row row = sheet.createRow((short)0);
+    // Create a cell and put a value in it.
+    Cell cell = row.createCell(0);
+    CellStyle cellStyle = wb.createCellStyle();
+    cellStyle.setDataFormat(
+            createHelper.createDataFormat().getFormat("mm-dd-yy h:mm"));
+    cell = row.createCell(1);
+    cell.setCellValue( stamp );
+    cell.setCellStyle(cellStyle);
+
+    extracted = ExcelConverter.extractDateFromCell( cell );
+    assertNotNull( extracted );
+
+    assertEquals( stamp, extracted );
+}
+
+@Test
+public void testExtractDateFromCellDDslashminusMMMMslashminusYY()
+{
+    Workbook wb = new XSSFWorkbook();
+    CreationHelper createHelper = wb.getCreationHelper();
+    Date stamp = parser.parse( "01/JAN/2012 05:14:26" ).getTime();
+    Sheet sheet = wb.createSheet("new sheet");
+    Date extracted = null;
+
+    // Create a row and put some cells in it. Rows are 0 based.
+    Row row = sheet.createRow((short)0);
+    // Create a cell and put a value in it.
+    Cell cell = row.createCell(0);
+    CellStyle cellStyle = wb.createCellStyle();
+    cellStyle.setDataFormat(
+            createHelper.createDataFormat().getFormat("dd\\-mmm\\-yy h:mm"));
+    cell = row.createCell(1);
+    cell.setCellValue( stamp );
+    cell.setCellStyle(cellStyle);
+
+    extracted = ExcelConverter.extractDateFromCell( cell );
+    assertNotNull( extracted );
+
+    assertEquals( stamp, extracted );
+}
+
+@Test
+public void testExtractDateFromCellDDminusMMMMminusYY()
+{
+    Workbook wb = new XSSFWorkbook();
+    CreationHelper createHelper = wb.getCreationHelper();
+    Date stamp = parser.parse( "01/JAN/2012 05:14:26" ).getTime();
+    Sheet sheet = wb.createSheet("new sheet");
+    Date extracted = null;
+
+    // Create a row and put some cells in it. Rows are 0 based.
+    Row row = sheet.createRow((short)0);
+    // Create a cell and put a value in it.
+    Cell cell = row.createCell(0);
+    CellStyle cellStyle = wb.createCellStyle();
+    cellStyle.setDataFormat(
+            createHelper.createDataFormat().getFormat("dd-mmm-yy hh:mm:ss.ttt blah blah blah"));
+    cell = row.createCell(1);
+    cell.setCellValue( stamp );
+    cell.setCellStyle(cellStyle);
+
+    extracted = ExcelConverter.extractDateFromCell( cell );
+    assertNotNull( extracted );
+
+    assertEquals( stamp, extracted );
+}
+
+@Test
+public void testEndEighteenNinetyNine()
+{
+    Calendar cal = parser.parse( "31/12/1899" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 0 );
+    assertNotNull( result );
+    assertEquals( when, result );
+}
+
+@Test
+public void testFirstJanuaryNineteenHundred()
+{
+    Calendar cal = parser.parse( "1/1/1900" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 1 );
+    assertNotNull( result );
+    assertEquals( when, result );
+}
+
+@Test
+public void testTwentyEighthFebruary1900()
+{
+    Calendar cal = parser.parse( "28/FEB/1900" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 59 );
+    assertNotNull( result );
+    assertEquals( when, result );
 
 }
+
+@Test
+public void testFirstMarch1900()
+{
+    Calendar cal = parser.parse( "1/MAR/1900" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 61 );
+    assertNotNull( result );
+    assertEquals( when, result );
+}
+
+
+@Test
+public void testSecondMarch1900()
+{
+    Calendar cal = parser.parse( "2/MAR/1900" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 62 );
+    assertNotNull( result );
+    assertEquals( when, result );
+}
+
+@Test
+public void testFirstJanuaryNineteenHundredAndOne()
+{
+    Calendar cal = parser.parse( "1/1/1901" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 367 );
+    assertNotNull( result );
+    assertEquals( when, result );
+}
+
+
+@Test
+public void testDavesBirthday2006()
+{
+    Calendar cal = parser.parse( "13/6/2006" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 38881.0 );
+    assertNotNull( result );
+    assertEquals( when, result );
+}
+
+@Test
+public void testDavesActualBirthday()
+{
+    Calendar cal = parser.parse( "13/6/1968" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 25002.0 );
+    assertNotNull( result );
+    assertEquals( when, result );
+}
+
+@Test
+public void testEndNineteenNinetyNine()
+{
+    Calendar cal = parser.parse( "31/12/1999" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 36525.0 );
+    assertNotNull( result );
+    assertEquals( when, result );
+}
+
+@Test
+public void testStartTwoThousand()
+{
+    Calendar cal = parser.parse( "1st January 2000" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 36526.0 );
+    assertNotNull( result );
+    assertEquals( when, result );
+}
+
+@Test
+public void testFourteenthAugust2005()
+{
+    Calendar cal = parser.parse( "14th August 2005" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 38578.0 );
+    String resultText;
+    assertNotNull( result );
+    assertEquals(when, result);
+    resultText = result.toString();
+    assertTrue( resultText.contains( "Aug" ) );
+    assertTrue( resultText.contains( "14" ) );
+    assertTrue( resultText.contains( "2005" ) );
+}
+@Test
+public void testFirstJan2012TwentySixMinutesAndFourteenSecondsPastFive()
+{
+    Calendar cal = parser.parse( "1st January 2012 05:14:26" );
+    Date when = cal.getTime();
+    Date result = ExcelConverter.convert( 40909.21835648148 );
+    assertNotNull( result );
+    assertEquals(when, result);
+}
+
 
 public static junit.framework.Test suite() {
     return new JUnit4TestAdapter( ExcelConverterTest.class );

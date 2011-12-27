@@ -20,7 +20,6 @@
 
 package au.com.polly.util;
 
-import au.com.polly.ddr.ExcelDateConverterTest;
 import junit.framework.JUnit4TestAdapter;
 import org.junit.Before;
 import org.junit.Test;

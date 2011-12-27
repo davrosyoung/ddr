@@ -23,8 +23,11 @@ package au.com.polly.plotter.csvgrapher;
 import au.com.polly.plotter.DataSeries;
 import au.com.polly.util.TimestampArmyKnife;
 import junit.framework.JUnit4TestAdapter;
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,8 +48,11 @@ import static org.junit.Assert.fail;
  * the configuration.
  *
  */
+@RunWith(JUnit4.class)
 public class CSVPlotterTest
 {
+private final static Logger logger = Logger.getLogger( CSVPlotterTest.class );
+private final static double ACCEPTABLE_ERROR = 1E-8;
 Properties fakeProps;
 String fakeData;
 
@@ -166,10 +172,10 @@ public void testReadData()
     assertEquals( knife.parse( "18/MAR/2007 08:41:00") , data.get( 1 ).getData().get( 3 ) );
 
     assertEquals( 4, data.get( 3 ).size() );
-    assertEquals( 37, data.get( 3 ).getData().get( 0 ) );
-    assertEquals( 39, data.get( 3 ).getData().get( 1 ) );
-    assertEquals( 36, data.get( 3 ).getData().get( 2 ) );
-    assertEquals( 36, data.get( 3 ).getData().get( 3 ) );
+    assertEquals( 37L, data.get( 3 ).getData().get( 0 ) );
+    assertEquals( 39L, data.get( 3 ).getData().get( 1 ) );
+    assertEquals( 36L, data.get( 3 ).getData().get( 2 ) );
+    assertEquals( 36L, data.get( 3 ).getData().get( 3 ) );
 
     assertEquals( 4, data.get( 4 ).size() );
     assertEquals( 24.5, data.get( 4 ).getData().get( 0 ) );

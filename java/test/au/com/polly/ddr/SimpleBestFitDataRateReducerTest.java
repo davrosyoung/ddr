@@ -20,8 +20,6 @@
 
 package au.com.polly.ddr;
 
-import au.com.polly.util.AussieDateParser;
-import au.com.polly.util.DateParser;
 import junit.framework.JUnit4TestAdapter;
 import org.apache.log4j.Logger;
 import org.junit.Before;
@@ -29,11 +27,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.Calendar;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -73,11 +66,11 @@ public void testReducingData()
     DataRateReducer reducer = new SimpleBestFitDataRateReducer();
     GasWellDataSet reducedDataSet;
 
-    reducedDataSet = reducer.reduce( dataSet, 10 );
+    reducedDataSet = reducer.reduce( dataSet );
     assertNotNull( reducedDataSet );
     assertEquals( "Dummy", reducedDataSet.getWellName() );
     assertEquals( dataSet.from(), reducedDataSet.from() );
-    assertEquals( dataSet.from(), reducedDataSet.from() );
+    assertEquals( dataSet.until(), reducedDataSet.until() );
 
     Map<WellMeasurementType,Double> errorMap = GasWellDataSetUtil.getError( dataSet, reducedDataSet );
     if ( errorMap.containsKey( WellMeasurementType.OIL_FLOW ) )

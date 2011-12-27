@@ -88,6 +88,11 @@ public void paintComponent( Graphics gfx )
     render((Graphics2D) gfx, this.getWidth(), this.getHeight());
 }
 
+public GasWellDataSet getData()
+{
+    return this.data;
+}
+
 
 
 public void render( Graphics2D gfx, int width, int height )
@@ -317,7 +322,7 @@ public void setDisplayDateRange(Date from, Date until)
 @Override
 public void reduce(DataRateReducer reducer)
 {
-    this.overlayData = reducer.reduce( data, 100 );
+    this.overlayData = reducer.reduce( data);
     repaint();
 }
 

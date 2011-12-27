@@ -23,13 +23,8 @@ package au.com.polly.ddr;
 import au.com.polly.util.Sequencer;
 import org.apache.log4j.Logger;
 
-import java.sql.Time;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,13 +42,14 @@ public SimpleBestFitDataRateReducer()
 }
 
 @Override
-public GasWellDataSet reduce(GasWellDataSet original, int maxIntervals)
+public GasWellDataSet reduce(GasWellDataSet original)
 {
     GasWellDataSet result = null;
     int[] minErrorPositions = null;
     double minOilFlowError = Double.MAX_VALUE;
     double minCondensateFlowError = Double.MAX_VALUE;
     Date[] segmentDateStart;
+    int maxIntervals = 10;
 
     if ( maxIntervals >= TIME_DIVISIONS )
     {

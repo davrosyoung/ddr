@@ -412,7 +412,7 @@ public class p46
             // ----------------------------------------------------------
             if ( ( cell.getCellType() == Cell.CELL_TYPE_NUMERIC ) && dateFormatMatcher.matches() )
             {
-                when = ExcelDateConverter.getInstance().convert( cell.getNumericCellValue() );
+                when = ExcelConverter.convert( cell.getNumericCellValue() );
 
                 // move along to first column to extract data from...
                 // --------------------------------------------------

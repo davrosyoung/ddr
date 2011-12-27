@@ -65,6 +65,8 @@ public void loadData( GasWellDataSet dataSet );
  */
 public void loadOverlayData( GasWellDataSet overlayDataSet );
 
+public GasWellDataSet getData();
+
 /**
  *
  * @return the data measurement set being overlayed against the

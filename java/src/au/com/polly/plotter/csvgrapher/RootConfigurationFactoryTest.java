@@ -25,6 +25,8 @@ import au.com.polly.util.DataType;
 import junit.framework.JUnit4TestAdapter;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.awt.*;
 import java.util.List;
@@ -43,6 +45,7 @@ import static org.junit.Assert.assertTrue;
  * Battery of tests of the data series class.
  *
  */
+@RunWith(JUnit4.class)
 public class RootConfigurationFactoryTest
 {
 Properties singleGraphProps;
@@ -337,8 +340,8 @@ public void testCreatingRootConfigWithTimeBasedAndScatterGraph()
     assertNotNull( config.getGraphConfig().get( 1 ).getAxisConfigurations().get( 1 ).getUnits() );
     assertEquals( "messages", config.getGraphConfig().get( 1 ).getAxisConfigurations().get( 1 ).getUnits() );
     assertFalse( config.getGraphConfig().get( 1 ).getAxisConfigurations().get( 1 ).isAutoScale() );
-    assertEquals( 40000, config.getGraphConfig().get( 1 ).getAxisConfigurations().get( 1 ).getMin() );
-    assertEquals( 60000, config.getGraphConfig().get( 1 ).getAxisConfigurations().get( 1 ).getMax() );
+    assertEquals( 40000L, config.getGraphConfig().get( 1 ).getAxisConfigurations().get( 1 ).getMin() );
+    assertEquals( 60000L, config.getGraphConfig().get( 1 ).getAxisConfigurations().get( 1 ).getMax() );
     assertEquals( Color.RED, config.getGraphConfig().get( 1 ).getAxisConfigurations().get( 1 ).getColour() );
 
     assertNotNull( config.getGraphConfig().get( 1 ).getXSeriesConfiguration() );

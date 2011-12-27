@@ -23,6 +23,7 @@ package au.com.polly.ddr;
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
 import au.com.polly.util.DateRange;
+import com.sun.xml.internal.rngom.binary.PatternBuilder;
 import org.apache.log4j.Logger;
 import sun.nio.cs.ext.DBCS_ONLY_IBM_EBCDIC_Decoder;
 
@@ -57,6 +58,7 @@ protected GasWellDataSet dataSet = null;
 private static Map<FieldType,Pattern[]> headingPatterns = new HashMap<FieldType,Pattern[]>();
 protected BufferedReader reader = null;
 protected static DateParser parser = new AussieDateParser();
+protected static Pattern cottonWoolPattern = Pattern.compile( "^\"([^\"]*)\"$" );
 
 
 static {
@@ -67,7 +69,7 @@ static {
   headingPatterns.put( FieldType.CONDENSATE_FLOW, new Pattern[] { Pattern.compile( "^(gas\\s+)?cond[^\\w\\.]*(\\s+flow)?(\\s+rate)?.*$" ) } );
   headingPatterns.put( FieldType.WATER_FLOW, new Pattern[] { Pattern.compile( "^water.*" ) } );
   headingPatterns.put( FieldType.WELL_NAME, new Pattern[] { Pattern.compile( "^well" ), Pattern.compile( "^well\\s+name$") } );
-  headingPatterns.put( FieldType.COMMENT, new Pattern[] { Pattern.compile( "^comment" ), Pattern.compile( "^explan.*"), Pattern.compile( "^descr.*$") } );
+  headingPatterns.put( FieldType.COMMENT, new Pattern[] { Pattern.compile( "^comment" ), Pattern.compile( "^explan.*"), Pattern.compile( "^explain.*" ), Pattern.compile( "^descr.*$") } );
 };
 
 // if any of the input lines matches this regexp, then it identifies a well to extract data for;
@@ -226,7 +228,17 @@ protected static GasWellDataEntry processDataLine( String line, List<FieldType> 
             case COMMENT:
                 if ( ( text != null ) && ( text.trim().length() > 0 ) )
                 {
-                    result.setComment( text.trim() );
+                    // strip off leading and trailing quotes...
+                    // -----------------------------------------
+                    Matcher m = cottonWoolPattern.matcher( text.trim() );
+                    if ( m.matches() )
+                    {
+                        result.setComment( m.group( 1 ) );
+                    } else {
+                        result.setComment( text.trim() );
+                    }
+                    
+                    
                 }
                 break;
         }

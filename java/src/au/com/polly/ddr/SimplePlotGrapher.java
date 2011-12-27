@@ -88,6 +88,11 @@ public void reduce(DataRateReducer reducer)
     throw new IllegalStateException( "DO NOT SUPPORT REDUCTION!!!!" );
 }
 
+public GasWellDataSet getData()
+{
+    return this.data;
+}
+
 @Override
 public GasWellDataSet getOverlayData()
 {

@@ -79,6 +79,8 @@ public static junit.framework.Test suite() {
 public void setupData()
 {
     dateParser = new AussieDateParser();
+
+    TestGasWellDataSet.repopulate();
  
     smallDataSet = TestGasWellDataSet.getSmallDataSet();
 
@@ -227,7 +229,7 @@ public void testCSVWriteAndRetrieve()
     assertEquals( 0, mwdm.getDataMap().keySet().size() );
 
     mwdm.addDataSet( TestGasWellDataSet.getSAA2FragmentDataSet() );
-    mwdm.addDataSet(TestGasWellDataSet.getNicksDataSet());
+    mwdm.addDataSet( TestGasWellDataSet.getNicksDataSet() );
 
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter( sw );

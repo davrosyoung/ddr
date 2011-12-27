@@ -21,6 +21,7 @@
 package au.com.polly.plotter;
 
 import junit.framework.JUnit4TestAdapter;
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,6 +42,9 @@ import static org.junit.Assert.assertNull;
  */
 public class AxisConfigurationTest
 {
+    private final static Logger logger = Logger.getLogger(AxisConfigurationTest.class);
+    private final static double ACCEPTABLE_ERROR = 1E-8;
+
     Properties standardProperties;
     Properties aggregateProperties;
 
@@ -167,8 +171,8 @@ public class AxisConfigurationTest
         assertNull( config.getUnits() );
         assertNotNull( config.getMin() );
         assertNotNull( config.getMax() );
-        assertEquals( 27.4, config.getMin().doubleValue() );
-        assertEquals( 58.2, config.getMax().doubleValue() );
+        assertEquals( 27.4, config.getMin().doubleValue(), ACCEPTABLE_ERROR );
+        assertEquals( 58.2, config.getMax().doubleValue(), ACCEPTABLE_ERROR );
     }
 
     /**

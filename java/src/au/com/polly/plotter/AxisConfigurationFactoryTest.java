@@ -148,8 +148,8 @@ public class AxisConfigurationFactoryTest {
         assertFalse( config.isAutoScale() );
         assertNotNull( config.getUnits() );
         assertEquals( "kg", config.getUnits() );
-        assertEquals( 97, config.getMax() );
-        assertEquals( 42, config.getMin() );
+        assertEquals( 97L, config.getMax() );
+        assertEquals( 42L, config.getMin() );
 
         config = configList.get( 2 );
         assertNotNull( config );
@@ -157,8 +157,8 @@ public class AxisConfigurationFactoryTest {
         assertEquals( Color.GREEN, config.getColour() );
         assertFalse( config.isAutoScale() );
         assertNull( config.getUnits() );
-        assertEquals( 20, config.getMax() );
-        assertEquals( 15, config.getMin() );
+        assertEquals( 20L, config.getMax() );
+        assertEquals( 15L, config.getMin() );
     }
 
     /**
@@ -187,15 +187,15 @@ public class AxisConfigurationFactoryTest {
         assertEquals( "second axis", configList.get( 1 ).getLabel() );
         assertEquals( Color.BLUE, configList.get( 1 ).getColour() );
         assertFalse( configList.get( 1 ).isAutoScale() );
-        assertEquals( 41, configList.get( 1 ).getMin() );
-        assertEquals( 98, configList.get( 1 ).getMax() );
+        assertEquals( 41L, configList.get( 1 ).getMin() );
+        assertEquals( 98L, configList.get( 1 ).getMax() );
         assertEquals( "polly", configList.get( 1 ).getUnits() );
 
         assertEquals( "third axis", configList.get( 2 ).getLabel() );
         assertEquals( Color.GREEN, configList.get( 2 ).getColour() );
         assertFalse( configList.get( 2 ).isAutoScale() );
-        assertEquals( 15, configList.get( 2 ).getMin() );
-        assertEquals( 20, configList.get( 2 ).getMax() );
+        assertEquals( 15L, configList.get( 2 ).getMin() );
+        assertEquals( 20L, configList.get( 2 ).getMax() );
         assertNull( configList.get( 2 ).getUnits() );
     }
 

@@ -95,8 +95,8 @@ public void setup()
     testCSVData.append( "# client: dirty big oil company\n" );
     testCSVData.append( "#\n" );
     testCSVData.append( "date/time,well,interval length,oil flow,gas flow,water flow\n" );
-    testCSVData.append( "13/JUN/2011 05:00:00, osho-2, 24, 117.6, 006.4, 325.1\n" );
-    testCSVData.append( "14/JUN/2011 05:00:00, osho-2, 24, 121.3, 008.1, 335.5\n" );
+    testCSVData.append( "13/JUN/2011 05:00:00, osho-2, 24, 117.6, 006.4, 325.1,\"start of data\"\n" );
+    testCSVData.append( "14/JUN/2011 05:00:00, osho-2, 24, 121.3, 008.1, 335.5,\n" );
     testCSVData.append( "15/JUN/2011 05:00:00, osho-2, 24, 124.1, 007.6, 337.2\n" );
     testCSVData.append( "16/JUN/2011 05:00:00, osho-2, 24, 118.2, 012.2, 342.6\n" );
     testCSVData.append( "17/JUN/2011 05:00:00, osho-2, 24, 115.3, 013.9, 317.5\n" );
@@ -105,7 +105,7 @@ public void setup()
     testCSVData.append( "15/JUN/2011 05:00:00, osho-9b, 24, 524.1, 107.6, 937.2\n" );
     testCSVData.append( "16/JUN/2011 05:00:00, osho-9b, 24, 518.2, 112.2, 942.6\n" );
     testCSVData.append( "17/JUN/2011 05:00:00, osho-9b, 24, 515.3, 113.9, 917.5\n" );
-    testCSVData.append( "18/JUN/2011 05:00:00, osho-9b, 24, 519.3, 110.9, 913.5\n" );
+    testCSVData.append( "18/JUN/2011 05:00:00, osho-9b, 24, 519.3, 110.9, 913.5, \"end of data\"\n" );
     testCSVReader = new StringReader( testCSVData.toString() );
 
     StringWriter sw = new StringWriter();
@@ -142,7 +142,7 @@ public void testResolvingFieldTypeEmptyString()
 @Test
 public void testResolvingFieldTypes()
 {
-    assertEquals( CSVGasWellDataExtractor.FieldType.WELL_NAME, CSVGasWellDataExtractor.resolveFieldType( "well")  );
+    assertEquals(CSVGasWellDataExtractor.FieldType.WELL_NAME, CSVGasWellDataExtractor.resolveFieldType("well"));
     assertEquals( CSVGasWellDataExtractor.FieldType.WELL_NAME, CSVGasWellDataExtractor.resolveFieldType( "Well" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.WELL_NAME, CSVGasWellDataExtractor.resolveFieldType( "WELL" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.WELL_NAME, CSVGasWellDataExtractor.resolveFieldType( "well name" ) );
@@ -197,6 +197,15 @@ public void testResolvingWaterFlowFieldType()
     assertEquals( CSVGasWellDataExtractor.FieldType.WATER_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water rate" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.WATER_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water flow" ) );
     assertEquals( CSVGasWellDataExtractor.FieldType.WATER_FLOW, CSVGasWellDataExtractor.resolveFieldType( "water" ) );
+}
+
+@Test
+public void testResolvingCommentFieldType()
+{
+    assertEquals( CSVGasWellDataExtractor.FieldType.COMMENT, CSVGasWellDataExtractor.resolveFieldType( "comment" ) );
+    assertEquals( CSVGasWellDataExtractor.FieldType.COMMENT, CSVGasWellDataExtractor.resolveFieldType( "description of measurement" ) );
+    assertEquals( CSVGasWellDataExtractor.FieldType.COMMENT, CSVGasWellDataExtractor.resolveFieldType( "explain it to me baby!!" ) );
+    assertEquals( CSVGasWellDataExtractor.FieldType.COMMENT, CSVGasWellDataExtractor.resolveFieldType( "explanations are harder than apologies" ) );
 }
 
 @Test
@@ -255,7 +264,8 @@ public void testProcessingColumnHeadings()
     assertFalse( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.WELL_NAME ) );
     assertFalse( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH ) );
     assertFalse( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW ) );
-    
+    assertFalse( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.COMMENT ) );
+
     
     columnHeadingList = CSVGasWellDataExtractor.processColumnHeadings( "well,time,interval,cond.,gas rate,water flow" );
     assertNotNull( columnHeadingList );
@@ -267,6 +277,21 @@ public void testProcessingColumnHeadings()
     assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.WELL_NAME ) );
     assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH ) );
     assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW ) );
+    assertFalse( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.COMMENT ) );
+    assertFalse( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.UNKNOWN ) );
+
+
+    columnHeadingList = CSVGasWellDataExtractor.processColumnHeadings( "well,time,interval,cond.,gas rate,water flow,comment" );
+    assertNotNull( columnHeadingList );
+    assertEquals( 7, columnHeadingList.size() );
+    assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.TIMESTAMP ) );
+    assertFalse( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.OIL_FLOW ) );
+    assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.GAS_FLOW ) );
+    assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.WATER_FLOW ) );
+    assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.WELL_NAME ) );
+    assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH ) );
+    assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW ) );
+    assertTrue( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.COMMENT ) );
     assertFalse( columnHeadingList.contains( CSVGasWellDataExtractor.FieldType.UNKNOWN ) );
     
 }
@@ -341,6 +366,64 @@ public void testProcessingDataLineWithNullValue()
 
     assertEquals( 130.6, entry.getMeasurement( WellMeasurementType.CONDENSATE_FLOW ), ACCEPTABLE_ERROR );
     assertEquals( 12.3, entry.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+}
+
+@Test
+public void testProcessingDataLineWithNullValueAndComment()
+{
+    List<CSVGasWellDataExtractor.FieldType> columns = new ArrayList<CSVGasWellDataExtractor.FieldType>();
+    columns.add( CSVGasWellDataExtractor.FieldType.WELL_NAME );
+    columns.add( CSVGasWellDataExtractor.FieldType.TIMESTAMP );
+    columns.add( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH );
+    columns.add( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW );
+    columns.add( CSVGasWellDataExtractor.FieldType.WATER_FLOW );
+    columns.add( CSVGasWellDataExtractor.FieldType.GAS_FLOW );
+    columns.add( CSVGasWellDataExtractor.FieldType.COMMENT );
+
+    String text = "osho2,13/JUN/2011 05:25:00,1.0,130.6,------,12.3,\"dave's world\"";
+    GasWellDataEntry entry = CSVGasWellDataExtractor.processDataLine( text, columns, 1, null );
+    assertNotNull(entry);
+    assertTrue(entry.containsMeasurement(WellMeasurementType.CONDENSATE_FLOW));
+    assertTrue(entry.containsMeasurement(WellMeasurementType.GAS_FLOW));
+    assertFalse(entry.containsMeasurement(WellMeasurementType.WATER_FLOW));
+    assertFalse(entry.containsMeasurement(WellMeasurementType.OIL_FLOW));
+    assertNotNull(entry.getWell());
+    assertEquals("osho2", entry.getWell().getName());
+    assertEquals( parser.parse( "13/JUN/2011 05:25" ).getTime(), entry.from() );
+    assertEquals( parser.parse( "13/JUN/2011 06:25" ).getTime(), entry.until() );
+
+    assertEquals( 130.6, entry.getMeasurement( WellMeasurementType.CONDENSATE_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 12.3, entry.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( "dave's world", entry.getComment() );
+}
+
+@Test
+public void testProcessingDataLineWithNullValueAndNakedComment()
+{
+    List<CSVGasWellDataExtractor.FieldType> columns = new ArrayList<CSVGasWellDataExtractor.FieldType>();
+    columns.add( CSVGasWellDataExtractor.FieldType.WELL_NAME );
+    columns.add( CSVGasWellDataExtractor.FieldType.TIMESTAMP );
+    columns.add( CSVGasWellDataExtractor.FieldType.INTERVAL_LENGTH );
+    columns.add( CSVGasWellDataExtractor.FieldType.CONDENSATE_FLOW );
+    columns.add( CSVGasWellDataExtractor.FieldType.WATER_FLOW );
+    columns.add( CSVGasWellDataExtractor.FieldType.GAS_FLOW );
+    columns.add( CSVGasWellDataExtractor.FieldType.COMMENT );
+
+    String text = "osho2,13/JUN/2011 05:25:00,1.0,130.6,------,12.3,dave's world";
+    GasWellDataEntry entry = CSVGasWellDataExtractor.processDataLine( text, columns, 1, null );
+    assertNotNull(entry);
+    assertTrue(entry.containsMeasurement(WellMeasurementType.CONDENSATE_FLOW));
+    assertTrue(entry.containsMeasurement(WellMeasurementType.GAS_FLOW));
+    assertFalse(entry.containsMeasurement(WellMeasurementType.WATER_FLOW));
+    assertFalse(entry.containsMeasurement(WellMeasurementType.OIL_FLOW));
+    assertNotNull( entry.getWell() );
+    assertEquals("osho2", entry.getWell().getName());
+    assertEquals( parser.parse( "13/JUN/2011 05:25" ).getTime(), entry.from() );
+    assertEquals( parser.parse( "13/JUN/2011 06:25" ).getTime(), entry.until() );
+
+    assertEquals( 130.6, entry.getMeasurement( WellMeasurementType.CONDENSATE_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 12.3, entry.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( "dave's world", entry.getComment() );
 }
 
 @Test

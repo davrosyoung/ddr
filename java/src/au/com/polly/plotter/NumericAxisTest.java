@@ -21,6 +21,7 @@
 package au.com.polly.plotter;
 
 import junit.framework.JUnit4TestAdapter;
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -33,6 +34,8 @@ import static org.junit.Assert.assertNotNull;
  */
 public class NumericAxisTest
 {
+private final static Logger logger = Logger.getLogger( NumericAxisTest.class );
+private final static double ACCEPTABLE_ERROR = 1E-8;
 
 // demonstrate that we can accurately calculate the next smallest power of ten
 // for a given value. our tests show that we are accurate to within about twelve
@@ -42,18 +45,18 @@ public class NumericAxisTest
 public void testCalculateIntervalFactor()
 {
     NumericAxis<Double> axis = new NumericAxis<Double>();
-    assertEquals( 0.1, axis.calculateIntervalFactor( 0.9999999999 ) );
-    assertEquals( 0.1, axis.calculateIntervalFactor( 0.1 ) );
-    assertEquals( 0.1, axis.calculateIntervalFactor( 0.10000000001 ) );
-    assertEquals( 0.1, axis.calculateIntervalFactor( 0.287 ) );
-    assertEquals( 1.0, axis.calculateIntervalFactor( 2.87 ) );
-    assertEquals( 10.0, axis.calculateIntervalFactor( 28.7 ) );
-    assertEquals( 100.0, axis.calculateIntervalFactor( 100.0 ) );
-    assertEquals( 100.0, axis.calculateIntervalFactor( 100.1 ) );
-    assertEquals( 100.0, axis.calculateIntervalFactor( 287 ) );
-    assertEquals( 100.0, axis.calculateIntervalFactor( 999.9999999999 ) );
-    assertEquals( 1000.0, axis.calculateIntervalFactor( 1000.0 ) );
-    assertEquals( 1000.0, axis.calculateIntervalFactor( 1000.00000000001 ) );
+    assertEquals( 0.1, axis.calculateIntervalFactor( 0.9999999999 ), ACCEPTABLE_ERROR );
+    assertEquals( 0.1, axis.calculateIntervalFactor( 0.1 ), ACCEPTABLE_ERROR );
+    assertEquals( 0.1, axis.calculateIntervalFactor( 0.10000000001 ), ACCEPTABLE_ERROR );
+    assertEquals( 0.1, axis.calculateIntervalFactor( 0.287 ), ACCEPTABLE_ERROR );
+    assertEquals( 1.0, axis.calculateIntervalFactor( 2.87 ), ACCEPTABLE_ERROR );
+    assertEquals( 10.0, axis.calculateIntervalFactor( 28.7 ), ACCEPTABLE_ERROR );
+    assertEquals( 100.0, axis.calculateIntervalFactor( 100.0 ), ACCEPTABLE_ERROR );
+    assertEquals( 100.0, axis.calculateIntervalFactor( 100.1 ), ACCEPTABLE_ERROR );
+    assertEquals( 100.0, axis.calculateIntervalFactor( 287 ), ACCEPTABLE_ERROR );
+    assertEquals( 100.0, axis.calculateIntervalFactor( 999.9999999999 ), ACCEPTABLE_ERROR );
+    assertEquals( 1000.0, axis.calculateIntervalFactor( 1000.0 ), ACCEPTABLE_ERROR );
+    assertEquals( 1000.0, axis.calculateIntervalFactor( 1000.00000000001 ), ACCEPTABLE_ERROR );
 }
 
 @Test
@@ -76,10 +79,10 @@ public void testAutoScalingSmallSetOfDoubles()
     axis.autoScale( ddSet );
 
     assertNotNull( axis );
-    assertEquals( 2.0, axis.intervalSize );
+    assertEquals( 2.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 11, axis.numberIntervals );
-    assertEquals( 42.0, axis.min );
-    assertEquals( 64.0, axis.max );
+    assertEquals( 42.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 64.0, axis.max, ACCEPTABLE_ERROR );
 
 
     // ok, now extend the range "a bit".... to about 35, this should
@@ -92,10 +95,10 @@ public void testAutoScalingSmallSetOfDoubles()
     // now recalculate...
     // ----------------------------
     assertNotNull( axis );
-    assertEquals( 5.0, axis.intervalSize );
+    assertEquals( 5.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 8, axis.numberIntervals );
-    assertEquals( 25.0, axis.min );
-    assertEquals( 65.0, axis.max );
+    assertEquals( 25.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 65.0, axis.max, ACCEPTABLE_ERROR );
 
 
     // ok, now extend the range out to about 60 ... this should just create
@@ -104,10 +107,10 @@ public void testAutoScalingSmallSetOfDoubles()
     ddSet.add( 12.1 );
     ddSet.add( 69.9999 );
     axis.autoScale( ddSet );
-    assertEquals( 10.0, axis.intervalSize );
+    assertEquals( 10.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 6, axis.numberIntervals );
-    assertEquals( 10.0, axis.min );
-    assertEquals( 70.0, axis.max );
+    assertEquals( 10.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 70.0, axis.max, ACCEPTABLE_ERROR );
 
     // ok, now just push it out to 70, then just beyond 70.
     // 70.0 will fall within 60-70 interval, 70.00001 should cause a
@@ -115,17 +118,17 @@ public void testAutoScalingSmallSetOfDoubles()
     // ------------------------------------------------------------------------
     ddSet.add( 70.0 );
     axis.autoScale( ddSet );
-    assertEquals( 10.0, axis.intervalSize );
+    assertEquals( 10.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 6, axis.numberIntervals );
-    assertEquals( 10.0, axis.min );
-    assertEquals( 70.0, axis.max );
+    assertEquals( 10.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 70.0, axis.max, ACCEPTABLE_ERROR );
 
     ddSet.add( 70.00000001 );
     axis.autoScale( ddSet );
-    assertEquals( 10.0, axis.intervalSize );
+    assertEquals( 10.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 7, axis.numberIntervals );
-    assertEquals( 10.0, axis.min );
-    assertEquals( 80.0, axis.max );
+    assertEquals( 10.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 80.0, axis.max, ACCEPTABLE_ERROR );
 
     // ok, now add a data point of 112.1, this should cause our interval factor
     // to be "stepped up" by a factor of ten. it should create six intervals
@@ -133,12 +136,10 @@ public void testAutoScalingSmallSetOfDoubles()
     // --------------------------------------------------------------------------
     ddSet.add( 112.1 );
     axis.autoScale( ddSet );
-    assertEquals( 20.0, axis.intervalSize );
+    assertEquals( 20.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 6, axis.numberIntervals );
-    assertEquals( 0.0, axis.min );
-    assertEquals( 120.0, axis.max );
-
-
+    assertEquals( 0.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 120.0, axis.max, ACCEPTABLE_ERROR );
 }
 
 @Test
@@ -159,19 +160,19 @@ public void testTroublesomeSetOfDoubles()
     axis.autoScale( monkeys );
 
     assertNotNull( axis );
-    assertEquals( 2.0, axis.intervalSize );
+    assertEquals( 2.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 7, axis.numberIntervals );
-    assertEquals( 14.0, axis.min );
-    assertEquals( 28.0, axis.max );
+    assertEquals( 14.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 28.0, axis.max, ACCEPTABLE_ERROR );
 
     monkeys.add( 7.3 );
     axis.autoScale( monkeys );
 
     assertNotNull( axis );
-    assertEquals( 2.0, axis.intervalSize );
+    assertEquals( 2.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 11, axis.numberIntervals );
-    assertEquals( 6.0, axis.min );
-    assertEquals( 28.0, axis.max );
+    assertEquals( 6.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 28.0, axis.max, ACCEPTABLE_ERROR );
 
 }
 
@@ -195,10 +196,10 @@ public void testAutoScalingSmallSetOfIntegers()
     axis.autoScale( ddSet );
 
     assertNotNull( axis );
-    assertEquals( 2.0, axis.intervalSize );
+    assertEquals( 2.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 11, axis.numberIntervals );
-    assertEquals( 42.0, axis.min );
-    assertEquals( 64.0, axis.max );
+    assertEquals( 42.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 64.0, axis.max, ACCEPTABLE_ERROR );
 
 
     // ok, now extend the range "a bit".... to about 35, this should
@@ -211,10 +212,10 @@ public void testAutoScalingSmallSetOfIntegers()
     // now recalculate...
     // ----------------------------
     assertNotNull( axis );
-    assertEquals( 5.0, axis.intervalSize );
+    assertEquals( 5.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 8, axis.numberIntervals );
-    assertEquals( 25.0, axis.min );
-    assertEquals( 65.0, axis.max );
+    assertEquals( 25.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 65.0, axis.max, ACCEPTABLE_ERROR );
 
 
     // ok, now extend the range out to about 60 ... this should just create
@@ -223,10 +224,10 @@ public void testAutoScalingSmallSetOfIntegers()
     ddSet.add( 12L );
     ddSet.add( 60L );
     axis.autoScale( ddSet );
-    assertEquals( 10.0, axis.intervalSize );
+    assertEquals( 10.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 6, axis.numberIntervals );
-    assertEquals( 10.0, axis.min );
-    assertEquals( 70.0, axis.max );
+    assertEquals( 10.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 70.0, axis.max, ACCEPTABLE_ERROR );
 
     // ok, now just push it out to 70, then just beyond 70.
     // 70.0 will fall within 60-70 interval, 71 should cause a
@@ -234,17 +235,17 @@ public void testAutoScalingSmallSetOfIntegers()
     // ------------------------------------------------------------------------
     ddSet.add( 70L );
     axis.autoScale( ddSet );
-    assertEquals( 10.0, axis.intervalSize );
+    assertEquals( 10.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 6, axis.numberIntervals );
-    assertEquals( 10.0, axis.min );
-    assertEquals( 70.0, axis.max );
+    assertEquals( 10.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 70.0, axis.max, ACCEPTABLE_ERROR );
 
     ddSet.add( 71L );
     axis.autoScale( ddSet );
-    assertEquals( 10.0, axis.intervalSize );
+    assertEquals( 10.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 7, axis.numberIntervals );
-    assertEquals( 10.0, axis.min );
-    assertEquals( 80.0, axis.max );
+    assertEquals( 10.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 80.0, axis.max, ACCEPTABLE_ERROR );
 
     // ok, now add a data point of 112, this should cause our interval factor
     // to be "stepped up" by a factor of ten. it should create six intervals
@@ -252,10 +253,10 @@ public void testAutoScalingSmallSetOfIntegers()
     // --------------------------------------------------------------------------
     ddSet.add( 112L );
     axis.autoScale( ddSet );
-    assertEquals( 20.0, axis.intervalSize );
+    assertEquals( 20.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 6, axis.numberIntervals );
-    assertEquals( 0.0, axis.min );
-    assertEquals( 120.0, axis.max );
+    assertEquals( 0.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 120.0, axis.max, ACCEPTABLE_ERROR );
 }
 
 
@@ -280,10 +281,10 @@ public void testManuallyScalingAxisSimple()
     axis.scale( 0L, 20L );
 
     assertNotNull( axis );
-    assertEquals( 2.0, axis.intervalSize );
+    assertEquals( 2.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 10, axis.numberIntervals );
-    assertEquals( 0.0, axis.min );
-    assertEquals( 20.0, axis.max );
+    assertEquals( 0.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 20.0, axis.max, ACCEPTABLE_ERROR );
 }
 
 @Test
@@ -307,10 +308,10 @@ public void testManuallyScalingAxisSomeMore()
     axis.scale( 30L, 40L );
 
     assertNotNull( axis );
-    assertEquals( 2.0, axis.intervalSize );
+    assertEquals( 2.0, axis.intervalSize, ACCEPTABLE_ERROR );
     assertEquals( 5, axis.numberIntervals );
-    assertEquals( 30.0, axis.min );
-    assertEquals( 40.0, axis.max );
+    assertEquals( 30.0, axis.min, ACCEPTABLE_ERROR );
+    assertEquals( 40.0, axis.max, ACCEPTABLE_ERROR );
 }
 
 

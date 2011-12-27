@@ -52,7 +52,7 @@ import static org.junit.Assert.fail;
  * Time: 4:15 PM
  * To change this template use File | Settings | File Templates.
  */
-@RunWith(JUnit4.class)
+@RunWith( JUnit4.class )
 public class GasWellDataEntryTest
 {
 DateParser dateParser;
@@ -86,6 +86,7 @@ public void testNullConstructor()
     assertFalse(entry.containsMeasurement(WellMeasurementType.GAS_FLOW));
     assertFalse(entry.containsMeasurement(WellMeasurementType.CONDENSATE_FLOW));
     assertFalse( entry.containsMeasurement( WellMeasurementType.OIL_FLOW ) );
+    assertNull( entry.getComment() );
 
 }
 
@@ -100,6 +101,7 @@ public void testSerialization()
     entry.setMeasurement( WellMeasurementType.GAS_FLOW, 0.56 );
     entry.setMeasurement( WellMeasurementType.OIL_FLOW, 73.5 );
     entry.setMeasurement( WellMeasurementType.CONDENSATE_FLOW, 16.2 );
+    entry.setComment( " Just for fun. ");
 
     ObjectOutputStream oos = null;
     try
@@ -144,6 +146,8 @@ public void testSerialization()
     assertEquals( 73.5, extract.getMeasurement(WellMeasurementType.OIL_FLOW), 0.0001 );
     assertEquals( 0.56, extract.getMeasurement(WellMeasurementType.GAS_FLOW), 0.001 );
     assertEquals( 16.2, extract.getMeasurement(WellMeasurementType.CONDENSATE_FLOW), 0.0001 );
+    assertNotNull( extract.getComment() );
+    assertEquals( "Just for fun.", extract.getComment() );
 
     assertTrue( entry.equals( extract ) );
     assertEquals( entry.hashCode(), extract.hashCode() );
@@ -185,19 +189,25 @@ public void testEqualityWithMeasurements()
     Date now = new Date();
 
     assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
 
     beta.setWell( davesWell );
     assertFalse( alpha.equals( beta ) );
+    assertFalse( alpha.hashCode() == beta.hashCode() );
     alpha.setWell( alansWell );
     assertFalse( alpha.equals( beta ) );
+    assertFalse( alpha.hashCode() == beta.hashCode() );
     alpha.setWell( davesOtherWell );
     assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
 
 
     alpha.setDateRange(new DateRange(now, 360000L, 1000L));
     assertFalse( alpha.equals( beta ) );
+    assertFalse( alpha.hashCode() == beta.hashCode() );
     beta.setDateRange(new DateRange(now, 360000L, 1000L));
     assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
 
     alpha.setMeasurement( WellMeasurementType.WATER_FLOW, 0.0 );
     assertFalse( beta.equals( alpha ) );
@@ -217,15 +227,28 @@ public void testEqualityWithMeasurements()
     assertFalse( alpha.equals( beta ) );
     alpha.setMeasurement( WellMeasurementType.OIL_FLOW, 5.76 );
     assertFalse( alpha.equals( beta ) );
+    assertFalse( alpha.hashCode() == beta.hashCode() );
     beta.setMeasurement( WellMeasurementType.OIL_FLOW, 5.76 );
     assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
 
     beta.setMeasurement( WellMeasurementType.CONDENSATE_FLOW, 57.6 );
-    assertFalse( alpha.equals( beta ) );
-    alpha.setMeasurement( WellMeasurementType.CONDENSATE_FLOW, 5.76 );
-    assertFalse( alpha.equals( beta ) );
-    beta.setMeasurement( WellMeasurementType.CONDENSATE_FLOW, 5.76 );
+    assertFalse(alpha.equals(beta));
+    alpha.setMeasurement(WellMeasurementType.CONDENSATE_FLOW, 5.76);
+    assertFalse(alpha.equals(beta));
+    beta.setMeasurement(WellMeasurementType.CONDENSATE_FLOW, 5.76);
     assertEquals( alpha, beta );
+    
+    alpha.setComment( " " );
+    assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
+
+    alpha.setComment( "hello world" );
+    assertFalse( alpha.equals( beta ) );
+    assertFalse(alpha.hashCode() == beta.hashCode());
+    beta.setComment( "hello world " );
+    assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
 }
 
 }

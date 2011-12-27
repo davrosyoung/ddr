@@ -116,7 +116,7 @@ public void setMeasurement( WellMeasurementType wmt, double value )
 
 public boolean containsMeasurement( WellMeasurementType wmt )
 {
-    return measurements.containsKey( wmt );
+    return ( ( measurements != null ) && ( wmt != null ) ) ? measurements.containsKey( wmt ) : false;
 }
 
 public double getMeasurement( WellMeasurementType wmt )

@@ -52,6 +52,43 @@ static {
 
 /**
  *
+ * @param alpha
+ * @param beta
+ * @return whether alpha and beta are the same date/time
+ *
+ * takes care of worrying about nulls!!
+ */
+public static boolean areDatesEqual( Date alpha, Date beta )
+{
+
+    boolean result = false;
+
+    do {
+        // if both strings are null, then they are equal!!
+        // ------------------------------------------------
+        if ( result = ( ( alpha == null ) && ( beta == null ) ) )
+        {
+            break;
+        }
+
+        // if one or tuther is null, then they are not equal!!
+        // --------------------------------------------------
+        if ( ( alpha == null ) || ( beta == null ) )
+        {
+            result = false;
+            break;
+        }
+
+        result = alpha.equals( beta );
+
+    } while( false );
+
+    return result;
+
+}
+
+/**
+ *
  * @param stamp
  * @return date formatted as dd/MMM/yyyy hh:mm:ss.mmm
  */

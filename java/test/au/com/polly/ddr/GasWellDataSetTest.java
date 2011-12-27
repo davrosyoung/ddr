@@ -23,6 +23,7 @@ package au.com.polly.ddr;
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
 import au.com.polly.util.DateRange;
+import com.sun.xml.internal.bind.v2.runtime.reflect.ListTransducedAccessorImpl;
 import junit.framework.JUnit4TestAdapter;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -37,8 +38,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -591,57 +594,70 @@ public void testConsolidatingDataFirstHundredAndFiftyMinutes()
 @Test( expected=NullPointerException.class )
 public void testExtractingReducedDataSetViaConstructorWithNullIntervals()
 {
-    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, null );
+    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, (List<GasWellDataBoundary>)null );
 }
 
 @Test( expected=IllegalArgumentException.class )
 public void testExtractingReducedDataSetViaConstructorWithNoIntervals()
 {
-    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, new Date[]{} );
+    List<GasWellDataBoundary> boundaryList = new ArrayList<GasWellDataBoundary>();
+    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, boundaryList );
 }
 
 @Test( expected=IllegalArgumentException.class )
 public void testExtractingReducedDataSetViaConstructorWithBackToFrontIntervals()
 {
-    Date alpha =   dateParser.parse( "14/JUNE/2011 13:00").getTime();
-    Date beta =   dateParser.parse( "14/JUNE/2011 12:00").getTime();
-    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, new Date[]{ alpha, beta } );
+    GasWellDataBoundary alpha = new GasWellDataBoundary( dateParser.parse( "14/JUNE/2011 13:00").getTime(), "start" );
+    GasWellDataBoundary beta = new GasWellDataBoundary( dateParser.parse( "14/JUNE/2011 12:00").getTime(), "finish" );
+    List<GasWellDataBoundary> boundaryList = new ArrayList<GasWellDataBoundary>();
+    boundaryList.add( alpha );
+    boundaryList.add( beta );
+    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, boundaryList );
 }
 
 @Test( expected=IllegalArgumentException.class )
 public void testExtractingReducedDataSetViaConstructorWithOutOfBoundsIntervalsTooEarly()
 {
-    Date alpha = dateParser.parse( "13/JUNE/2011 03:59").getTime();
-    Date beta = dateParser.parse( "14/JUNE/2011 12:00").getTime();
-    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, new Date[]{ alpha, beta } );
+    GasWellDataBoundary alpha = new GasWellDataBoundary( dateParser.parse( "13/JUNE/2011 03:59").getTime(), "start" );
+    GasWellDataBoundary beta = new GasWellDataBoundary( dateParser.parse( "14/JUNE/2011 12:00").getTime(), "finish" );
+    List<GasWellDataBoundary> boundaryList = new ArrayList<GasWellDataBoundary>();
+    boundaryList.add( alpha );
+    boundaryList.add( beta );
+    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, boundaryList );
+
 }
 
 @Test( expected=IllegalArgumentException.class )
 public void testExtractingReducedDataSetViaConstructorWithOutOfBoundsIntervalsTooLate()
 {
-    Date alpha = dateParser.parse( "13/JUNE/2011 08:00").getTime();
-    Date beta = dateParser.parse( "20/JUNE/2011 12:00").getTime();
-    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, new Date[]{ alpha, beta } );
+    GasWellDataBoundary alpha = new GasWellDataBoundary( dateParser.parse( "13/JUNE/2011 08:00").getTime(), "start" );
+    GasWellDataBoundary beta = new GasWellDataBoundary( dateParser.parse( "20/JUNE/2011 12:00").getTime(), "finish" );
+    List<GasWellDataBoundary> boundaryList = new ArrayList<GasWellDataBoundary>();
+    boundaryList.add( alpha );
+    boundaryList.add( beta );
+    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, boundaryList );
+
 }
 
 
 @Test
 public void testExtractingReducedDataSetViaConstructor()
 {
+    List<GasWellDataBoundary> boundaryList = new ArrayList<GasWellDataBoundary>();
+
     assertNotNull( littleDataSet );
     assertNotNull( littleDataSet.getData() );
     assertEquals( littleDataSet.getData().size(), 100 );
     assertNotNull( littleDataSet.from() );
     assertNotNull( littleDataSet.until() );
+    
+    boundaryList.add( new GasWellDataBoundary( dateParser.parse( "13/JUNE/2011 04:00" ).getTime(), "eins" ) );
+    boundaryList.add( new GasWellDataBoundary( dateParser.parse( "14/JUNE/2011 04:00" ).getTime(), "zwei" ) );
+    boundaryList.add( new GasWellDataBoundary( dateParser.parse( "15/JUNE/2011 04:00" ).getTime(), "drei" ) );
+    boundaryList.add( new GasWellDataBoundary( dateParser.parse( "16/JUNE/2011 04:00" ).getTime(), "vier" ) );
+    boundaryList.add( new GasWellDataBoundary( dateParser.parse( "17/JUNE/2011 04:00" ).getTime(), "funf" ) );
 
-    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, new Date[]{
-            dateParser.parse( "13/JUNE/2011 04:00").getTime(),
-            dateParser.parse( "14/JUNE/2011 04:00").getTime(),
-            dateParser.parse( "15/JUNE/2011 04:00").getTime(),
-            dateParser.parse( "16/JUNE/2011 04:00").getTime(),
-            dateParser.parse( "17/JUNE/2011 04:00").getTime(),
-            dateParser.parse( "17/JUNE/2011 07:59:59").getTime()
-    } );
+    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, boundaryList );
 
     assertNotNull( reduced );
     assertNotNull( reduced.getData() );
@@ -649,7 +665,7 @@ public void testExtractingReducedDataSetViaConstructor()
     logger.debug( reduced );
     assertEquals( 5, reduced.getData().size() );
     assertEquals( dateParser.parse( "13/JUNE/2011 04:00").getTime(), reduced.from() );
-    assertEquals( dateParser.parse( "17/JUNE/2011 07:59:59").getTime(), reduced.until() );
+    assertEquals( dateParser.parse( "17/JUNE/2011 08:00:00").getTime(), reduced.until() );
 
     GasWellDataEntry entry;
 
@@ -657,6 +673,7 @@ public void testExtractingReducedDataSetViaConstructor()
     assertNotNull( entry );
     assertEquals( dateParser.parse( "13/JUNE/2011 04:00").getTime(), entry.from() );
     assertEquals( dateParser.parse( "14/JUNE/2011 04:00").getTime(), entry.until() );
+    assertEquals( "eins", entry.getComment() );
     assertTrue( entry.containsMeasurement( WellMeasurementType.GAS_FLOW ) );
     assertTrue( entry.containsMeasurement( WellMeasurementType.WATER_FLOW ) );
     assertFalse( entry.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) );
@@ -668,6 +685,62 @@ public void testExtractingReducedDataSetViaConstructor()
     assertNotNull( entry );
     assertEquals( dateParser.parse( "14/JUNE/2011 04:00").getTime(), entry.from() );
     assertEquals( dateParser.parse( "15/JUNE/2011 04:00").getTime(), entry.until() );
+    assertEquals( "zwei", entry.getComment() );
+    assertTrue( entry.containsMeasurement( WellMeasurementType.GAS_FLOW ) );
+    assertTrue( entry.containsMeasurement( WellMeasurementType.WATER_FLOW ) );
+    assertFalse( entry.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) );
+    assertTrue( entry.containsMeasurement( WellMeasurementType.OIL_FLOW ) );
+    expected = ( 1139.1 + 1142.6 + 1140.7 + 1141.2 + 1142.8 + 1140.3 + 0320.5 + 0000.0 + 0000.0 + 0000.0 + 0000.0 + 0000.0 + 0762.5 + 1762.4 + 1482.3 + 1312.5 + 1274.7 + 1082.5 + 0995.7 + 1127.5 + 1138.5 + 1137.6 + 1139.6 + 1140.6) / 24.0;
+    assertEquals( expected, entry.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+
+
+}
+@Test
+public void testExtractingReducedDataSetViaConstructorWithEndBoundary()
+{
+    List<GasWellDataBoundary> boundaryList = new ArrayList<GasWellDataBoundary>();
+
+    assertNotNull( littleDataSet );
+    assertNotNull( littleDataSet.getData() );
+    assertEquals( littleDataSet.getData().size(), 100 );
+    assertNotNull( littleDataSet.from() );
+    assertNotNull( littleDataSet.until() );
+
+    boundaryList.add( new GasWellDataBoundary( dateParser.parse( "13/JUNE/2011 04:00" ).getTime(), "eins" ) );
+    boundaryList.add( new GasWellDataBoundary( dateParser.parse( "14/JUNE/2011 04:00" ).getTime(), "zwei" ) );
+    boundaryList.add( new GasWellDataBoundary( dateParser.parse( "15/JUNE/2011 04:00" ).getTime(), "drei" ) );
+    boundaryList.add( new GasWellDataBoundary( dateParser.parse( "16/JUNE/2011 04:00" ).getTime(), "vier" ) );
+    boundaryList.add( new GasWellDataBoundary( dateParser.parse( "17/JUNE/2011 04:00" ).getTime(), "funf", GasWellDataBoundary.BoundaryType.END ) );
+
+    GasWellDataSet reduced = new GasWellDataSet( littleDataSet, boundaryList );
+
+    assertNotNull( reduced );
+    assertNotNull( reduced.getData() );
+    logger.debug( "reduced data:" );
+    logger.debug( reduced );
+    assertEquals( 4, reduced.getData().size() );
+    assertEquals( dateParser.parse( "13/JUNE/2011 04:00").getTime(), reduced.from() );
+    assertEquals( dateParser.parse( "17/JUNE/2011 04:00").getTime(), reduced.until() );
+
+    GasWellDataEntry entry;
+
+    entry = reduced.getEntry( dateParser.parse( "13/JUNE/2011 04:00").getTime() );
+    assertNotNull(entry);
+    assertEquals( dateParser.parse( "13/JUNE/2011 04:00").getTime(), entry.from() );
+    assertEquals( dateParser.parse( "14/JUNE/2011 04:00").getTime(), entry.until() );
+    assertEquals( "eins", entry.getComment() );
+    assertTrue( entry.containsMeasurement( WellMeasurementType.GAS_FLOW ) );
+    assertTrue( entry.containsMeasurement( WellMeasurementType.WATER_FLOW ) );
+    assertFalse( entry.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) );
+    assertTrue( entry.containsMeasurement( WellMeasurementType.OIL_FLOW ) );
+    double expected = ( 1567.5 + 1342.1 + 1152.6 + 1133.6 + 1132.8 + 1127.6 + 1128.3 + 1129.5 + 1128.6+ 1153.5+ 1132.4+ 1129.1+ 1128.5+ 1131.2+ 1130.0+ 1131.5+ 1132.1 + 1132.7+ 1133.1+ 1135.8+ 1138.5 ) / 24.0;
+    assertEquals( expected, entry.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+
+    entry = reduced.getEntry( dateParser.parse( "14/JUNE/2011 04:00" ).getTime() );
+    assertNotNull( entry );
+    assertEquals( dateParser.parse( "14/JUNE/2011 04:00").getTime(), entry.from() );
+    assertEquals( dateParser.parse( "15/JUNE/2011 04:00").getTime(), entry.until() );
+    assertEquals( "zwei", entry.getComment() );
     assertTrue( entry.containsMeasurement( WellMeasurementType.GAS_FLOW ) );
     assertTrue( entry.containsMeasurement( WellMeasurementType.WATER_FLOW ) );
     assertFalse( entry.containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) );

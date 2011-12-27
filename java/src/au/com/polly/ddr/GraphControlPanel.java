@@ -20,6 +20,7 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.plotter.TimeUnit;
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
 import org.apache.log4j.Logger;
@@ -49,7 +50,7 @@ import java.util.Date;
  *
  *
  */
-public class GraphControlPanel extends JPanel implements ActionListener
+public class GraphControlPanel extends JPanel implements ActionListener, ReductionPanelListener
 {
 static private Logger logger = Logger.getLogger( GraphControlPanel.class );
 SimpleDateFormat dateFormatter = new SimpleDateFormat( "dd/MMM/yyyy HH:mm:ss" );
@@ -92,6 +93,9 @@ JButton generateOverlayButton;
 PlotGrapher grapher;
 Date from = null;
 Date until = null;
+
+JDialog reductionDialog = null;
+DiscontinuityReducerControlPanel reducerControlPanel = null;
 
 public GraphControlPanel( Date from, Date until )
 {
@@ -404,8 +408,15 @@ public void actionPerformed(ActionEvent evt)
 
             if ( button.getName().equals( "reduce" ) )
             {
-                DataRateReducer reducer = new SimpleDiscontinuityDataRateReducer();
-                grapher.reduce( reducer );
+                Frame frame = JOptionPane.getFrameForComponent(this);
+                JDialog reductionDialog = new JDialog( frame, "Flow Rate Reduction Parameters", Dialog.ModalityType.MODELESS );
+                DiscontinuityReducerControlPanel reducerControlPanel = new DiscontinuityReducerControlPanel();
+                reducerControlPanel.setData( grapher.getData() );
+                reductionDialog.setContentPane(reducerControlPanel);
+                reducerControlPanel.setVisible(true);
+                reductionDialog.pack();
+                reductionDialog.setVisible( true );
+
             }
 
         } while( false );
@@ -506,6 +517,25 @@ protected GasWellDataSet loadDataFromFileChooser( JFileChooser chooser )
     return result;
 }
 
+@Override
+public void cancelReduction()
+{
+    reducerControlPanel.setVisible( false );
+            
+    reductionDialog.setVisible( false );
+    reductionDialog.dispose();
+    reductionDialog = null;
+}
+
+@Override
+public void reduce( ReductionParameters reductionParameters )
+{
+    SimpleDiscontinuityDataRateReducerV2 reducer = new SimpleDiscontinuityDataRateReducerV2( reductionParameters );
+    
+    //                DataRateReducer reducer = new SimpleDiscontinuityDataRateReducer();
+//                grapher.reduce( reducer );
+    grapher.reduce( reducer );
+}
 
 /* ImageFilter.java is used by FileChooserDemo2.java. */
 public class DataSourceFileFilter extends FileFilter

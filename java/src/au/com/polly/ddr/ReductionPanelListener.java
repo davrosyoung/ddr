@@ -3,7 +3,7 @@
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
- *
+ *  
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -20,8 +20,29 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.plotter.TimeUnit;
 
-public interface DataRateReducer
+import java.util.Date;
+
+/**
+ * Interface implemented both those objects which are interested in what a reduction panel does.
+ *
+ *
+ */
+public interface ReductionPanelListener
 {
-public GasWellDataSet reduce( GasWellDataSet original );
+
+/**
+ * This method is invoked if the reduction control panel is cancelled without
+ * any reduction taking place.
+ * 
+ */
+public void cancelReduction();
+
+/**
+ * @param reductionRecipe specifies how the data flow rate reduction is to be conducted.
+ *
+ */
+public void reduce( ReductionParameters reductionRecipe );
+
 }

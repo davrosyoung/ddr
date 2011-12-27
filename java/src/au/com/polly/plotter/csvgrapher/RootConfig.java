@@ -43,6 +43,11 @@ public RootConfig()
  */
 public void populate( Properties props )
 {
+    if ( props == null )
+    {
+        throw new NullPointerException( "Properties must not be null!!");
+    }
+    //todo: write the implementation!!
     return;
 }
     
