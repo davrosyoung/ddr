@@ -18,8 +18,13 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.GasWellDataExtractor;
+import au.com.polly.ddr.GasWellDataExtractorFactory;
+import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.MultipleWellDataMap;
+import au.com.polly.ddr.SimpleOverlayPlotGrapher;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;

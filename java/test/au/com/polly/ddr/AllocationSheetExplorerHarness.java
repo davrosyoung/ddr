@@ -21,10 +21,8 @@
 package au.com.polly.ddr;
 
 import au.com.polly.util.ReadInput;
-import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -38,11 +36,11 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Program to help us run the allocation sheet harness.
  */
+@Deprecated
 public class AllocationSheetExplorerHarness
 {
 

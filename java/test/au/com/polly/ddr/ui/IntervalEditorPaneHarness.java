@@ -18,8 +18,13 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.GasWellDataExtractor;
+import au.com.polly.ddr.GasWellDataExtractorFactory;
+import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.MultipleWellDataMap;
+import au.com.polly.ddr.TestGasWellDataSet;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -35,20 +40,17 @@ import java.util.List;
  *
  *
  */
-public class DiscontinuityReducerControlPanelHarness
+public class IntervalEditorPaneHarness
 {
-private final static Logger logger = Logger.getLogger( DiscontinuityReducerControlPanelHarness.class );
+private final static Logger logger = Logger.getLogger( IntervalEditorPaneHarness.class );
 private static GasWellDataSet dataSet;
-private static DiscontinuityReducerControlPanel controlPanel;
 
 public static void createAndShowGUI()
 {
     JFrame f = new JFrame( "Interval Boundaries" );
     f.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     f.setSize(1400, 800);
-    controlPanel = new DiscontinuityReducerControlPanel();
-    controlPanel.setData( dataSet );
-    f.setContentPane( controlPanel );
+    f.setContentPane( new IntervalEditorPane( dataSet ) );
     f.pack();
     f.setVisible( true );
 }
@@ -74,7 +76,7 @@ public static void main( String... args )
             dataSetList = mwdm.getDataSetList();
             if ( dataSetList.size() > 0 )
             {
-                DiscontinuityReducerControlPanelHarness.dataSet = mwdm.getDataSetList().get( 0 );
+                IntervalEditorPaneHarness.dataSet = mwdm.getDataSetList().get( 0 );
             } else {
                 logger.error("NO gas well data sets retrieved from CSV file \"" + filename + "\"");
             }
@@ -84,9 +86,9 @@ public static void main( String... args )
         }
     }
 
-    if ( DiscontinuityReducerControlPanelHarness.dataSet == null )
+    if ( IntervalEditorPaneHarness.dataSet == null )
     {
-        DiscontinuityReducerControlPanelHarness.dataSet = TestGasWellDataSet.getNicksDataSet();
+        IntervalEditorPaneHarness.dataSet = TestGasWellDataSet.getNicksDataSet();
     }
 
     Runnable doCreateAndShowGUI = new Runnable() {

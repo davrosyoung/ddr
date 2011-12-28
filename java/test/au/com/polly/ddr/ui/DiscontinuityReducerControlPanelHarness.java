@@ -18,17 +18,19 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.GasWellDataExtractor;
+import au.com.polly.ddr.GasWellDataExtractorFactory;
+import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.MultipleWellDataMap;
+import au.com.polly.ddr.TestGasWellDataSet;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.ObjectInputStream;
 import java.util.List;
 
 /**
@@ -38,17 +40,20 @@ import java.util.List;
  *
  *
  */
-public class IntervalEditorPaneHarness
+public class DiscontinuityReducerControlPanelHarness
 {
-private final static Logger logger = Logger.getLogger( IntervalEditorPaneHarness.class );
+private final static Logger logger = Logger.getLogger( DiscontinuityReducerControlPanelHarness.class );
 private static GasWellDataSet dataSet;
+private static DiscontinuityReducerControlPanel controlPanel;
 
 public static void createAndShowGUI()
 {
     JFrame f = new JFrame( "Interval Boundaries" );
     f.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     f.setSize(1400, 800);
-    f.setContentPane( new IntervalEditorPane( dataSet ) );
+    controlPanel = new DiscontinuityReducerControlPanel();
+    controlPanel.setData( dataSet );
+    f.setContentPane( controlPanel );
     f.pack();
     f.setVisible( true );
 }
@@ -74,7 +79,7 @@ public static void main( String... args )
             dataSetList = mwdm.getDataSetList();
             if ( dataSetList.size() > 0 )
             {
-                IntervalEditorPaneHarness.dataSet = mwdm.getDataSetList().get( 0 );
+                DiscontinuityReducerControlPanelHarness.dataSet = mwdm.getDataSetList().get( 0 );
             } else {
                 logger.error("NO gas well data sets retrieved from CSV file \"" + filename + "\"");
             }
@@ -84,9 +89,9 @@ public static void main( String... args )
         }
     }
 
-    if ( IntervalEditorPaneHarness.dataSet == null )
+    if ( DiscontinuityReducerControlPanelHarness.dataSet == null )
     {
-        IntervalEditorPaneHarness.dataSet = TestGasWellDataSet.getNicksDataSet();
+        DiscontinuityReducerControlPanelHarness.dataSet = TestGasWellDataSet.getNicksDataSet();
     }
 
     Runnable doCreateAndShowGUI = new Runnable() {

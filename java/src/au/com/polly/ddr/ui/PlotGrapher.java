@@ -18,7 +18,11 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.ddr.ui;
+
+import au.com.polly.ddr.DataRateReducer;
+import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.WellMeasurementType;
 
 import java.util.Date;
 

@@ -655,27 +655,8 @@ public void output( PrintStream writer )
 
             for( GasWellDataEntry entry : list )
             {
-                writer.println( DateArmyKnife.formatWithMinutes( entry.from() ) + "," + entry.getDateRange().span() / 3600000.0 );
                 cal.setTime( entry.from() );
-                formatter.format( "| %02d/%3s/%04d %02d:%02d:%02d |",
-                        cal.get( Calendar.DAY_OF_MONTH ),
-                        monthNames[ cal.get( Calendar.MONTH ) ],
-                        cal.get( Calendar.YEAR ),
-                        cal.get( Calendar.HOUR_OF_DAY ),
-                        cal.get( Calendar.MINUTE ),
-                        cal.get( Calendar.SECOND )
-                );
-
-                cal.add( Calendar.SECOND, (int)entry.getIntervalLengthMS() - 1 );
-
-                formatter.format( " %02d/%3s/%04d %02d:%02d:%02d |",
-                        cal.get( Calendar.DAY_OF_MONTH ),
-                        monthNames[ cal.get( Calendar.MONTH ) ],
-                        cal.get( Calendar.YEAR ),
-                        cal.get( Calendar.HOUR_OF_DAY ),
-                        cal.get( Calendar.MINUTE ),
-                        cal.get( Calendar.SECOND )
-                );
+                writer.print( "| " + DateArmyKnife.formatWithSeconds( entry.from() ) + " | " + DateArmyKnife.formatWithSeconds( entry.until() ) + " |" );
 
                 if ( entry.containsMeasurement( WellMeasurementType.OIL_FLOW ) )
                 {

@@ -18,8 +18,16 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.ExcelWorkbookExplorer;
+import au.com.polly.ddr.ExcelWorkbookExplorerFactory;
+import au.com.polly.ddr.GasWell;
+import au.com.polly.ddr.GasWellDataExtractor;
+import au.com.polly.ddr.GasWellDataExtractorFactory;
+import au.com.polly.ddr.GasWellDataLocator;
+import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.MultipleWellDataMap;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;

@@ -36,6 +36,7 @@ import java.util.List;
  * Attempts to locate well specific data within a specified worksheet.
  *
  */
+@Deprecated
 public class AllocationSheetExplorer implements ExcelWorkbookExplorer
 {
 protected Sheet sheet = null;

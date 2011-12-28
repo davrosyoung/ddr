@@ -18,8 +18,11 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.ReductionParameters;
+import au.com.polly.ddr.WellMeasurementType;
 import au.com.polly.plotter.TimeUnit;
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateArmyKnife;
@@ -51,9 +54,9 @@ JLabel secondaryIndicatorLabel;
 JComboBox secondaryIndicatorMenu;
 JLabel medianCrosserLabel;
 JCheckBox medianCrosserBox;
-JLabel medianCrosserBoundaryDistanceLabel;
-JTextField medianCrosserBoundaryDistanceQuantityField;
-JComboBox medianCrosserBoundaryDistanceUnitMenu;
+//JLabel medianCrosserBoundaryDistanceLabel;
+//JTextField medianCrosserBoundaryDistanceQuantityField;
+//JComboBox medianCrosserBoundaryDistanceUnitMenu;
 JLabel regularIntervalLabel;
 JCheckBox regularIntervalBox;
 JLabel intervalStartLabel;
@@ -128,7 +131,7 @@ protected void populate()
     add( primaryIndicatorLabel, gbc );
 
     primaryIndicatorMenu = new JComboBox();
-    primaryIndicatorMenu.setName("primaryIndicatorMenu");
+    primaryIndicatorMenu.setName( "primaryIndicatorMenu" );
     primaryIndicatorMenu.addActionListener(this);
     primaryIndicatorListModel = new IndicatorListModel();
     primaryIndicatorMenu.setModel(primaryIndicatorListModel);
@@ -165,7 +168,7 @@ protected void populate()
     medianCrosserBox.setActionCommand( "medianCrosserBox" );
     medianCrosserBox.setSelected( false );
     add( medianCrosserBox, gbc );
-
+ /*
     gbc.gridx = 0;
     gbc.gridy++;
     gbc.gridwidth = 2;
@@ -187,7 +190,7 @@ protected void populate()
     medianCrosserBoundaryDistanceUnitMenu.setSelectedIndex(1);
     medianCrosserBoundaryDistanceUnitMenu.setEnabled( false );
     add( medianCrosserBoundaryDistanceUnitMenu, gbc );
-
+*/
     gbc.gridx = 0;
     gbc.gridy++;
     gbc.gridwidth = 2;

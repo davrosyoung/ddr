@@ -25,6 +25,7 @@ import au.com.polly.util.DateParser;
 import au.com.polly.util.DateRange;
 import org.apache.log4j.Logger;
 
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -41,9 +42,12 @@ static protected GasWellDataSet dummyDataSet = null;
 static protected GasWellDataSet smallDataSet = null;
 static protected GasWellDataSet smallReducedDataSet = null;
 static protected GasWellDataSet by11DataSet = null;
+static protected GasWellDataSet reductionTestDataSet = null;
+static protected GasWellDataSet oldFaithfulDataSet = null;
 static protected GasWell saa2Well = new GasWell( "SAA-2" );
 static protected GasWell saa11Well = new GasWell( "SAA-11" );
 static protected GasWell dummyWell = new GasWell( "Dummy" );
+static protected GasWell oldFaithfulWell = new GasWell( "Ol' Faithful" );
 
 static final private DataSet[] nicksRawData = {
         new OilDataSet( parser.parse( "16/JUL/2006 20:47" ).getTime(), 0000.0, 0000.0, 0000.0, 0277.7000 ),
@@ -918,6 +922,35 @@ static final private DataSet[] by11RawData = {
         new CondensateDataSet( parser.parse( "13/JUN/2011" ).getTime(),  25.32,   5.33,  49.92, 24.0 )
 };
 
+private final static DataSet[] reductionTestRawData = {
+        new OilDataSet( parser.parse( "01/JUN/2012" ).getTime(), 10.0, 00.0, 08.0, 24.0 ), 
+        new OilDataSet( parser.parse( "02/JUN/2012" ).getTime(), 11.0, 00.0, 09.0, 24.0 ), 
+        new OilDataSet( parser.parse( "03/JUN/2012" ).getTime(), 09.5, 00.0, 08.2, 24.0 ), 
+        new OilDataSet( parser.parse( "04/JUN/2012" ).getTime(), 05.0, 00.0, 06.0, 24.0 ), 
+        new OilDataSet( parser.parse( "05/JUN/2012" ).getTime(), 00.0, 00.0, 02.0, 24.0 ), 
+        new OilDataSet( parser.parse( "06/JUN/2012" ).getTime(), 00.0, 00.0, 00.0, 24.0 ), 
+        new OilDataSet( parser.parse( "07/JUN/2012" ).getTime(), 00.0, 00.0, 00.0, 24.0 ), 
+        new OilDataSet( parser.parse( "08/JUN/2012" ).getTime(), 00.6, 00.0, 00.0, 24.0 ), 
+        new OilDataSet( parser.parse( "09/JUN/2012" ).getTime(), 00.0, 00.0, 00.0, 24.0 ), 
+        new OilDataSet( parser.parse( "10/JUN/2012" ).getTime(), 00.0, 00.0, 00.0, 24.0 ), 
+        new OilDataSet( parser.parse( "11/JUN/2012" ).getTime(), 05.0, 00.0, 00.0, 24.0 ), 
+        new OilDataSet( parser.parse( "12/JUN/2012" ).getTime(), 09.0, 00.0, 01.0, 24.0 ), 
+        new OilDataSet( parser.parse( "13/JUN/2012" ).getTime(), 12.0, 00.0, 05.0, 24.0 ), 
+        new OilDataSet( parser.parse( "14/JUN/2012" ).getTime(), 12.7, 00.0, 09.0, 24.0 ), 
+        new OilDataSet( parser.parse( "15/JUN/2012" ).getTime(), 11.4, 00.0, 10.9, 24.0 ), 
+        new OilDataSet( parser.parse( "16/JUN/2012" ).getTime(), 14.0, 00.0, 12.2, 24.0 ), 
+        new OilDataSet( parser.parse( "17/JUN/2012" ).getTime(), 15.0, 00.0, 12.8, 24.0 ), 
+        new OilDataSet( parser.parse( "18/JUN/2012" ).getTime(), 14.4, 00.0, 13.4, 24.0 ), 
+        new OilDataSet( parser.parse( "19/JUN/2012" ).getTime(), 13.0, 00.0, 14.8, 24.0 ), 
+        new OilDataSet( parser.parse( "20/JUN/2012" ).getTime(), 14.0, 00.0, 13.9, 24.0 ), 
+        new OilDataSet( parser.parse( "21/JUN/2012" ).getTime(), 13.4, 00.0, 13.2, 24.0 ), 
+        new OilDataSet( parser.parse( "22/JUN/2012" ).getTime(), 12.6, 00.0, 00.0, 24.0 ), 
+        new OilDataSet( parser.parse( "23/JUN/2012" ).getTime(), 11.0, 00.0, 00.0, 24.0 ), 
+        new OilDataSet( parser.parse( "24/JUN/2012" ).getTime(), 10.4, 00.0, 00.0, 24.0 ), 
+        new OilDataSet( parser.parse( "25/JUN/2012" ).getTime(), 10.9, 00.0, 13.0, 24.0 ), 
+        new OilDataSet( parser.parse( "26/JUN/2012" ).getTime(), 10.0, 00.0, 11.8, 24.0 ), 
+};
+
 
 static {
     repopulate();
@@ -951,6 +984,10 @@ public static void repopulate()
 
     // four years of gas condensate data..
     by11DataSet = populateFromRawData( new GasWell( "BY11" ), by11RawData );
+    
+    reductionTestDataSet = populateFromRawData( new GasWell( "osho" ), reductionTestRawData );
+
+    oldFaithfulDataSet = populateOldFaithful();
 
 }
 
@@ -1005,6 +1042,47 @@ public static GasWellDataSet getSmallReducedDataSet()
 public static GasWellDataSet getBY11DataSet()
 {
     return by11DataSet;
+}
+
+public static GasWellDataSet getReductionTestDataSet()
+{
+    return reductionTestDataSet;
+}
+
+public static GasWellDataSet getOldFaithfulDataSet()
+{
+    return oldFaithfulDataSet;
+}
+
+protected static GasWellDataSet populateOldFaithful()
+{
+    // create two years of pretty constant data...
+    // -------------------------------------------
+    GasWellDataSet dataSet = new GasWellDataSet( oldFaithfulWell );
+    GasWellDataEntry entry = null;
+    Calendar cal;
+    Date from;
+    Date until;
+    double r = 0.00;
+    cal = Calendar.getInstance();
+    cal.setTime( parser.parse( "01/JAN/2012" ).getTime() );
+    
+    while( cal.get( Calendar.YEAR ) <= 2014 )
+    {
+        from = cal.getTime();
+        cal.add( Calendar.SECOND, 86400 );
+        entry = new GasWellDataEntry();
+        entry.setWell( dataSet.getWell() );
+        until = cal.getTime();
+        entry.setDateRange( new DateRange( from, until ) );
+        r = ( r + ( Math.random() * 50.0 ) ) / 2.0;
+        entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1200.0 + r );
+        entry.setMeasurement( WellMeasurementType.WATER_FLOW, 1300.0 - ( r * 2 ) );
+        entry.setMeasurement( WellMeasurementType.GAS_FLOW, 10.0 + ( r * 0.025 ) );
+        dataSet.addDataEntry( entry );
+    }
+    
+    return dataSet;
 }
 
 protected static GasWellDataSet populateFromRawData( GasWell well, DataSet[] rawData )

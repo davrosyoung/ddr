@@ -18,9 +18,16 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.ddr.ui;
 
-import au.com.polly.plotter.TimeUnit;
+import au.com.polly.ddr.GasWell;
+import au.com.polly.ddr.GasWellDataExtractor;
+import au.com.polly.ddr.GasWellDataExtractorFactory;
+import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.MultipleWellDataMap;
+import au.com.polly.ddr.ReductionParameters;
+import au.com.polly.ddr.SimpleDiscontinuityDataRateReducerV2;
+import au.com.polly.ddr.WellMeasurementType;
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
 import org.apache.log4j.Logger;
@@ -33,12 +40,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -77,6 +82,7 @@ JButton gasFlowButton;
 JButton condensateFlowButton;
 JButton waterFlowButton;
 JButton loadFileButton;
+JButton editOverlayButton;
 JButton loadOverlayFileButton;
 JButton saveOverlayFileButton;
 JFileChooser loadFileBox;
@@ -96,6 +102,9 @@ Date until = null;
 
 JDialog reductionDialog = null;
 DiscontinuityReducerControlPanel reducerControlPanel = null;
+
+JDialog intervalEditorDialog = null;
+IntervalEditorPane intervalEditorPane = null;
 
 public GraphControlPanel( Date from, Date until )
 {
@@ -139,6 +148,11 @@ public GraphControlPanel( Date from, Date until )
     loadOverlayFileButton.setText( "Open Overlay data..." );
     loadOverlayFileButton.addActionListener( this );
     loadOverlayFileButton.setName( "openOverlayFileButton" );
+    
+    editOverlayButton = new JButton();
+    editOverlayButton.setText( "Edit Overlay data" );
+    editOverlayButton.addActionListener( this );
+    editOverlayButton.setName( "editOverlayData" );
 
     generateOverlayButton = new JButton();
     generateOverlayButton.setText( "reduce" );
@@ -245,6 +259,9 @@ public GraphControlPanel( Date from, Date until )
     gbc.gridheight = 1;
 
     add( generateOverlayButton, gbc );
+    
+    gbc.gridx = 2;
+    add( editOverlayButton, gbc );
 
     gbc.gridx = 5;
     add( untilDateLabel, gbc );
@@ -317,6 +334,27 @@ public void actionPerformed(ActionEvent evt)
                     grapher.loadOverlayData( newData );
                 }
                 break;
+            }
+            
+            if ( button.getName().equals( "editOverlayData" ) )
+            {
+                if ( grapher.getOverlayData() != null )
+                {
+                    generateOverlayButton.setEnabled( false );
+                    if ( intervalEditorDialog == null )
+                    {
+                        Frame frame = JOptionPane.getFrameForComponent( this );
+                        intervalEditorDialog = new JDialog( frame, "Reduced data editor", Dialog.ModalityType.MODELESS );
+                        intervalEditorPane = new IntervalEditorPane( grapher.getOverlayData() );
+                        intervalEditorDialog.setContentPane(intervalEditorPane);
+                        intervalEditorPane.setVisible(true);
+                        intervalEditorDialog.pack();
+                        intervalEditorDialog.setVisible( true );
+                    }
+                } else {
+                    // todo : show error message explaining that we can't edit reduced/overlay data
+                    // until it's been generated!!
+                }
             }
 
 
@@ -409,14 +447,14 @@ public void actionPerformed(ActionEvent evt)
             if ( button.getName().equals( "reduce" ) )
             {
                 Frame frame = JOptionPane.getFrameForComponent(this);
-                JDialog reductionDialog = new JDialog( frame, "Flow Rate Reduction Parameters", Dialog.ModalityType.MODELESS );
-                DiscontinuityReducerControlPanel reducerControlPanel = new DiscontinuityReducerControlPanel();
+                reductionDialog = new JDialog( frame, "Flow Rate Reduction Parameters", Dialog.ModalityType.MODELESS );
+                reducerControlPanel = new DiscontinuityReducerControlPanel();
+                reducerControlPanel.setListener( this );
                 reducerControlPanel.setData( grapher.getData() );
                 reductionDialog.setContentPane(reducerControlPanel);
                 reducerControlPanel.setVisible(true);
                 reductionDialog.pack();
                 reductionDialog.setVisible( true );
-
             }
 
         } while( false );
@@ -473,13 +511,13 @@ protected GasWellDataSet loadDataFromFileChooser( JFileChooser chooser )
             {
                 logger.debug( "extractor is of class \""+ extractor.getClass().getName() + "\"" );
                 MultipleWellDataMap mwdm = extractor.extract();
-                if ( mwdm.dataMap.keySet().size() > 1 )
+                if ( mwdm.getDataMap().keySet().size() > 1 )
                 {
                     // need to get the operator to select a single well from the multiple
                     // wells which are available.
                     // -------------------------------------------------------------------
-                    GasWell[] wells = new GasWell[ mwdm.dataMap.keySet().size() ];
-                    mwdm.dataMap.keySet().toArray( wells );
+                    GasWell[] wells = new GasWell[ mwdm.getDataMap().keySet().size() ];
+                    mwdm.getDataMap().keySet().toArray( wells );
                     String[] wellNames = new String[ wells.length ];
                     for( int i = 0; i < wells.length; i++ )
                     {
@@ -499,14 +537,14 @@ protected GasWellDataSet loadDataFromFileChooser( JFileChooser chooser )
                     {
                         GasWell well = new GasWell( s );
                         logger.debug( "About to obtain data for well \"" + well.getName() + "\"" );
-                        result = mwdm.dataMap.get( well );
+                        result = mwdm.getDataMap().get( well );
                     } else {
                         result = null;
                     }
 
                 } else {
-                    GasWell well = (GasWell)mwdm.dataMap.keySet().toArray()[ 0 ];
-                    result = mwdm.dataMap.get( well );
+                    GasWell well = (GasWell)mwdm.getDataMap().keySet().toArray()[ 0 ];
+                    result = mwdm.getDataMap().get( well );
                 }
             }
         }  else {
@@ -521,20 +559,35 @@ protected GasWellDataSet loadDataFromFileChooser( JFileChooser chooser )
 public void cancelReduction()
 {
     reducerControlPanel.setVisible( false );
-            
+    reducerControlPanel.removeAll();
+
     reductionDialog.setVisible( false );
+    reductionDialog.removeAll();
     reductionDialog.dispose();
     reductionDialog = null;
+    reducerControlPanel = null;
 }
 
 @Override
 public void reduce( ReductionParameters reductionParameters )
 {
     SimpleDiscontinuityDataRateReducerV2 reducer = new SimpleDiscontinuityDataRateReducerV2( reductionParameters );
-    
-    //                DataRateReducer reducer = new SimpleDiscontinuityDataRateReducer();
-//                grapher.reduce( reducer );
-    grapher.reduce( reducer );
+
+    logger.debug( "Just about to reduce" );
+
+    grapher.reduce(reducer);
+
+    logger.debug( "Just finished reduction" );
+
+    reducerControlPanel.setVisible( false );
+    reducerControlPanel.removeAll();
+
+    reductionDialog.setVisible( false );
+    reductionDialog.removeAll();
+    reductionDialog.dispose();
+    reductionDialog = null;
+    reducerControlPanel = null;
+
 }
 
 /* ImageFilter.java is used by FileChooserDemo2.java. */

@@ -18,13 +18,12 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.ddr.ui;
 
 import java.io.InputStream;
 import java.util.Iterator;
 
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.eventusermodel.examples.FromHowTo;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.openxml4j.opc.Package;
 import org.xml.sax.Attributes;

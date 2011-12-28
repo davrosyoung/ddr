@@ -53,7 +53,7 @@ public MultipleWellDataMap()
     this.dataMap = new HashMap<GasWell,GasWellDataSet>();
 }
 
-protected Map<GasWell,GasWellDataSet> getDataMap()
+public Map<GasWell,GasWellDataSet> getDataMap()
 {
     return dataMap;
 }
@@ -116,7 +116,7 @@ private Object writeReplace()
  *
  * @param writer where to write all of the data out to.
  */
-protected void outputCSV( PrintWriter writer )
+public void outputCSV( PrintWriter writer )
 {
     boolean firstWell = true;
     

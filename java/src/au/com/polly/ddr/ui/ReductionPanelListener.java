@@ -18,8 +18,9 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.ReductionParameters;
 import au.com.polly.plotter.TimeUnit;
 
 import java.util.Date;

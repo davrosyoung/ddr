@@ -60,9 +60,9 @@ public ReductionParameters( WellMeasurementType primary, WellMeasurementType sec
     this.secondaryIndicator = secondary;
     if ( insertRegularBoundaries )
     {
-        regularBoundaryStart = regularBoundaryStart;
-        regularBoundarySpanQuantity = boundarySpanQuantity;
-        regularBoundarySpanUnit = boundarySpanUnit;
+        this.regularBoundaryStart = regularBoundaryStart;
+        this.regularBoundarySpanQuantity = boundarySpanQuantity;
+        this.regularBoundarySpanUnit = boundarySpanUnit;
     }
 }
 

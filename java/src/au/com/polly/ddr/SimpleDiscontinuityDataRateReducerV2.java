@@ -38,6 +38,7 @@ static Logger logger = Logger.getLogger( SimpleDiscontinuityDataRateReducerV2.cl
 
 private final static long MEDIAN_CROSSING_MIN_GAP_MS = 7 * 86400 * 1000L;
 private final static long THREE_DAYS = 86400 * 3 * 1000L;
+private final static long FORTNIGHT = 86400 * 14 * 1000L;
 
 protected ReductionParameters recipe = null;
 
@@ -79,6 +80,8 @@ public GasWellDataSet reduce( GasWellDataSet original )
     Calendar boundaryCalendar;
     Date boundaryStamp;
     boolean fini = false;
+    boolean wasUnderC45 = true;
+    boolean wasOverC55 = true;
 
     result = new GasWellDataSet( original.getWell() );
 
@@ -107,7 +110,7 @@ public GasWellDataSet reduce( GasWellDataSet original )
         boundaryCalendar.setTime( regularBoundaryStart );
         
         do {
-            boundaryCalendar.add( recipe.regularBoundarySpanQuantity, recipe.regularBoundarySpanUnit.getCalendarField() );
+            boundaryCalendar.add( recipe.regularBoundarySpanUnit.getCalendarField(), recipe.regularBoundarySpanQuantity  );
             boundaryStamp = boundaryCalendar.getTime();
             if ( boundaryStamp.getTime() < original.until().getTime() )
             {
@@ -122,7 +125,7 @@ public GasWellDataSet reduce( GasWellDataSet original )
 
     for( GasWellDataEntry entry : dataEntries )
     {
-        unsorted.add( entry.getMeasurement( recipe.primaryIndicator ) );
+        unsorted.add( entry.containsMeasurement( recipe.primaryIndicator ) ? entry.getMeasurement( recipe.primaryIndicator ) : 0.0 );
     }
 
     Collections.sort( unsorted, new Comparator()
@@ -155,7 +158,7 @@ public GasWellDataSet reduce( GasWellDataSet original )
 
     // only add the start of data marker if we haven't already added the same marker in the
     // regular boundaries.
-    if ( regularBoundaries.get( 0 ).getTimestamp().getTime() > original.from().getTime() )
+    if ( ( regularBoundaries == null ) || ( regularBoundaries.get( 0 ).getTimestamp().getTime() > original.from().getTime() ) )
     {
         discontinuityBoundaries.add( new GasWellDataBoundary(original.from(), "Start of data", GasWellDataBoundary.BoundaryType.START ) );
     }
@@ -163,7 +166,12 @@ public GasWellDataSet reduce( GasWellDataSet original )
     for( int i = 0; i < dataEntries.size(); i++ )
     {
         GasWellDataEntry entry = dataEntries.get( i );
-        current = entry.getMeasurement( recipe.primaryIndicator );
+        current = entry.containsMeasurement( recipe.primaryIndicator ) ? entry.getMeasurement( recipe.primaryIndicator ) : 0.0;
+        if ( ( recipe.secondaryIndicator != null ) && ( recipe.secondaryIndicator != recipe.primaryIndicator )  )
+        {
+            currentSecondary = entry.containsMeasurement( recipe.secondaryIndicator ) ? entry.getMeasurement( recipe.secondaryIndicator ) : 0.0;
+        }
+        long sinceLast = entry.from().getTime() - discontinuityBoundaries.get( discontinuityBoundaries.size() - 1 ).getTimestamp().getTime();
         if ( i > 0 )
         {
             do {
@@ -203,117 +211,39 @@ public GasWellDataSet reduce( GasWellDataSet original )
                     discontinuityBoundaries.add( new GasWellDataBoundary( entry.from(), "Outage ends on secondary indicator (" + recipe.secondaryIndicator + ")", GasWellDataBoundary.BoundaryType.SECONDARY_INDICATOR_OUTAGE_END  ) );
                 }
                 
-                if ( recipe.detectMedianCrossers && ( previous < c55 ) && ( current >= c55 ) )
+                if ( recipe.detectMedianCrossers && ( previous < c55 ) && ( current >= c55 ) && ( wasUnderC45 ) && ( sinceLast > FORTNIGHT ) )
                 {
                     logger.debug( "i=" + i + " .... primary indicator rises above c55 at " + entry.from() );
                     discontinuityBoundaries.add( new GasWellDataBoundary( entry.from(), "Primary indicator (" + recipe.primaryIndicator + ") rises above 55th percentile", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_MEDIAN_CROSSING ) );
+                    wasUnderC45 = false;
+                    wasOverC55 = true;
                 }
                 
-                if ( recipe.detectMedianCrossers && ( previous >= c45 ) && ( current < c45 ) )
+                if ( recipe.detectMedianCrossers && ( previous >= c45 ) && ( current < c45 ) && ( wasOverC55 ) && ( sinceLast > FORTNIGHT ) )
                 {
                     logger.debug( "i=" + i + " .... primary indicator falls below c45 at " + entry.from() );
                     discontinuityBoundaries.add( new GasWellDataBoundary( entry.from(), "Primary indicator (" + recipe.primaryIndicator + ") falls below 55th percentile", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_MEDIAN_CROSSING ) );
+                    wasOverC55 = false;
+                    wasUnderC45 = true;
                 }
 
             } while( false );
 
         }
         previous = current;
+        previousSecondary = currentSecondary;
     }
     
     // ok ... now we have to merge them....
     // ------------------------------------
-    prevDiscontinuityBoundary = null;
-    currentDiscontinuityBoundary = discontinuityBoundaries.get( discontinuityIndex );
-    nextDiscontinuityBoundary = discontinuityBoundaries.get( discontinuityIndex + 1 );
-    prevRegularBoundary = null;
-    currentRegularBoundary = regularBoundaries.get( regularBoundaryIndex );
-    nextRegularBoundary = regularBoundaries.get( regularBoundaryIndex + 1 );
-    do {
-        
-        // only process the discontinuity boundary if it is the next one to be processed.
-        // -------------------------------------------------------------------------------
-        if ( currentDiscontinuityBoundary.getTimestamp().getTime() < currentRegularBoundary.getTimestamp().getTime() )
-        {
-            // primary outage start/end markers always take precedence over anything else...
-            // ------------------------------------------------------------------------------
-            if ( currentDiscontinuityBoundary.getBoundaryType().isPrimaryOutage() )
-            {
-                combinedBoundaries.add( currentDiscontinuityBoundary );
-                discontinuityIndex++;
-                prevDiscontinuityBoundary = currentDiscontinuityBoundary;
-                currentDiscontinuityBoundary = nextDiscontinuityBoundary;
-                nextDiscontinuityBoundary = ( discontinuityIndex < discontinuityBoundaries.size() ) ? discontinuityBoundaries.get( discontinuityIndex ) : null;
-                continue;
-            }
+    if ( regularBoundaries != null )
+    {
+        combinedBoundaries = GasWellDataBoundary.merge( regularBoundaries, discontinuityBoundaries );
+    } else {
+        combinedBoundaries = discontinuityBoundaries;
+    }
 
-            if ( currentDiscontinuityBoundary.getBoundaryType().isSecondaryOutage() )
-            {
-                combinedBoundaries.add( currentDiscontinuityBoundary );
-                discontinuityIndex++;
-                prevDiscontinuityBoundary = currentDiscontinuityBoundary;
-                currentDiscontinuityBoundary = nextDiscontinuityBoundary;
-                nextDiscontinuityBoundary = ( discontinuityIndex < discontinuityBoundaries.size() ) ? discontinuityBoundaries.get( discontinuityIndex ) : null;
-                continue;
-            }
-
-            if ( currentDiscontinuityBoundary.getBoundaryType().isSecondaryOutage() )
-            {
-                combinedBoundaries.add( currentDiscontinuityBoundary );
-                discontinuityIndex++;
-                prevDiscontinuityBoundary = currentDiscontinuityBoundary;
-                currentDiscontinuityBoundary = nextDiscontinuityBoundary;
-                nextDiscontinuityBoundary = ( discontinuityIndex < discontinuityBoundaries.size() ) ? discontinuityBoundaries.get( discontinuityIndex ) : null;
-                continue;
-            }    
-        }
-        
-        if (
-                ( currentRegularBoundary.getBoundaryType() == GasWellDataBoundary.BoundaryType.START )
-             && ( currentRegularBoundary.getTimestamp().getTime() < currentDiscontinuityBoundary.getTimestamp().getTime() )
-                )
-        {
-            combinedBoundaries.add( currentRegularBoundary );
-            regularBoundaryIndex++;
-            prevRegularBoundary = currentRegularBoundary;
-            currentRegularBoundary = nextRegularBoundary;
-            nextRegularBoundary = ( regularBoundaryIndex < regularBoundaries.size() ? regularBoundaries.get( regularBoundaryIndex ) : null );
-            continue;
-        }
-        
-        // always add the regular boundary markers ... this may change..
-        // ----------------------------------------------------------------
-        if ( currentRegularBoundary.getBoundaryType() == GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY )
-        {
-            combinedBoundaries.add( currentRegularBoundary );
-            regularBoundaryIndex++;
-            prevRegularBoundary = currentRegularBoundary;
-            currentRegularBoundary = nextRegularBoundary;
-            nextRegularBoundary = ( regularBoundaryIndex < regularBoundaries.size() ? regularBoundaries.get( regularBoundaryIndex ) : null );
-            continue;
-        }
-        
-        // always end the "end" marker (not quite sure about this end marker business!!)
-        // ----------------------------------------------------------------------------
-        if ( currentRegularBoundary.getBoundaryType() == GasWellDataBoundary.BoundaryType.END )
-        {
-            combinedBoundaries.add( currentRegularBoundary );
-            regularBoundaryIndex++;
-            prevRegularBoundary = currentRegularBoundary;
-            currentRegularBoundary = nextRegularBoundary;
-            nextRegularBoundary = ( regularBoundaryIndex < regularBoundaries.size() ? regularBoundaries.get( regularBoundaryIndex ) : null );
-            continue;
-        }
-        
-    } while( !fini );
-
-    logger.debug("We have " + discontinuityBoundaries.size() + " discontinuities...");
-
-    discontinuityBoundaries.add(new GasWellDataBoundary(original.until(), "End of data"));
-
-    result = new GasWellDataSet( original, discontinuityBoundaries );
-
-    logger.debug( result );
+    result = new GasWellDataSet( original, combinedBoundaries );
 
     return result;  //To change body of implemented methods use File | Settings | File Templates.
 }

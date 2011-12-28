@@ -20,6 +20,7 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.ddr.ui.PlotGrapher;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -325,6 +326,7 @@ public void reduce(DataRateReducer reducer)
     this.overlayData = reducer.reduce( data);
     repaint();
 }
+
 
 protected static DateScale determineDateScale( long days )
 {
