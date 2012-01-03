@@ -1,0 +1,98 @@
+<!--
+  ~ Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
+  ~  All rights reserved. This code is not to be distributed in binary
+  ~ or source form without express consent of Polly Enterprises Pty Ltd.
+  ~
+  ~
+  ~
+  ~  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+  ~  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+  ~  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+  ~  PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+  ~  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  ~  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  ~  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  ~  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  ~  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  ~  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  ~  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<project name="ddr" basedir=".">
+<description>
+Daves Data Reducer
+</description>
+
+    <property name="test_source" location="java/test"/>
+    <property name="source" location="java/src"/>
+    <property name="test_classes" location="out/test"/>
+    <property name="classes" location="out/production"/>
+    <property name="dist" location="dist"/>
+
+
+    <path id="class.path">
+        <fileset dir="java/lib">
+            <include name="*.jar"/>
+            <include name="**/*.jar"/>
+        </fileset>
+        <pathelement path="conf"/>
+        <dirset dir="${classes}">
+            <include name="*/**"/>
+        </dirset>
+    </path>
+
+    <path id="test.class.path">
+        <path refid="class.path"/>
+        <dirset dir="${test_classes}">
+            <include name="*/**"/>
+        </dirset>
+    </path>
+
+    <target name="clean">
+        <delete dir="${test_classes}"/>
+        <delete dir="${classes}"/>
+        <delete dir="${dist}"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${classes}"/>
+        <javac srcdir="${source}" destdir="${classes}">
+            <classpath refid="class.path"/>
+        </javac>
+    </target>
+
+    <target name="compile.tests">
+        <mkdir dir="${test_classes}"/>
+        <javac srcdir="${test_source}" destdir="${test_classes}">
+            <classpath refid="class.path"/>
+        </javac>
+    </target>
+    
+    <target name="dist" depends="compile">
+        <mkdir dir="dist"/>
+        <jar jarfile="dist/ddr.jar" basedir="${classes}">
+                <manifest>
+                    <attribute name="Main-Class" value="au.com.polly.ddr.ui.SimplePlotGrapherHarness"/>
+                </manifest>
+        </jar>
+    </target>
+    
+    <target name="test" depends="compile,compile.tests">
+        <junit fork="yes" haltonfailure="no">
+          <batchtest>
+            <fileset dir="${test_classes}" includes="**/Test*.class" />
+            <fileset dir="${test_classes}" includes="**/*Test.class" />
+        </batchtest>
+        <formatter type="plain" usefile="false" />
+        <classpath refid="test.class.path"/>
+        </junit>
+    </target>
+
+    <target name="debug">
+        <echoproperties/>
+        <property name="debugClassPath" refid="class.path"/>
+        <echo>classpath is ${debugClassPath}</echo>
+        <property name="debugTestClassPath" refid="test.class.path"/>
+        <echo>test.class.path is ${debugTestClassPath}</echo>
+    </target>
+</project>
