@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -19,6 +19,8 @@
  */
 
 package au.com.polly.plotter;
+
+import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -50,18 +52,18 @@ import java.util.List;
  */
 public class PlotCanvas extends Canvas
 {
+private final static Logger logger = Logger.getLogger( PlotCanvas.class );
 List<PlotData<Integer,Integer>> graphData;
 Axis                        xAxis;
 AxisConfiguration           xAxisConfig;
 List<Axis> yAxis;
 List<AxisConfiguration> yAxisConfig;
 
-final static int DEFAULT_POINT_SIZE = 4;
 final static int LEFT_AXIS_BORDER = 40;
 final static int RIGHT_AXIS_BORDER = 80;
-final static int BOTTOM_AXIS_BORDER = 100;
+final static int BOTTOM_AXIS_BORDER = 150;
 final static int TITLE_BORDER = 20;    
-
+/*
 protected boolean showGrid = false;
 protected double minY;
 protected double minX;
@@ -72,6 +74,7 @@ protected double yInterval;
 protected double xScale;
 protected double yScale;
 protected boolean dirty = true;
+*/
 protected String title;
 protected boolean doRegression = false;
 
@@ -172,7 +175,6 @@ public void addPlotData( PlotData plotData, Axis xAxis, Axis yAxis, AxisConfigur
 
 public void paint(Graphics g)
 {
-    super.paint(g);
     Graphics2D g2d = (Graphics2D)g;
     Color origColour = g2d.getColor();
 /*  only use these for primitive testing of the canvas extent.
@@ -193,21 +195,21 @@ public void paint(Graphics g)
 
 
     this.smallFont = new Font("SansSerif", Font.PLAIN, 10 );
-    this.axisLabelFont = new Font("SansSerif", Font.PLAIN, 16 );
+    this.axisLabelFont = new Font("SansSerif", Font.PLAIN, 20 );
     this.titleFont = new Font("SansSerif", Font.PLAIN, 24 );
 
     // ok, let's start with a white background...
     // -------------------------------------------
     g.setColor( Color.WHITE );
     g.fillRect( 0, 0, getWidth(), getHeight() );
-
+    
     renderXAxis( g2d, xAxis, xAxisConfig );
     renderLeftYAxis( g2d, yAxis.get( 0 ), yAxisConfig.get( 0 ) );
     if ( yAxis.size() > 1 )
     {
         renderRightYAxis( g2d, yAxis.get( 1 ), yAxisConfig.get( 1 ) );
     }
-/*
+/*  ONLY UNCOMMENT FOR PRIMITIVE TESTING OF CANVAS EXTENT!!
     minX = (int) 0;
     maxX = (int) getSize().getWidth() - 1;
     midX = ( minX + maxX ) / 2;
@@ -328,8 +330,7 @@ public void plotData( Graphics2D g, List<PlotData<Integer,Integer>> data )
 
     g.setColor( origColour );
 
-    System.out.println( funcName + "graphData.size()=" + graphData.size() );
-
+    logger.debug("graphData.size()=" + graphData.size() );
 
     // ok ... line of regression??? only if there is only one pair of data...
     // ------------------------------------------------------------------------
@@ -367,6 +368,7 @@ public void plotData( Graphics2D g, List<PlotData<Integer,Integer>> data )
         // ------------------------------------------------------------------
         g.setTransform( identityTransformation );
     }
+
 }
 
 public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
@@ -376,21 +378,16 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     int x1 = LEFT_AXIS_BORDER + config.getPlotLength();
     double c;
     String units;
-    char[] tickLabel;
     Stroke standardStroke;
     Stroke dashedStroke;
-    AffineTransform identity = null;
-    identity = g.getTransform();
+    AffineTransform identity = new AffineTransform();
     identity.setToIdentity();
     Color origColor = g.getColor();
 
-    String funcName = "renderXAxis(): ";
-
-    System.out.println( funcName + "------------------------------------------------------------" );
-    System.out.println( funcName + "width=" + getWidth() + ", height=" + getHeight() );
-    System.out.println( funcName + "x0=" + x0 + ", y0=" + y0 + ", x1=" + x1 );
-    System.out.println( funcName + "------------------------------------------------------------" );
-
+    logger.debug( "------------------------------------------------------------" );
+    logger.debug( "width=" + getWidth() + ", height=" + getHeight() );
+    logger.debug( "x0=" + x0 + ", y0=" + y0 + ", x1=" + x1 );
+    logger.debug( "------------------------------------------------------------" );
 
     standardStroke = g.getStroke();
     dashedStroke = new BasicStroke( 1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, new float[] { 2, 2, 2, 2 }, 0 );
@@ -399,26 +396,34 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     // draw the axis line itself...
     // ------------------------
     g.setColor( config.getColour() );
-    g.drawLine( x0, y0, x1, y0 );
-    g.setFont( smallFont );
+    g.drawLine(x0, y0, x1, y0);
+//    g.setFont( smallFont );
+    
+    Font rotatedFont;
+    AffineTransform fat = new AffineTransform();
+    fat.rotate( Math.PI / 2 );
+    rotatedFont = smallFont.deriveFont( fat );
+    
+    g.setFont( rotatedFont );
+    
+    logger.debug( "axis.getNumberIntervals=" + axis.getNumberIntervals() + ", axis.getMinimumValue()=" + axis.getMinimumValue() );
 
     // now to mark the intervals...
     // ------------------------------
     c = axis.getMinimumValue();
-    for( int i = 0; i <= axis.getNumberIntervals(); i++ )
+    for( int i = 0; i <= axis.getNumberIntervals(); i++, c += axis.getIntervalSize() )
     {
+        String dateText;
         g.setStroke( standardStroke );
         x0 = axis.getPosition( c, config ) + LEFT_AXIS_BORDER;
-        tickLabel = axis.getDataLabel( c ).toCharArray();
+        dateText = axis.getDataLabel(c);
+        logger.debug("for i=" + i + ", c=" + c + ", tickLabel=" + dateText);
         g.drawLine( x0, y0, x0, y0 + 5 );
-        c += axis.getIntervalSize();
 
         // muck about with the coordinate system to draw the x-axis labels on an angle, then
         // set back to regular "identity" transformation ..... avoids complications...
         // -----------------------------------------------------------------------------------
-        g.translate( x0 - 10, y0 + 8 );
-        g.rotate( Math.PI / 4 );
-        g.drawChars( tickLabel, 0, tickLabel.length, 0, 0 );
+        g.drawString( dateText, x0 - 4, y0 + 8  );
         g.setTransform( identity );
 
         // now draw a thin dashed line to mark this interval
@@ -455,13 +460,12 @@ public void renderLeftYAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     int y0 = getHeight() - BOTTOM_AXIS_BORDER;
     int y1 = ( getHeight() -BOTTOM_AXIS_BORDER ) - ( config.getPlotLength() );
     double c;
-    char[] tickLabel;
+    String tickLabel;
     String funcName = "renderYAxis(): ";
     String units;
     Stroke standardStroke;
     Stroke dashedStroke;
-    AffineTransform identity = null;
-    identity = g.getTransform();
+    AffineTransform identity = new AffineTransform();
     identity.setToIdentity();
     Color origColor = g.getColor();
 
@@ -470,10 +474,10 @@ public void renderLeftYAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     dashedStroke = new BasicStroke( 1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, new float[] { 2, 2, 2, 2 }, 0 );
 
 
-    System.out.println( funcName + "------------------------------------------------------------" );
-    System.out.println( funcName + "width=" + getWidth() + ", height=" + getHeight() );
-    System.out.println( funcName + "x0=" + x0 + ", y0=" + y0 + ", y1=" + y1 );
-    System.out.println( funcName + "------------------------------------------------------------" );
+    logger.debug("------------------------------------------------------------" );
+    logger.debug("width=" + getWidth() + ", height=" + getHeight() );
+    logger.debug("x0=" + x0 + ", y0=" + y0 + ", y1=" + y1 );
+    logger.debug("------------------------------------------------------------" );
 
     // draw the axis line itself...
     // ------------------------
@@ -491,10 +495,10 @@ public void renderLeftYAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     {
         g.setStroke( standardStroke );
         y1 = ( getHeight() - BOTTOM_AXIS_BORDER ) - axis.getPosition( c, config );
-        tickLabel = axis.getDataLabel( c ).toCharArray();
+        tickLabel = axis.getDataLabel( c );
         g.drawLine( x0 - 5, y1, x0, y1 );
         c += axis.getIntervalSize();
-        g.drawChars( tickLabel, 0, tickLabel.length, x0 - 20, y1 );
+        g.drawString( tickLabel, x0 - 20, y1 + 4 );
 
 
         // now draw a thin dashed line to mark this interval
@@ -505,10 +509,10 @@ public void renderLeftYAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     }
     g.setStroke( standardStroke );
 
-
+/* just for now!!
     g.translate( 16, getHeight() - ( BOTTOM_AXIS_BORDER + 40 ) );
     g.rotate( - ( Math.PI / 2 ) );
-
+*/
 
     g.setFont( axisLabelFont );
 
@@ -535,7 +539,7 @@ public void renderRightYAxis( Graphics2D g, Axis axis, AxisConfiguration config 
     int y0 = getHeight() - BOTTOM_AXIS_BORDER;
     int y1 = ( getHeight() -BOTTOM_AXIS_BORDER ) - ( config.getPlotLength() );
     double c;
-    char[] tickLabel;
+    String tickLabel;
     String funcName = "renderRightYAxis(): ";
     String units;
     Stroke standardStroke;
@@ -550,10 +554,10 @@ public void renderRightYAxis( Graphics2D g, Axis axis, AxisConfiguration config 
     dashedStroke = new BasicStroke( 1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, new float[] { 2, 2, 2, 2 }, 0 );
 
 
-    System.out.println( funcName + "------------------------------------------------------------" );
-    System.out.println( funcName + "width=" + getWidth() + ", height=" + getHeight() );
-    System.out.println( funcName + "x1=" + x0 + ", y0=" + y0 + ", y1=" + y1 );
-    System.out.println( funcName + "------------------------------------------------------------" );
+    logger.debug("------------------------------------------------------------" );
+    logger.debug("width=" + getWidth() + ", height=" + getHeight() );
+    logger.debug("x1=" + x0 + ", y0=" + y0 + ", y1=" + y1 );
+    logger.debug("------------------------------------------------------------" );
 
     // draw the axis line itself...
     // ------------------------
@@ -570,13 +574,12 @@ public void renderRightYAxis( Graphics2D g, Axis axis, AxisConfiguration config 
     {
         g.setStroke( standardStroke );
         y1 = ( getHeight() - BOTTOM_AXIS_BORDER ) - axis.getPosition( c, config );
-        tickLabel = axis.getDataLabel( c ).toCharArray();
+        tickLabel = axis.getDataLabel( c );
         g.drawLine( x0, y1, x0 + 5, y1 );
         c += axis.getIntervalSize();
-        g.drawChars( tickLabel, 0, tickLabel.length, x0 + 2, y1 );
+        g.drawString( tickLabel, x0 + 2, y1 );
 
     }
-
 
     g.translate( x0 + 2, getHeight() - ( BOTTOM_AXIS_BORDER + 40 ) );
     g.rotate( - ( Math.PI / 2 ) );
@@ -610,4 +613,5 @@ public boolean doRegression()
 {
     return this.doRegression;
 }
+
 }

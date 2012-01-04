@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -62,9 +62,9 @@ public class Plotter extends JFrame implements ActionListener
               + "to display the total number of button clicks."
         );
 
-        xAxisConfig = new AxisConfiguration( "Date/Time", null, Color.BLACK,  300 );
-        yAxisConfig = new AxisConfiguration( "Writes/Second", null, Color.BLACK,  300 );
-        y2AxisConfig = new AxisConfiguration( "Msgs/second", null, Color.GREEN,  300 );
+        xAxisConfig = new AxisConfiguration( "Date/Time", null, Color.BLACK,  600 );
+        yAxisConfig = new AxisConfiguration( "Writes/Second", null, Color.BLACK,  600 );
+        y2AxisConfig = new AxisConfiguration( "Msgs/second", null, Color.GREEN,  600 );
         xAxis = new TimestampAxis<Long>();
         yAxis = new NumericAxis<Double>();
         y2Axis = new NumericAxis<Double>();
@@ -72,7 +72,7 @@ public class Plotter extends JFrame implements ActionListener
 
         label = new JLabel(labelPrefix + "0    ");
         canvas = new PlotCanvas();
-        canvas.setBounds( 0, 0, 600, 600 );
+        canvas.setBounds( 0, 0, 800, 800 );
         canvas.setTitle( "Disk IO performance" );
 
         // create some data in feed it into the plott canvas....
@@ -208,11 +208,11 @@ public class Plotter extends JFrame implements ActionListener
         JPanel pane = new JPanel();
         pane.setBorder(BorderFactory.createEmptyBorder(30, 30, 10, 30));
         pane.setLayout( new GridBagLayout());
-        pane.add(button);
-        pane.add( label );
+//        pane.add(button);
+//        pane.add( label );
         pane.add( canvas );
 
-        setContentPane(pane);
+        setContentPane( pane );
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -221,13 +221,6 @@ public class Plotter extends JFrame implements ActionListener
     }
 
     public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(
-                    UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (Exception e) {
-            System.err.println("Couldn't use the cross-platform "
-                             + "look and feel: " + e);
-        }
 
         JFrame frame = new Plotter();
 

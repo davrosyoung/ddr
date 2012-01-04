@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -104,11 +104,16 @@ public void scale( Number min, Number max )
 }
 
 
+/**
+ *
+ * @param min
+ * @param max
+ */
 public void calculate( long min, long max )
 {
     long range = 0L;
-    double intervalFactor;
-    long unitLength;
+    double intervalFactor;      // how many unit lengths each interval should span.
+    long unitLength;            // how long the selected units are in seconds...
 
 
     // determine the minimum and maximum values...
@@ -221,7 +226,7 @@ public String getDataLabel( Long value)
     NumberFormat formatter;
     String result = null;
 
-    result = knife.formatWithSeconds(new Date(value.longValue()));
+    result = knife.formatWithSeconds( new Date( value.longValue() ), false );
 
     return result;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -55,7 +55,7 @@ public int getPosition(double value, AxisConfiguration configuration);
 
 /**
  *
-  * @return the number of intervals that this axis covers. each interval will be delinieated
+  * @return the number of intervals that this axis covers. each interval will be delineated
  * by a tick mark when rendered.
  */
 public int getNumberIntervals();
