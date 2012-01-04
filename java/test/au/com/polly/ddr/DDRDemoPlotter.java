@@ -63,30 +63,40 @@ public class DDRDemoPlotter extends JFrame implements ActionListener
         TimestampArmyKnife knife = new TimestampArmyKnife();
 
 
-        xAxisConfig = new AxisConfiguration( "Date/Time", null, Color.WHITE,  600 );
-        yAxisConfig = new AxisConfiguration( "Writes/Second", null, Color.WHITE,  600 );
-        y2AxisConfig = new AxisConfiguration( "Msgs/second", null, Color.GREEN,  600 );
+        xAxisConfig = new AxisConfiguration( "Date/Time", null, Color.WHITE,  Color.GRAY, 600 );
+        yAxisConfig = new AxisConfiguration( "Barrels/Day", null, Color.WHITE, Color.GRAY,  600 );
         xAxis = new TimestampAxis<Long>();
         yAxis = new NumericAxis<Double>();
-        y2Axis = new NumericAxis<Double>();
 
         dataPlotter = new DataPlotter( 800, 800 );
-        dataPlotter.setTitle("Disk IO performance");
+        dataPlotter.setTitle("SAA2 Flow Rates");
 
 
         Canvas canvas = new GraphCanvas( dataPlotter );
         canvas.setBounds( 0, 0, 800, 800 );
-        label = new JLabel(labelPrefix + "0    ");
 
         GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
         
         PlotData<Long,Double> oilPlotData = ds.getPlotData( WellMeasurementType.OIL_FLOW );
         oilPlotData.setColour( Color.RED );
+		oilPlotData.setMarkerSize( 8 );
+        
+        PlotData<Long,Double> waterPlotData = ds.getPlotData( WellMeasurementType.WATER_FLOW );
+        waterPlotData.setColour( Color.BLUE );
+		waterPlotData.setMarkerSize( 8 );
+
+        PlotData<Long,Double> gasPlotData = ds.getPlotData( WellMeasurementType.GAS_FLOW );
+        gasPlotData.setColour( Color.YELLOW );
+		gasPlotData.setMarkerSize( 8 );
 
         xAxis.autoScale( oilPlotData.getXAxisData() );
         yAxis.autoScale( oilPlotData.getYAxisData() );
+		yAxis.autoScale( waterPlotData.getYAxisData() );
+		yAxis.autoScale( gasPlotData.getYAxisData() );
 
         dataPlotter.addPlotData( oilPlotData, xAxis, yAxis, xAxisConfig, yAxisConfig);
+        dataPlotter.addPlotData( waterPlotData, xAxis, yAxis, xAxisConfig, yAxisConfig);
+        dataPlotter.addPlotData( gasPlotData, xAxis, yAxis, xAxisConfig, yAxisConfig);
 
         JPanel pane = new JPanel();
         pane.setBorder( BorderFactory.createEmptyBorder( 30, 30, 10, 30 ) );

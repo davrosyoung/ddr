@@ -226,7 +226,7 @@ public String getDataLabel( Long value)
     NumberFormat formatter;
     String result = null;
 
-    result = knife.formatWithSeconds( new Date( value.longValue() ), false );
+    result = knife.formatJustDate( new Date( value.longValue() ), false );
 
     return result;
 }

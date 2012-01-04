@@ -44,6 +44,7 @@ public class AxisConfiguration
 String label = null;
 String units = null;
 Color colour = null;
+Color gridColour = null;
 int length;
 boolean autoScale = true;
 Number min = null;
@@ -64,9 +65,21 @@ public AxisConfiguration(
         int length
 )
 {
+    this( label, units, colour, colour, length );
+}
+
+public AxisConfiguration(
+        String label,
+        String units,
+        Color colour,
+		Color gridColour,
+        int length
+)
+{
     setLabel( label );
     setUnits( units );
     setColour( colour );
+	setGridColour( gridColour );
     setPlotLength( length );
 }
 
@@ -97,6 +110,7 @@ public void populate( Properties props, String qualifier )
     String maxText = "auto";
     Number min;
     Number max;
+	boolean gridColourSpecified = false;
 
     for ( Object keyo : props.keySet() )
     {
@@ -116,7 +130,14 @@ public void populate( Properties props, String qualifier )
             continue;
         }
 
-        if ( key.endsWith( "colour" ) )
+		if ( key.contains( "grid" ) && ( key.endsWith( "colour" ) || key.endsWith( "color" ) ) )
+		{
+			setGridColour( props.getProperty( key ) );
+			gridColourSpecified = true;
+			continue;
+		}
+
+        if ( key.endsWith( "colour" ) || key.endsWith(  "color" ) )
         {
             setColour( props.getProperty( key ) );
             continue;
@@ -137,6 +158,11 @@ public void populate( Properties props, String qualifier )
             maxText = props.getProperty( key );
         }
     }
+
+	if ( ! gridColourSpecified )
+	{
+		setGridColour( getColour() );
+	}
 
     // break out of this do-while loop, as soon as we find the appropriate format
     // for specifying the range for this axis.
@@ -244,6 +270,49 @@ public Color getColour()
     if ( this.colour != null )
     {
         result = colour;
+    }
+
+    return result;
+}
+
+/**
+ *
+ * @param colourName name of the colour desired for this axis
+ *
+ * convenience method, allowing colour to be set by name, rather than using
+ * a java.awt.Color object.
+ */
+public void setGridColour( String colourName )
+{
+    Color colour = ColourParser.parse( colourName );
+
+    if ( colour != null )
+    {
+        setGridColour( colour );
+    }
+}
+
+/**
+ *
+ * @param colour what colour to paint this axis in.
+ */
+public void setGridColour( Color colour )
+{
+    this.gridColour = colour;
+}
+
+/**
+ *
+ * @return if a colour has been specified for this axis, it will return that colour,
+ * otherwise black will be returned.
+ */
+public Color getGridColour()
+{
+    Color result = Color.BLACK;
+
+    if ( this.gridColour != null )
+    {
+        result = this.gridColour;
     }
 
     return result;

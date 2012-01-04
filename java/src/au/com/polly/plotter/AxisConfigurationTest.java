@@ -60,11 +60,13 @@ public class AxisConfigurationTest
         aggregateProperties = new Properties();
         aggregateProperties.put( "axis[1].label", "dave's test" );
         aggregateProperties.put( "axis[1].colour", "yellow" );
+        aggregateProperties.put( "axis[1].grid_colour", "orange" );
         aggregateProperties.put( "axis[1].min", "auto" );
         aggregateProperties.put( "axis[1].max", "auto" );
         aggregateProperties.put( "axis[1].units", "kg" );
         aggregateProperties.put( "axis[2].label", "second axis" );
         aggregateProperties.put( "axis[2].colour", "red" );
+        aggregateProperties.put( "axis[2].grid_colour", "orange" );
         aggregateProperties.put( "axis[2].min", "42" );
         aggregateProperties.put( "axis[2].max", "97" );
         aggregateProperties.put( "axis[2].units", "km/h" );
@@ -87,6 +89,7 @@ public class AxisConfigurationTest
         assertNotNull( config );
         assertNull( config.getLabel() );
         assertEquals( Color.BLACK, config.getColour() );
+        assertEquals( Color.BLACK, config.getGridColour() );
         assertEquals( true, config.isAutoScale() );
         assertNull( config.getUnits() );
         assertNull( config.getMax() );
@@ -104,6 +107,7 @@ public class AxisConfigurationTest
         assertNotNull( config );
         assertEquals( "test", config.getLabel() );
         assertEquals( Color.BLACK, config.getColour() );
+        assertEquals( Color.BLACK, config.getGridColour() );
         assertEquals( true, config.isAutoScale() );
         assertNull( config.getUnits() );
         assertNull( config.getMax() );
@@ -124,6 +128,7 @@ public class AxisConfigurationTest
         assertNotNull( config );
         assertEquals( "dave's test", config.getLabel() );
         assertEquals( Color.YELLOW, config.getColour() );
+        assertEquals( Color.YELLOW, config.getGridColour() );
         assertEquals( true, config.isAutoScale() );
         assertNull( config.getUnits() );
         assertNull( config.getMax() );
@@ -144,6 +149,7 @@ public class AxisConfigurationTest
         assertNotNull( config );
         assertEquals( "dave's test", config.getLabel() );
         assertEquals( Color.YELLOW, config.getColour() );
+        assertEquals( Color.YELLOW, config.getGridColour() );
         assertEquals( true, config.isAutoScale() );
         assertNull( config.getUnits() );
         assertNull( config.getMax() );
@@ -167,6 +173,7 @@ public class AxisConfigurationTest
         assertNotNull( config );
         assertEquals( "dave's test", config.getLabel() );
         assertEquals( Color.YELLOW, config.getColour() );
+        assertEquals( Color.YELLOW, config.getGridColour() );
         assertFalse( config.isAutoScale() );
         assertNull( config.getUnits() );
         assertNotNull( config.getMin() );
@@ -189,6 +196,7 @@ public class AxisConfigurationTest
         assertNotNull( config );
         assertEquals( "second axis", config.getLabel() );
         assertEquals( Color.RED, config.getColour() );
+        assertEquals( Color.ORANGE, config.getGridColour() );
         assertFalse( config.isAutoScale() );
         assertNotNull( config.getUnits() );
         assertNotNull( config.getMin() );
@@ -199,6 +207,34 @@ public class AxisConfigurationTest
         assertEquals( "km/h", config.getUnits() );
 
     }
+	
+	@Test
+	public void testConstructorWithSingleColour()
+	{
+		AxisConfiguration config = new AxisConfiguration( "test", "volts", Color.BLUE, 400 );
+		assertNotNull( config );
+		assertEquals(  "test", config.getLabel() );
+		assertEquals( "volts", config.getUnits() );
+		assertEquals(  Color.BLUE, config.getColour() );
+		assertEquals(  Color.BLUE, config.getGridColour() );
+		assertEquals(  400, config.getPlotLength() );
+		assertEquals(  null, config.getMin() );
+		assertEquals(  null, config.getMax() );
+	}
+
+	@Test
+	public void testConstructorWithSeparateGridColour()
+	{
+		AxisConfiguration config = new AxisConfiguration( "test", "volts", Color.BLUE, Color.GREEN, 400 );
+		assertNotNull( config );
+		assertEquals(  "test", config.getLabel() );
+		assertEquals( "volts", config.getUnits() );
+		assertEquals(  Color.BLUE, config.getColour() );
+		assertEquals(  Color.GREEN, config.getGridColour() );
+		assertEquals(  400, config.getPlotLength() );
+		assertEquals(  null, config.getMin() );
+		assertEquals(  null, config.getMax() );
+	}
 
     public static junit.framework.Test suite()
     {

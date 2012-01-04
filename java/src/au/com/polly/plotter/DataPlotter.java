@@ -3,7 +3,7 @@
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
- *
+ *  
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -61,7 +61,7 @@ private List<AxisConfiguration> yAxisConfig;
 
 final static int LEFT_AXIS_BORDER = 40;
 final static int RIGHT_AXIS_BORDER = 80;
-final static int BOTTOM_AXIS_BORDER = 150;
+final static int BOTTOM_AXIS_BORDER = 100;
 final static int TITLE_BORDER = 20;    
 /*
 protected boolean showGrid = false;
@@ -219,7 +219,7 @@ public void paint(Graphics g)
 
 
     this.smallFont = new Font("SansSerif", Font.PLAIN, 10 );
-    this.axisLabelFont = new Font("SansSerif", Font.PLAIN, 20 );
+    this.axisLabelFont = new Font("SansSerif", Font.PLAIN, 12 );
     this.titleFont = new Font("SansSerif", Font.PLAIN, 24 );
 
     // ok, let's start with a *bleck* background...
@@ -319,6 +319,7 @@ public void plotData( Graphics2D g, List<PlotData<Integer,Integer>> data )
 
         }
 
+		pointSize = plotData.getMarkerSize();
 
         // now overlay the data markers.... with the original pen stroke
         // --------------------------------------------------------------
@@ -423,12 +424,11 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     // ------------------------
     g.setColor( config.getColour() );
     g.drawLine(x0, y0, x1, y0);
-//    g.setFont( smallFont );
-    
+
     Font rotatedFont;
     AffineTransform fat = new AffineTransform();
     fat.rotate( Math.PI / 2 );
-    rotatedFont = smallFont.deriveFont( fat );
+    rotatedFont = axisLabelFont.deriveFont( fat );
     
     g.setFont( rotatedFont );
     
@@ -440,6 +440,7 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     for( int i = 0; i <= axis.getNumberIntervals(); i++, c += axis.getIntervalSize() )
     {
         String dateText;
+		g.setColor(  config.getColour() );
         g.setStroke( standardStroke );
         x0 = axis.getPosition( c, config ) + LEFT_AXIS_BORDER;
         dateText = axis.getDataLabel(c);
@@ -454,6 +455,7 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
 
         // now draw a thin dashed line to mark this interval
         // -----------------------------------------------------
+		g.setColor( config.getGridColour()  );
         g.setStroke( dashedStroke );
         g.drawLine( x0, y0, x0, TITLE_BORDER );
     }
@@ -519,6 +521,7 @@ public void renderLeftYAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     c = axis.getMinimumValue();
     for( int i = 0; i <= axis.getNumberIntervals(); i++ )
     {
+		g.setColor( config.getColour() );
         g.setStroke( standardStroke );
         y1 = ( getHeight() - BOTTOM_AXIS_BORDER ) - axis.getPosition( c, config );
         tickLabel = axis.getDataLabel( c );
@@ -529,6 +532,7 @@ public void renderLeftYAxis( Graphics2D g, Axis axis, AxisConfiguration config )
 
         // now draw a thin dashed line to mark this interval
         // -----------------------------------------------------
+		g.setColor( config.getGridColour() );
         g.setStroke( dashedStroke );
         g.drawLine( x0, y1, x1, y1 );
 
