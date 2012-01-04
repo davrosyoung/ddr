@@ -50,14 +50,14 @@ import java.util.List;
  * share the same x-axis.
  *
  */
-public class PlotCanvas extends Canvas
+public class DataPlotter
 {
-private final static Logger logger = Logger.getLogger( PlotCanvas.class );
-List<PlotData<Integer,Integer>> graphData;
-Axis                        xAxis;
-AxisConfiguration           xAxisConfig;
-List<Axis> yAxis;
-List<AxisConfiguration> yAxisConfig;
+private final static Logger logger = Logger.getLogger( DataPlotter.class );
+private List<PlotData<Integer,Integer>> graphData;
+private Axis                        xAxis;
+private AxisConfiguration           xAxisConfig;
+private List<Axis> yAxis;
+private List<AxisConfiguration> yAxisConfig;
 
 final static int LEFT_AXIS_BORDER = 40;
 final static int RIGHT_AXIS_BORDER = 80;
@@ -78,15 +78,20 @@ protected boolean dirty = true;
 protected String title;
 protected boolean doRegression = false;
 
-Font smallFont;
-Font axisLabelFont;
-Font titleFont;
+private Font smallFont;
+private Font axisLabelFont;
+private Font titleFont;
 
 protected int pointSize = 10;
 
-public PlotCanvas()
+private final int width;  // width in pixels of our drawing region
+private final int height; // height (in pixels) of our drawing region/canvas
+
+public DataPlotter( int width, int height )
 {
     super();
+    this.width = width;
+    this.height = height;
     this.yAxis = new ArrayList<Axis>();
     this.yAxisConfig = new ArrayList<AxisConfiguration>();
     this.graphData = new ArrayList<PlotData<Integer,Integer>>();
@@ -97,15 +102,34 @@ public void setTitle( String title )
     this.title = title;
 }
 
-    /**
-     *
-     * @param plotData the data to be plotted. multiple sets of plot data may be applied. but only one y-axis
-     * will be applied.
-     * @param xAxis
-     * @param yAxis
-     * @param xAxisConfig
-     * @param yAxisConfig
-     */
+/**
+ * 
+ * @return number of pixels wide that we have to draw upon.
+ */
+public int getWidth()
+{
+    return width;
+}
+
+
+/**
+ *
+ * @return number of pixels high that we have to draw upon.
+ */
+public int getHeight()
+{
+    return height;
+}
+
+/**
+ *
+ * @param plotData the data to be plotted. multiple sets of plot data may be applied. but only one y-axis
+ * will be applied.
+ * @param xAxis
+ * @param yAxis
+ * @param xAxisConfig
+ * @param yAxisConfig
+ */
 public void addPlotData( PlotData plotData, Axis xAxis, Axis yAxis, AxisConfiguration xAxisConfig, AxisConfiguration yAxisConfig )
 {
     PlotData<Integer,Integer> currGraphData = new PlotData<Integer,Integer>();
@@ -198,12 +222,14 @@ public void paint(Graphics g)
     this.axisLabelFont = new Font("SansSerif", Font.PLAIN, 20 );
     this.titleFont = new Font("SansSerif", Font.PLAIN, 24 );
 
-    // ok, let's start with a white background...
+    // ok, let's start with a *bleck* background...
     // -------------------------------------------
-    g.setColor( Color.WHITE );
+    g.setColor( Color.BLACK );
     g.fillRect( 0, 0, getWidth(), getHeight() );
     
-    renderXAxis( g2d, xAxis, xAxisConfig );
+    g.setColor( Color.WHITE );
+    
+    renderXAxis(g2d, xAxis, xAxisConfig);
     renderLeftYAxis( g2d, yAxis.get( 0 ), yAxisConfig.get( 0 ) );
     if ( yAxis.size() > 1 )
     {

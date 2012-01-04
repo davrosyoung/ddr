@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -58,6 +58,14 @@ public void testFormattingDateWithMilliseconds()
 }
 
 @Test
+public void testFormattingDateWithMillisecondsTwoDigitYear()
+{
+    Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
+    String text = DateArmyKnife.format( stamp, false );
+    Assert.assertEquals( "13/JUN/68 04:13:59.235", text  );
+}
+
+@Test
 public void testFormattingDateWithSeconds()
 {
     Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
@@ -66,11 +74,43 @@ public void testFormattingDateWithSeconds()
 }
 
 @Test
+public void testFormattingDateWithSecondsTwoDigitYear()
+{
+    Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
+    String text = DateArmyKnife.formatWithSeconds(stamp, false);
+    Assert.assertEquals( "13/JUN/68 04:13:59", text  );
+}
+
+@Test
 public void testFormattingDateWithMinutes()
 {
     Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
     String text = DateArmyKnife.formatWithMinutes(stamp);
     Assert.assertEquals( "13/JUN/1968 04:13", text  );
+}
+
+@Test
+public void testFormattingDateWithMinutesTwoDigitYear()
+{
+    Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
+    String text = DateArmyKnife.formatWithMinutes(stamp, false);
+    Assert.assertEquals( "13/JUN/68 04:13", text  );
+}
+
+@Test
+public void testFormattingJustDate()
+{
+    Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
+    String text = DateArmyKnife.formatJustDate(stamp);
+    Assert.assertEquals( "13/JUN/1968", text  );
+}
+
+@Test
+public void testFormattingJustDateWithTwoDigitYear()
+{
+    Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
+    String text = DateArmyKnife.formatJustDate(stamp, false);
+    Assert.assertEquals( "13/JUN/68", text  );
 }
 
 public static junit.framework.Test suite() {

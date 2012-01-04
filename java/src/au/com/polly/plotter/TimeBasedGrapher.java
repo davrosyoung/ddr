@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -22,6 +22,7 @@ package au.com.polly.plotter;
 
 import au.com.polly.util.DateArmyKnife;
 import au.com.polly.util.TimestampArmyKnife;
+import org.apache.log4j.Logger;
 
 import java.awt.*;
 
@@ -36,12 +37,13 @@ public class TimeBasedGrapher<Long extends Number,T extends Number>
 extends BaseGrapher<Long,T>
 implements Grapher<Long,T>
 {
-    PlotData<Long,T>[] plotData;
-    Axis<T>[] axes;
-    AxisConfiguration[] axesConfig;
+private final static Logger logger = Logger.getLogger( TimeBasedGrapher.class );
+private PlotData<Long,T>[] plotData;
+private Axis<T>[] axes;
+private AxisConfiguration[] axesConfig;
 
 
-    TimestampArmyKnife knife;
+//    TimestampArmyKnife knife;
 
 
 
@@ -88,13 +90,12 @@ implements Grapher<Long,T>
     /**
      * format specific rendering logic, invoked by the render() method.
      */
-    public void doRender( PlotCanvas canvas )
+    protected void doRender( DataPlotter plotter, Graphics2D gfx )
     {
         TimestampAxis<java.lang.Long> timeAxis;
         AxisConfiguration timeAxisConfig;
 
         timeAxis = new TimestampAxis<java.lang.Long>();
-        System.out.println( "TimeBasedGrapher::doRender(): getTimestampArmyKnife()=" + ( ( getTimestampKnife() != null ) ? getTimestampKnife() : "<NULL>" ) );
         timeAxis.knife = new DateArmyKnife();
         timeAxisConfig = new AxisConfiguration( "Date/Time", null, Color.BLACK, width );
 
@@ -115,10 +116,8 @@ implements Grapher<Long,T>
                     axes[ i ].scale( axesConfig[ i ].getMin(), axesConfig[ i ].getMax() );
                 }
             }
-            canvas.addPlotData( data, timeAxis, axes[ i ], timeAxisConfig, axesConfig[ i ] );
-
+            plotter.addPlotData(data, timeAxis, axes[i], timeAxisConfig, axesConfig[i]);
         }
-
     }
 
 
@@ -145,13 +144,4 @@ implements Grapher<Long,T>
     public void setAxesConfig(AxisConfiguration[] axesConfig) {
         this.axesConfig = axesConfig;
     }
-
-    public TimestampArmyKnife getTimestampKnife() {
-        return knife;
-    }
-
-    public void setTimestampKnife(TimestampArmyKnife knife) {
-        this.knife = knife;
-    }
-
 }

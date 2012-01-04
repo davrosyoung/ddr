@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -40,7 +40,8 @@ import java.awt.event.WindowListener;
 public class Plotter2 extends JFrame implements ActionListener
 {
     private JLabel label;
-    private PlotCanvas canvas;
+    private DataPlotter plotter;
+    private Canvas canvas = null;
     private static String labelPrefix = "No of button clicks: ";
     private int numClicks = 0;
     AxisConfiguration xAxisConfig = null;
@@ -57,11 +58,13 @@ public class Plotter2 extends JFrame implements ActionListener
         xAxis = new NumericAxis<Double>();
         yAxis = new NumericAxis<Double>();
 
-        canvas = new PlotCanvas();
-        canvas.setBounds( 0, 0, 800, 800 );
-        canvas.setTitle( "Regression Test" );
+        plotter = new DataPlotter( 800, 800 );
+        plotter.setTitle("Regression Test");
 
-        // create some data in feed it into the plot canvas....
+        canvas = new GraphCanvas( plotter );
+        canvas.setBounds( 0, 0, 800, 800 );
+
+        // create some data in feed it into the plot plotter....
         // -------------------------------------------------
         PlotData<Double,Double> data = new PlotData<Double,Double>();
 /*
@@ -107,14 +110,14 @@ public class Plotter2 extends JFrame implements ActionListener
         data.add( p7 );
         data.add( p8 );
         data.add( p9 );
-*/        
+*/
         data.setColour( Color.BLUE );
 
-        yAxis.autoScale( data.getYAxisData() );
+        yAxis.autoScale(data.getYAxisData());
         xAxis.autoScale( data.getXAxisData() );
 
 
-        canvas.addPlotData( data, xAxis, yAxis, xAxisConfig, yAxisConfig );
+        plotter.addPlotData(data, xAxis, yAxis, xAxisConfig, yAxisConfig);
 
         JPanel pane = new JPanel();
         pane.setBorder( BorderFactory.createEmptyBorder(5, 5, 5, 5) );
@@ -150,6 +153,23 @@ public class Plotter2 extends JFrame implements ActionListener
         frame.pack();
         frame.setVisible(true);
     }
+
+
+
+class GraphCanvas extends Canvas
+{
+    DataPlotter plotter = null;
+
+    public GraphCanvas( DataPlotter plotter )
+    {
+        this.plotter = plotter;
+    }
+
+    public void paint( Graphics g )
+    {
+        plotter.paint( g );
+    }
+}
 
 
 }

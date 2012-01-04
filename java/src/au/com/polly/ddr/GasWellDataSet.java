@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -20,6 +20,8 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.plotter.DataPoint;
+import au.com.polly.plotter.PlotData;
 import au.com.polly.util.DateArmyKnife;
 import au.com.polly.util.DateRange;
 import au.com.polly.util.HashCodeUtil;
@@ -904,6 +906,34 @@ public int hashCode()
     for( GasWellDataEntry entry : list )
     {
         result = HashCodeUtil.hash( result, entry );
+    }
+
+    return result;
+}
+
+
+/**
+ * To enable the plotting classes from the watson project to be able to plot data for the DDR project,
+ * this method enables a PlotData object to be extracted for a specific well measurement type.
+ *
+ * @param wmt measurement type to obtaint the plot data for.
+ * @return
+ */
+public PlotData<Long,Double> getPlotData( WellMeasurementType wmt )
+{
+    PlotData<Long,Double> result = new PlotData<Long,Double>();
+    Iterator<GasWellDataEntry> i = getIterator();
+    Double y = 0.0;
+    Date when = null;
+    GasWellDataEntry entry = null;
+
+    while( i.hasNext() )
+    {
+        entry = i.next();
+        if ( entry.containsMeasurement( wmt ) )
+        {
+            result.add( new DataPoint<Long, Double>( entry.getDateRange().from().getTime(), entry.getMeasurement( wmt ) ) );
+        }
     }
 
     return result;

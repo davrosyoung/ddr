@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -92,11 +92,22 @@ public static boolean areDatesEqual( Date alpha, Date beta )
  * @param stamp
  * @return date formatted as dd/MMM/yyyy hh:mm:ss.mmm
  */
-public static String format(Date stamp)
+public static String format( Date stamp )
+{
+    return format( stamp, true );
+}
+
+/**
+ *
+ * @param stamp
+ * @param fourDigitYear whether year should be output as four digits instead of two.
+ * @return date formatted as dd/MMM/yyyy hh:mm:ss.mmm or dd/MMM/yy hh:mm:ss.mmm
+ */
+public static String format( Date stamp, boolean fourDigitYear )
 {
     Calendar cal = Calendar.getInstance();
     cal.setTime( stamp );
-    return format( cal );
+    return format( cal, fourDigitYear );
 }
 
 /**
@@ -104,10 +115,10 @@ public static String format(Date stamp)
  * @param cal
  * @return date formatted as dd/MMM/yyyy hh:mm:ss.mmm
  */
-public static String format( Calendar cal )
+public static String format( Calendar cal, boolean fourDigitYear )
 {
     StringBuilder out = new StringBuilder();
-    out.append( formatWithSeconds( cal ) );
+    out.append( formatWithSeconds( cal, fourDigitYear ) );
     out.append( "." );
     out.append( threeDigitFormatter.format( cal.get( Calendar.MILLISECOND ) ) );
     return out.toString();
@@ -119,23 +130,45 @@ public static String format( Calendar cal )
  * @param stamp
  * @return date formatted as dd/MMM/yyyy hh:mm:ss
  */
-public static String formatWithSeconds(Date stamp)
+public static String formatWithSeconds( Date stamp )
 {
-    Calendar cal = Calendar.getInstance();
-    cal.setTime( stamp );
-    return formatWithSeconds( cal );
+    return formatWithSeconds( stamp, true );
 }
+
 
 /**
  *
+ * @param stamp
+ * @param fourDigitYear whether or not to output year as four digits (instead of two)
+ * @return date formatted as dd/MMM/yyyy hh:mm:ss or dd/MMM/yy hh:mm:ss
+ */
+public static String formatWithSeconds( Date stamp, boolean fourDigitYear )
+{
+    Calendar cal = Calendar.getInstance();
+    cal.setTime( stamp );
+    return formatWithSeconds( cal, fourDigitYear );
+}
+
+/**
  * @param cal
  * @return date formatted as dd/MMM/yyyy hh:mm:ss
  */
+
 public static String formatWithSeconds( Calendar cal )
+{
+    return formatWithSeconds( cal, true );
+}
+
+/**
+ * @param cal
+ * @param fourDigitYear whether year should contain four digits (true) or two( false).
+ * @return date formatted as dd/MMM/yyyy hh:mm:ss or dd/MMM/yy hh:mm:ss
+ */
+public static String formatWithSeconds( Calendar cal, boolean fourDigitYear )
 {
     StringBuilder out = new StringBuilder();
     
-    out.append( formatWithMinutes( cal ) );
+    out.append( formatWithMinutes( cal, fourDigitYear ) );
     out.append( ":" );
     out.append( twoDigitFormatter.format( cal.get( Calendar.SECOND ) ) );
 
@@ -149,13 +182,23 @@ public static String formatWithSeconds( Calendar cal )
  * @param stamp
  * @return date formatted as dd/MMM/yyyy hh:mm
  */
-public static String formatWithMinutes(Date stamp)
+public static String formatWithMinutes( Date stamp )
+{
+    return formatWithMinutes( stamp, true );
+}
+
+/**
+ * @param stamp
+ * @param fourDigitYear whether or not to output the year with four digits.
+ * @return date formatted as dd/MMM/yyyy hh:mm
+ */
+public static String formatWithMinutes( Date stamp, boolean fourDigitYear )
 {
     Calendar cal = Calendar.getInstance();
     cal.setTime( stamp );
-    return formatWithMinutes( cal );
+    return formatWithMinutes( cal, fourDigitYear );
 }
-        
+
 
 /**
  *
@@ -163,15 +206,23 @@ public static String formatWithMinutes(Date stamp)
  * @param cal
  * @return date formatted as dd/MMM/yyyy hh:mm
  */
-public static String formatWithMinutes(Calendar cal)
+public static String formatWithMinutes( Calendar cal )
+{
+    return formatWithMinutes( cal, true );
+}
+
+/**
+ *
+ *
+ * @param cal
+ * @param fourDigitYear whether to output four digit year or not.
+ * @return date formatted as dd/MMM/yyyy hh:mm  or dd/MMM/yy hh:mm
+ */
+public static String formatWithMinutes(Calendar cal, boolean fourDigitYear )
 {
     StringBuilder out = new StringBuilder();
     
-    out.append( twoDigitFormatter.format( cal.get( Calendar.DAY_OF_MONTH ) ));
-    out.append( "/" );
-    out.append( MonthParser.monthAbbreviation( cal.get( Calendar.MONTH ) ).toUpperCase() );
-    out.append( "/" );
-    out.append( fourDigitFormatter.format( cal.get( Calendar.YEAR ) ) );
+    out.append( formatJustDate( cal, fourDigitYear ) );
     out.append( " " );
     out.append( twoDigitFormatter.format( cal.get( Calendar.HOUR_OF_DAY ) ) );
     out.append( ":" );
@@ -179,6 +230,54 @@ public static String formatWithMinutes(Calendar cal)
     
     return out.toString();
 }
-        
+
+/**
+ * 
+ * @param stamp
+ * @return  date formatted as dd/MMM/yyyy
+ */
+public static String formatJustDate( Date stamp )
+{
+    return formatJustDate(stamp, true);
+}
+
+/**
+ * 
+ * @param stamp
+ * @param fourDigitYear whether or not to output year as four digits.
+ * @return date formatted as dd/MMM/yy or dd/MMM/yyyy
+ */
+public static String formatJustDate( Date stamp, boolean fourDigitYear )
+{
+    Calendar cal = Calendar.getInstance();
+    cal.setTime( stamp );
+    return formatJustDate( cal, fourDigitYear );    
+}
+
+/**
+ * @param cal
+ * @return date formatted as dd/MMM/yyyy
+ */
+public static String formatJustDate( Calendar cal )
+{
+    return formatJustDate( cal, true );
+}
+
+/**
+ * @param cal
+ * @param fourDigitYear whether to output four digit year or not.
+ * @return date formatted as dd/MMM/yyyy  or dd/MMM/yy
+ */
+public static String formatJustDate(Calendar cal, boolean fourDigitYear )
+{
+    StringBuilder out = new StringBuilder();
+
+    out.append( twoDigitFormatter.format( cal.get( Calendar.DAY_OF_MONTH ) ));
+    out.append( "/" );
+    out.append( MonthParser.monthAbbreviation( cal.get( Calendar.MONTH ) ).toUpperCase() );
+    out.append( "/" );
+    out.append( fourDigitYear ? fourDigitFormatter.format( cal.get( Calendar.YEAR ) ) : twoDigitFormatter.format( cal.get( Calendar.YEAR ) ) );
+    return out.toString();
+}
 
 }

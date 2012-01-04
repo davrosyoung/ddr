@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -20,6 +20,7 @@
 
 package au.com.polly.plotter;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
@@ -38,28 +39,28 @@ implements Grapher<T,U> {
     int height;
 
     public BufferedImage render()
-       {
+    {
            BufferedImage result;
 
            // ping response time vs dispatcher linger time...
            // ... XY scatter plot with regression data.
            // -----------------------------------------------------------------------
            result = new BufferedImage( getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB );
-           PlotCanvas canvas = new PlotCanvas();
-           canvas.setBounds( 0, 0, result.getWidth(), result.getHeight() );
-           canvas.setTitle( title );
+           DataPlotter plotter = new DataPlotter( getWidth(), getHeight() );
 
-           doRender( canvas );
+           doRender( plotter, (Graphics2D)result.getGraphics() );
 
-           canvas.paint( result.getGraphics() );
+           plotter.paint( result.getGraphics() );
 
            return result;
-       }
+    }
 
     /**
-     * @return A buffered image, containing the rendered graph.
+     * @param plotter the data plotter
+     * @param gfx the graphics context within which to perform the rendering.
+     *
      */
-    public abstract void doRender( PlotCanvas canvas );
+    protected abstract void doRender( DataPlotter plotter, Graphics2D gfx );
 
     public String getTitle() {
         return title;

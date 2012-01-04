@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -28,9 +28,12 @@ import au.com.polly.plotter.NumericAxis;
 import au.com.polly.plotter.PlotData;
 import au.com.polly.plotter.TimeBasedGrapher;
 import au.com.polly.plotter.XYScatterGrapher;
+import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DataType;
+import au.com.polly.util.DateParser;
 import au.com.polly.util.StringArmyKnife;
 import au.com.polly.util.TimestampArmyKnife;
+import org.apache.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -41,6 +44,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,13 +56,13 @@ import java.util.Properties;
  */
 public class CSVPlotter
 {
+private final static Logger logger = Logger.getLogger( CSVPlotter.class );
+private final static DateParser parser = new AussieDateParser();
 final static int DEFAULT_GRAPH_WIDTH = 1600;
 final static int DEFAULT_GRAPH_HEIGHT = 1000;
 RootConfiguration config = null;
 Map<Integer,DataSeries> data = null;
-TimestampArmyKnife tsArmyKnife = null;
-
-
+//TimestampArmyKnife tsArmyKnife = null;
 
 /**
  * Generate either time based or X-Y scatter plots from CSV files.
@@ -99,9 +103,8 @@ public void run()
     }
 
     this.config = readConfig( props );
-    tsArmyKnife = new TimestampArmyKnife();
-    tsArmyKnife.setTimeZone( config.getTimezone() );
-    setTimestampArmyKnife( tsArmyKnife );
+//    tsArmyKnife = new TimestampArmyKnife();
+//    tsArmyKnife.setTimeZone(config.getTimezone());
 
     try {
         dataFile = new File( config.getSourceDataPath() );
@@ -246,7 +249,8 @@ public Map<Integer,DataSeries> readData( RootConfiguration config, BufferedReade
                     break;
 
                 case TIMESTAMP:
-                    stamp = tsArmyKnife.parse( bits[ columnID.intValue() - 1 ] );
+                    Date when = parser.parse( bits[ columnID.intValue() - 1 ] ).getTime();
+                    stamp = when.getTime();
                     if ( stamp >= 0L )
                     {
                         invalidLine = false;
@@ -355,8 +359,6 @@ public void generateGraphs( RootConfiguration rootConfiguration, Map<Integer,Dat
                             axes,
                             axesConfig
                     );
-            ((TimeBasedGrapher)grapher).setTimestampKnife( tsArmyKnife );
-
         }
 
         result = grapher.render();
@@ -372,17 +374,6 @@ public void generateGraphs( RootConfiguration rootConfiguration, Map<Integer,Dat
     }
 
     return;
-}
-
-
-public TimestampArmyKnife getTimestampArmyKnife()
-{
-    return tsArmyKnife;
-}
-
-public void setTimestampArmyKnife(TimestampArmyKnife tsArmyKnife)
-{
-    this.tsArmyKnife = tsArmyKnife;
 }
 
 

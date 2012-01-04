@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -20,6 +20,8 @@
 
 package au.com.polly.ddr;
 
+import au.com.polly.plotter.DataPoint;
+import au.com.polly.plotter.PlotData;
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
 import au.com.polly.util.DateRange;
@@ -747,7 +749,33 @@ public void testExtractingReducedDataSetViaConstructorWithEndBoundary()
     assertTrue( entry.containsMeasurement( WellMeasurementType.OIL_FLOW ) );
     expected = ( 1139.1 + 1142.6 + 1140.7 + 1141.2 + 1142.8 + 1140.3 + 0320.5 + 0000.0 + 0000.0 + 0000.0 + 0000.0 + 0000.0 + 0762.5 + 1762.4 + 1482.3 + 1312.5 + 1274.7 + 1082.5 + 0995.7 + 1127.5 + 1138.5 + 1137.6 + 1139.6 + 1140.6) / 24.0;
     assertEquals( expected, entry.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+}
 
+@Test
+public void testGetPlotDataForSAA2FragmentOilFlow()
+{
+    PlotData pd = TestGasWellDataSet.getSAA2FragmentDataSet().getPlotData( WellMeasurementType.OIL_FLOW );
+    assertNotNull( pd );
+    assertEquals( 119, pd.size() );
+    
+    List<DataPoint<Long,Double>> dataPointList = pd.getDataPoints();
+    assertNotNull( dataPointList );
+    assertEquals( 119, dataPointList.size() );
+
+    DataPoint<Long,Double> p = dataPointList.get( 0 );
+    assertEquals( dateParser.parse( "30/JUL/2009" ).getTime().getTime(), (long)p.getX() );
+    assertEquals( 286.51, p.getY(), ACCEPTABLE_ERROR );
+    
+
+    p = dataPointList.get( 1 );
+    assertEquals( dateParser.parse( "31/JUL/2009" ).getTime().getTime(), (long)p.getX() );
+    assertEquals( 276.88, p.getY(), ACCEPTABLE_ERROR );
+
+
+    p = dataPointList.get( 118 );
+    assertEquals( dateParser.parse( "25/NOV/2009" ).getTime().getTime(), (long)p.getX() );
+    assertEquals( 2367.34, p.getY(), ACCEPTABLE_ERROR );
 
 }
+
 }
