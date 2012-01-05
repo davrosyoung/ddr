@@ -29,6 +29,7 @@ import au.com.polly.plotter.PlotData;
 import au.com.polly.plotter.TimeBasedGrapher;
 import au.com.polly.plotter.XYScatterGrapher;
 import au.com.polly.util.AussieDateParser;
+import au.com.polly.util.BaseDateParser;
 import au.com.polly.util.DataType;
 import au.com.polly.util.DateParser;
 import au.com.polly.util.StringArmyKnife;
@@ -103,6 +104,7 @@ public void run()
     }
 
     this.config = readConfig( props );
+    ((BaseDateParser)parser).setTimeZone( config.getTimezone() );
 //    tsArmyKnife = new TimestampArmyKnife();
 //    tsArmyKnife.setTimeZone(config.getTimezone());
 
@@ -158,6 +160,7 @@ public Map<Integer,DataSeries> readData( RootConfiguration config, BufferedReade
     DataSeriesConfiguration ySeriesConfig;
     List<DataSeriesConfiguration> multiYSeriesConfig;
     char[] commaSeparator = new char[] { ',' };
+    Date when = null;
 
     // interrogate the supplied configuration to determine which columns have which
     // data types (timestamp/long/double).
@@ -249,12 +252,17 @@ public Map<Integer,DataSeries> readData( RootConfiguration config, BufferedReade
                     break;
 
                 case TIMESTAMP:
-                    Date when = parser.parse( bits[ columnID.intValue() - 1 ] ).getTime();
-                    stamp = when.getTime();
-                    if ( stamp >= 0L )
+                    when = null;
+                    try
                     {
+                        when = parser.parse( bits[ columnID.intValue() - 1 ] ).getTime();
+                        stamp = when.getTime();
+                        logger.debug( "Parsed \"" + bits[ columnID.intValue() - 1 ] + "\" into " + when );
                         invalidLine = false;
                         ds.add( stamp );
+                    } catch (Exception e) {
+                        stamp = -1L;
+                        invalidLine = true;
                     }
                     break;
             }

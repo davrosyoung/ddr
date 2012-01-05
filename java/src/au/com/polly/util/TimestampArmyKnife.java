@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -20,6 +20,8 @@
 
 package au.com.polly.util;
 
+import org.apache.log4j.Logger;
+
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -30,6 +32,7 @@ import java.util.regex.Pattern;
 @Deprecated
 public class TimestampArmyKnife
 {
+    private final static Logger logger = Logger.getLogger( TimestampArmyKnife.class );
     private final static int debug = 5;
     private TimeZone tz;
     private final static String[] months = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
@@ -261,7 +264,7 @@ public class TimestampArmyKnife
     )
     {
         long result;
-        Calendar calendar = Calendar.getInstance(this.tz);
+        Calendar calendar = Calendar.getInstance( this.tz );
         calendar.set( Calendar.YEAR, year );
         calendar.set( Calendar.MONTH, month );
         calendar.set( Calendar.DAY_OF_MONTH, dom );
@@ -345,10 +348,7 @@ public class TimestampArmyKnife
                         break;
                 }
 
-                if ( debug > 6 )
-                {
-                    System.out.println( "Determined year=\"" + year + "\", month=\"" + month + "\", dom=\"" + dom + "\", hour=\"" + hour + "\", minute=\"" + minute + "\", seconds=\"" + seconds + "\", milliseconds=\"" + ( milliSeconds != null ? milliSeconds : "<NULL>" ) );
-                }
+                logger.debug( "Determined year=\"" + year + "\", month=\"" + month + "\", dom=\"" + dom + "\", hour=\"" + hour + "\", minute=\"" + minute + "\", seconds=\"" + seconds + "\", milliseconds=\"" + ( milliSeconds != null ? milliSeconds : "<NULL>" ) );
 
                 result = calculateStamp( dom, month, year, hour, minute, seconds, milliSeconds );
             }

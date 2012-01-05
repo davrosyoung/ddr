@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -87,8 +87,8 @@ public class AxisConfigurationTest
     {
         AxisConfiguration config = new AxisConfiguration();
         assertNotNull( config );
-        assertNull( config.getLabel() );
-        assertEquals( Color.BLACK, config.getColour() );
+        assertNull(config.getLabel());
+        assertEquals(Color.BLACK, config.getColour());
         assertEquals( Color.BLACK, config.getGridColour() );
         assertEquals( true, config.isAutoScale() );
         assertNull( config.getUnits() );
@@ -105,7 +105,7 @@ public class AxisConfigurationTest
     {
         AxisConfiguration config = new AxisConfiguration( "test", null, null, 0 );
         assertNotNull( config );
-        assertEquals( "test", config.getLabel() );
+        assertEquals("test", config.getLabel());
         assertEquals( Color.BLACK, config.getColour() );
         assertEquals( Color.BLACK, config.getGridColour() );
         assertEquals( true, config.isAutoScale() );
@@ -125,8 +125,8 @@ public class AxisConfigurationTest
     {
         AxisConfiguration config = new AxisConfiguration();
         config.populate( standardProperties );
-        assertNotNull( config );
-        assertEquals( "dave's test", config.getLabel() );
+        assertNotNull(config);
+        assertEquals("dave's test", config.getLabel());
         assertEquals( Color.YELLOW, config.getColour() );
         assertEquals( Color.YELLOW, config.getGridColour() );
         assertEquals( true, config.isAutoScale() );
@@ -145,9 +145,9 @@ public class AxisConfigurationTest
     {
         AxisConfiguration config = new AxisConfiguration();
         standardProperties.put( "min", "27.4" );
-        config.populate( standardProperties );
-        assertNotNull( config );
-        assertEquals( "dave's test", config.getLabel() );
+        config.populate(standardProperties);
+        assertNotNull(config);
+        assertEquals("dave's test", config.getLabel());
         assertEquals( Color.YELLOW, config.getColour() );
         assertEquals( Color.YELLOW, config.getGridColour() );
         assertEquals( true, config.isAutoScale() );
@@ -167,11 +167,11 @@ public class AxisConfigurationTest
         AxisConfiguration config = new AxisConfiguration();
         standardProperties.put( "min", "27.4" );
         standardProperties.put( "max", "58.2" );
-        assertEquals( "27.4", standardProperties.get( "min" ) );
+        assertEquals("27.4", standardProperties.get("min"));
         assertEquals( "58.2", standardProperties.get( "max" ) );
-        config.populate( standardProperties );
-        assertNotNull( config );
-        assertEquals( "dave's test", config.getLabel() );
+        config.populate(standardProperties);
+        assertNotNull(config);
+        assertEquals("dave's test", config.getLabel());
         assertEquals( Color.YELLOW, config.getColour() );
         assertEquals( Color.YELLOW, config.getGridColour() );
         assertFalse( config.isAutoScale() );
@@ -226,14 +226,14 @@ public class AxisConfigurationTest
 	public void testConstructorWithSeparateGridColour()
 	{
 		AxisConfiguration config = new AxisConfiguration( "test", "volts", Color.BLUE, Color.GREEN, 400 );
-		assertNotNull( config );
-		assertEquals(  "test", config.getLabel() );
-		assertEquals( "volts", config.getUnits() );
-		assertEquals(  Color.BLUE, config.getColour() );
+		assertNotNull(config);
+		assertEquals("test", config.getLabel());
+		assertEquals("volts", config.getUnits());
+		assertEquals(Color.BLUE, config.getColour());
 		assertEquals(  Color.GREEN, config.getGridColour() );
 		assertEquals(  400, config.getPlotLength() );
-		assertEquals(  null, config.getMin() );
-		assertEquals(  null, config.getMax() );
+		assertEquals(null, config.getMin());
+		assertEquals(null, config.getMax());
 	}
 
     public static junit.framework.Test suite()

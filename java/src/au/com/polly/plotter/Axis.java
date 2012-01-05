@@ -22,7 +22,7 @@ package au.com.polly.plotter;
 
 
 /**
- * Represents either a vertical or horizontal axis. The implmenteing classes ensure
+ * Represents either a vertical or horizontal axis. The implmenting classes ensure
  * that an appropriate axis is generated for the data set fed to this class.
  */
 public interface Axis<T extends Number>
@@ -40,7 +40,7 @@ public void autoScale(DataSeries<T> data);
  * @param max
  *
  *
- * This method is invoked when aribitary constraints are to be set upon the axis.
+ * This method is invoked when arbitrary constraints are to be set upon the axis.
  */
 public void scale(Number min, Number max);
 

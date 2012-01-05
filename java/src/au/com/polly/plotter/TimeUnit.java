@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -20,17 +20,25 @@
 
 package au.com.polly.plotter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Represents the units of time which can be used to represent the horizontal time axis upon a graph.
  * The year unit is intentionally approximate, and is sufficient for presenting data upon a graph
  * where the time axis unit is in years. Months cannot be sufficiently expressed in seconds and
- * need to be calculated differently.
+ * need to be calculated differently. Intended only for making guesses about appropriate scaling
+ * for timescale axes!!
+ *
+ * @author Dave Young
  * 
  * 
  */
-public enum TimeUnit
+public enum TimeUnit implements Comparator<TimeUnit>
 {
     MILLISECOND( Calendar.MILLISECOND, 1L, "milliseconds" ),
     SECOND( Calendar.SECOND, 1000L, "seconds" ),
@@ -38,28 +46,92 @@ public enum TimeUnit
     HOUR( Calendar.HOUR, 3600 * 1000L, "hours" ),
     DAY( Calendar.DAY_OF_YEAR, 86400 * 1000L, "days" ),
     WEEK( Calendar.WEEK_OF_YEAR, 7 * 86400 * 1000L, "weeks" ),
-    MONTH( Calendar.MONTH, -1, "months" ),
+    MONTH( Calendar.MONTH, 31 * 86400L * 1000L, "months" ),
     YEAR( Calendar.YEAR, 365243 * 86400L, "years" );
 
-    private int calendarField;
-    private long milliSeconds;
-    private String menuLabel;
+private static List<TimeUnit> downwards = null;
 
-    private TimeUnit( int calendarField, long ms, String menuLabel )
+static {
+    downwards = new ArrayList<TimeUnit>( Arrays.asList( TimeUnit.values() ) );
+    Collections.sort( downwards, TimeUnit.MILLISECOND.descending() );
+}
+
+/**
+ * the field in java.util.Calendar which this unit of time can be represented by.
+ * by obtaining this value, one can perform operations such as add() and roll()
+ * on a calendar object.
+ */
+    private final int calendarField;
+
+/**
+ * A rough estimate of how many milliseconds duration this time unit encompasses. It's
+ * just fine until we get to months and years, where it is an approximation at best!!
+ */
+    private final long milliSeconds;
+
+/**
+ *  How this field is to be represented in human readable form.
+ */
+    private final String label;
+
+
+    private TimeUnit( int calendarField, long ms, String label )
     {
         this.calendarField = calendarField;
         this.milliSeconds = ms;
-        this.menuLabel = menuLabel;
+        this.label = label;
     }
 
     public String toString()
     {
-        return menuLabel;
+        return label;
     }
 
     public int getCalendarField()
     {
         return calendarField;
     }
+
+    /**
+     * @return approximate length of this time unit in milliseconds. It's sort of
+     * a guess for MONTH and YEAR units, where they can depend in length depending
+     * upon the actual calendar month & year in question.
+     *
+     */
+    public long getDurationMS()
+    {
+        return this.milliSeconds;
+    }
+
+/**
+ * compares one time unit against another by interrogating the duration field.
+ *
+ *
+ * @param o1
+ * @param o2
+ * @return  <0 if o1 is smaller than o2, 0 if equal, >0 if o1 is larger than o2
+ */
+    @Override
+    public int compare( TimeUnit o1, TimeUnit o2 )
+    {
+        return ((Long)o1.getDurationMS()).compareTo( o2.getDurationMS() );
+    }
+    
+
+    public Comparator<TimeUnit> ascending()
+    {
+        return this;
+    }
+
+    public Comparator<TimeUnit> descending()
+    {
+        return Collections.reverseOrder( ascending() );
+    }
+
+    public static List<TimeUnit> getReverseOrder()
+    {
+        return downwards;
+    }
+
 
 }

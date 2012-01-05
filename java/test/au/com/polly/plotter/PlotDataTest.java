@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -22,17 +22,23 @@ package au.com.polly.plotter;
 
 import junit.framework.JUnit4TestAdapter;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
  * Battery of tests of the data series class.
  *
  */
+@RunWith(JUnit4.class)
 public class PlotDataTest
 {
 private final static double ACCEPTABLE_ERROR = 1E-6;
@@ -43,6 +49,18 @@ private final static double ACCEPTABLE_ERROR = 1E-6;
         PlotData<Long,Double> data = new PlotData<Long,Double>();
         assertNotNull ( data );
         assertEquals( 0, data.size() );
+        
+        data.setLineStyles(EnumSet.of( PlotData.LineStyle.STEPPED, PlotData.LineStyle.THICK ) );
+        
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.NONE ) );
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.JOINED ) );
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.THIN ) );
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.DASHED ) );
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.FINE_DASHED ) );
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.EXTRA_THICK ) );
+        
+        assertTrue( data.getLineStyles().contains( PlotData.LineStyle.STEPPED ) );
+        assertTrue( data.getLineStyles().contains( PlotData.LineStyle.THICK ) );
     }
 
     @Test
@@ -54,6 +72,15 @@ private final static double ACCEPTABLE_ERROR = 1E-6;
         PlotData<Long,Double> data = new PlotData<Long,Double>( timeSeries, dataSeries );
         assertNotNull( data );
         assertEquals( 0, data.size() );
+        assertTrue(data.getLineStyles().contains(PlotData.LineStyle.NONE));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.JOINED ) );
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.THIN ) );
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.DASHED ) );
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.FINE_DASHED ) );
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.EXTRA_THICK ) );
+        assertFalse(data.getLineStyles().contains(PlotData.LineStyle.STEPPED));
+        assertFalse(data.getLineStyles().contains(PlotData.LineStyle.THICK));
+
     }
 
     @Test(expected=NullPointerException.class)
@@ -252,6 +279,56 @@ private final static double ACCEPTABLE_ERROR = 1E-6;
         assertEquals( 48L, data.getMaxX().longValue() );
         assertEquals( 74.7, data.getMinY(), ACCEPTABLE_ERROR );
         assertEquals( 90.8, data.getMaxY(), ACCEPTABLE_ERROR );
+    }
+
+    @Test
+    public void testSettingLineStyles()
+    {
+        PlotData<Long,Double> data = new PlotData<Long,Double>();
+        assertNotNull ( data );
+        assertEquals( 0, data.size() );
+        
+        data.add( new DataPoint<Long, Double>( 1000L, 5.23 ) );
+        data.add( new DataPoint<Long, Double>( 1100L, 6.03 ) );
+        data.add( new DataPoint<Long, Double>( 1200L, 5.86 ) );
+        data.add( new DataPoint<Long, Double>( 1300L, 5.23 ) );
+        
+        assertEquals( 4, data.size() );
+        assertEquals( 1000L, (long)data.getMinX() );
+        assertEquals( 1300L, (long)data.getMaxX() );
+        assertEquals( 5.23, data.getMinY(), ACCEPTABLE_ERROR );
+        assertEquals( 6.03, data.getMaxY(), ACCEPTABLE_ERROR );
+        
+        assertTrue( data.getLineStyles().contains( PlotData.LineStyle.NONE ));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.FINE_DASHED ));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.JOINED ));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.STEPPED ));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.DASHED ));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.THIN ));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.THICK ));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.EXTRA_THICK ));
+
+        data.setLineStyles(EnumSet.of( PlotData.LineStyle.STEPPED, PlotData.LineStyle.THICK ) );
+
+        assertFalse(data.getLineStyles().contains(PlotData.LineStyle.NONE));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.FINE_DASHED ));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.JOINED ));
+        assertTrue(data.getLineStyles().contains(PlotData.LineStyle.STEPPED));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.DASHED ));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.THIN ));
+        assertTrue(data.getLineStyles().contains(PlotData.LineStyle.THICK));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.EXTRA_THICK ));
+
+        data.setLineStyles(EnumSet.of( PlotData.LineStyle.JOINED ) );
+
+        assertFalse(data.getLineStyles().contains(PlotData.LineStyle.NONE));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.FINE_DASHED ));
+        assertTrue(data.getLineStyles().contains(PlotData.LineStyle.JOINED));
+        assertFalse(data.getLineStyles().contains(PlotData.LineStyle.STEPPED));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.DASHED ));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.THIN ));
+        assertFalse(data.getLineStyles().contains(PlotData.LineStyle.THICK));
+        assertFalse( data.getLineStyles().contains( PlotData.LineStyle.EXTRA_THICK ));
     }
 
     public static junit.framework.Test suite()

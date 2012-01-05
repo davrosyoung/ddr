@@ -44,21 +44,7 @@ implements Axis<Long>
 {
 DateArmyKnife knife = new DateArmyKnife();
 // our units of time.    
-enum TimeUnit { WEEK, DAY, HOUR, MINUTE, SECOND, MILLISECOND };
 boolean empty = true;
-
-// map to represent how large each unit of time is, in milliseconds.
-// -------------------------------------------------------------------- 
-private static Map<TimeUnit,java.lang.Long> unitSize = new HashMap<TimeUnit,java.lang.Long>();
-
-static {
-    unitSize.put( TimeUnit.WEEK, 7 * 86400000L );
-    unitSize.put( TimeUnit.DAY, 86400000L );
-    unitSize.put( TimeUnit.HOUR, 3600000L );
-    unitSize.put( TimeUnit.MINUTE, 60000L );
-    unitSize.put( TimeUnit.SECOND, 1000L );
-    unitSize.put( TimeUnit.MILLISECOND, 1L );
-}
 
 /**
  * Invoking this method will cause the axis to determine the most appropriate scaling and
@@ -121,7 +107,7 @@ public void calculate( long min, long max )
     range = max - min;
 
     TimeUnit unit = calculateAxisTimeUnit( range );
-    unitLength =  unitSize.get( unit );
+    unitLength =  unit.getDurationMS();
     double numberUnits = (double)range / (double)unitLength;
 
     // figuring out the interval factor, according to powers of ten, only really works
@@ -200,13 +186,16 @@ public TimeUnit calculateAxisTimeUnit( long range )
     int i;
     TimeUnit result = TimeUnit.MILLISECOND;
 
+
+
     // ok, find the appropriate time unit, given the range supplied...
     // ... iterate through the time units, which start with the biggest
     // and end with the smallest....
+    // .... we need to go from biggest to smallest!!!
     // -----------------------------------------------------
-    for( TimeUnit unit : TimeUnit.values() )
+    for( TimeUnit unit : TimeUnit.getReverseOrder() )
     {
-        long size = unitSize.get( unit );
+        long size = unit.getDurationMS();
         if ( range >= size )
         {
             result = unit;

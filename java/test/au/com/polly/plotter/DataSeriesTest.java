@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -22,6 +22,8 @@ package au.com.polly.plotter;
 
 import junit.framework.JUnit4TestAdapter;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,7 @@ import static org.junit.Assert.assertNull;
  * Battery of tests of the data series class.
  *
  */
+@RunWith(JUnit4.class)
 public class DataSeriesTest
 {
 private final static double ACCEPTABLE_ERROR = 1E-6;

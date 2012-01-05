@@ -21,10 +21,12 @@
 package au.com.polly.plotter;
 
 import org.apache.log4j.Logger;
+import sun.beans.editors.FontEditor;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 
@@ -79,13 +81,30 @@ protected String title;
 protected boolean doRegression = false;
 
 private Font smallFont;
+private Font axisTitleFont;
 private Font axisLabelFont;
 private Font titleFont;
+
+private static Stroke fineDashedStroke;
+private static Stroke regularDashedStroke;
 
 protected int pointSize = 10;
 
 private final int width;  // width in pixels of our drawing region
 private final int height; // height (in pixels) of our drawing region/canvas
+
+private final static Stroke thinNoDashStroke = new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f );
+private final static Stroke thinFineDashStroke = new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, new float[] { 3, 3, 3, 3 }, 0.0f );
+private final static Stroke thinRegularDashStroke = new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, new float[] { 6, 6, 6, 6 }, 0.0f );
+private final static Stroke regularNoDashStroke = new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f );
+private final static Stroke regularFineDashStroke = new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, new float[] { 3, 3, 3, 3 }, 0.0f );
+private final static Stroke regularRegularDashStroke = new BasicStroke( 2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, new float[] { 6, 6, 6, 6 }, 0.0f );
+private final static Stroke thickNoDashStroke = new BasicStroke( 3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f );
+private final static Stroke thickFineDashStroke = new BasicStroke( 3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, new float[] { 4, 4, 4, 4 }, 0.0f );
+private final static Stroke thickRegularDashStroke = new BasicStroke( 3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, new float[] { 8, 8, 8, 8 }, 0.0f );
+private final static Stroke extraThickNoDashStroke = new BasicStroke( 5.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f );
+private final static Stroke extraThickFineDashStroke = new BasicStroke( 5.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, new float[] { 5, 5, 5, 5 }, 0.0f );
+private final static Stroke extraThickRegularDashStroke = new BasicStroke( 5.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, new float[] { 10, 10, 10, 10 }, 0.0f );
 
 public DataPlotter( int width, int height )
 {
@@ -156,7 +175,10 @@ public void addPlotData( PlotData plotData, Axis xAxis, Axis yAxis, AxisConfigur
 //      yAxis.autoScale( plotData.getYAxisData() );
         this.yAxis.add( yAxis );
         yAxisConfig.setPlotLength( getHeight() - ( BOTTOM_AXIS_BORDER + TITLE_BORDER ) );
-        this.yAxisConfig.add( yAxisConfig );
+        if ( ! this.yAxis.contains( yAxisConfig ) )
+        {
+            this.yAxisConfig.add( yAxisConfig );
+        }
     }
 
     // if an x-axis hasn't been supplied, then use whatever has already been set...
@@ -175,10 +197,11 @@ public void addPlotData( PlotData plotData, Axis xAxis, Axis yAxis, AxisConfigur
         yAxisConfig = this.yAxisConfig.get( 0 );
     }
 
-    currGraphData.setMarkerSize( plotData.getMarkerSize() );
-    currGraphData.setMarkerStyle( plotData.getMarkerStyle() );
+    currGraphData.setMarkerSize(plotData.getMarkerSize());
+    currGraphData.setMarkerStyle(plotData.getMarkerStyle());
     currGraphData.setColour( plotData.getColour() );
-
+    currGraphData.setLineStyles( plotData.getLineStyles() );
+    
     // use the axis information to translate the data points into
     // points relative to the x and y axis.
     // ----------------------------------------------------------------
@@ -220,6 +243,7 @@ public void paint(Graphics g)
 
     this.smallFont = new Font("SansSerif", Font.PLAIN, 10 );
     this.axisLabelFont = new Font("SansSerif", Font.PLAIN, 12 );
+    this.axisTitleFont = new Font("SansSerif", Font.PLAIN, 16 );
     this.titleFont = new Font("SansSerif", Font.PLAIN, 24 );
 
     // ok, let's start with a *bleck* background...
@@ -227,7 +251,9 @@ public void paint(Graphics g)
     g.setColor( Color.BLACK );
     g.fillRect( 0, 0, getWidth(), getHeight() );
     
-    g.setColor( Color.WHITE );
+    g.setColor(Color.WHITE);
+    
+    logger.debug( "yAxis.size()=" + yAxis.size() );
     
     renderXAxis(g2d, xAxis, xAxisConfig);
     renderLeftYAxis( g2d, yAxis.get( 0 ), yAxisConfig.get( 0 ) );
@@ -272,7 +298,6 @@ public void plotData( Graphics2D g, List<PlotData<Integer,Integer>> data )
     int lastY = -1;
     Stroke originalStroke = g.getStroke();
     Color origColour = g.getColor();
-    String funcName = "plotData(): ";
     AffineTransform identityTransformation = g.getTransform();
     identityTransformation.setToIdentity();
     double theta;
@@ -287,13 +312,54 @@ public void plotData( Graphics2D g, List<PlotData<Integer,Integer>> data )
         g.setColor( c );
         lastX = -1;
         lastY = -1;
-
-
+        
+        logger.debug( "plotData=" + plotData );
+        
+        // only bother plotting lines if we have been requested to..
         // we only plot lines between points for time based data, because we don't know the
         // order of the points, we might just end up with a scribble...
-        // ---------------------------------------------------------------------------------
-        if ( xAxis instanceof TimestampAxis )
+        // ------------------------------------------------------------
+        if ( ( !plotData.getLineStyles().contains( PlotData.LineStyle.NONE ) && !plotData.getLineStyles().isEmpty() ) && ( xAxis instanceof TimestampAxis ) )
         {
+            Stroke drawingStroke = obtainAppropriateStroke( plotData.getLineStyles() );
+            g.setStroke( drawingStroke );
+            
+            
+            for( int i = 0; i < pointList.size(); i++ )
+            {
+                DataPoint<Integer,Integer> point = pointList.get( i );
+                int x = point.getX() + LEFT_AXIS_BORDER;
+                int y = getHeight() - ( BOTTOM_AXIS_BORDER + point.getY() );
+
+                if ( plotData.getLineStyles().contains( PlotData.LineStyle.JOINED ) )
+                {
+                    if ( ( lastX >= 0 ) && ( lastY >= 0 ) )
+                    {
+                        g.drawLine( lastX, lastY, x, y );
+                    }
+                }
+                
+                if ( plotData.getLineStyles().contains( PlotData.LineStyle.STEPPED ) )
+                {
+                    if ( ( lastX >= 0 ) && ( lastY >= 0 ) )
+                    {
+                        g.drawLine( lastX, lastY, x, lastY );
+                        g.drawLine( x, lastY, x, y );
+                        
+                        if ( i == pointList.size() - 1 )
+                        {
+                            g.drawLine( x, y, getWidth() - RIGHT_AXIS_BORDER, y );
+                        }
+                    }
+                    
+                }
+
+                lastX = x;
+                lastY = y;
+            }
+            
+            g.setStroke( originalStroke );
+        }
 
             // ok ... first draw the lines, then overlay the markers on the top...
             // --------------------------------------------------------------------
@@ -303,21 +369,7 @@ public void plotData( Graphics2D g, List<PlotData<Integer,Integer>> data )
                                           BasicStroke.JOIN_MITER, 10,
                                           dashPattern, 0));
 */
-            for( DataPoint<Integer,Integer> point : pointList )
-            {
-                int x = point.getX() + LEFT_AXIS_BORDER;
-                int y = getHeight() - ( BOTTOM_AXIS_BORDER + point.getY() );
 
-
-                if ( ( lastX >= 0 ) && ( lastY >= 0 ) )
-                {
-                    g.drawLine( lastX, lastY, x, y );
-                }
-                lastX = x;
-                lastY = y;
-            }
-
-        }
 
 		pointSize = plotData.getMarkerSize();
 
@@ -440,7 +492,7 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     for( int i = 0; i <= axis.getNumberIntervals(); i++, c += axis.getIntervalSize() )
     {
         String dateText;
-		g.setColor(  config.getColour() );
+		g.setColor(config.getColour());
         g.setStroke( standardStroke );
         x0 = axis.getPosition( c, config ) + LEFT_AXIS_BORDER;
         dateText = axis.getDataLabel(c);
@@ -450,7 +502,7 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
         // muck about with the coordinate system to draw the x-axis labels on an angle, then
         // set back to regular "identity" transformation ..... avoids complications...
         // -----------------------------------------------------------------------------------
-        g.drawString( dateText, x0 - 4, y0 + 8  );
+        g.drawString(dateText, x0 - 4, y0 + 8);
         g.setTransform( identity );
 
         // now draw a thin dashed line to mark this interval
@@ -486,26 +538,26 @@ public void renderLeftYAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     int x0 = LEFT_AXIS_BORDER;
     int x1 = this.getWidth() - RIGHT_AXIS_BORDER;
     int y0 = getHeight() - BOTTOM_AXIS_BORDER;
-    int y1 = ( getHeight() -BOTTOM_AXIS_BORDER ) - ( config.getPlotLength() );
+    int y1 = ( getHeight() - BOTTOM_AXIS_BORDER ) - ( config.getPlotLength() );
     double c;
     String tickLabel;
-    String funcName = "renderYAxis(): ";
     String units;
     Stroke standardStroke;
     Stroke dashedStroke;
     AffineTransform identity = new AffineTransform();
     identity.setToIdentity();
+    AffineTransform vertical = new AffineTransform();
+    vertical.rotate( Math.PI / 2 );
     Color origColor = g.getColor();
-
+    Font verticalAxisFont = axisTitleFont.deriveFont( vertical );
 
     standardStroke = g.getStroke();
     dashedStroke = new BasicStroke( 1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, new float[] { 2, 2, 2, 2 }, 0 );
 
-
-    logger.debug("------------------------------------------------------------" );
-    logger.debug("width=" + getWidth() + ", height=" + getHeight() );
-    logger.debug("x0=" + x0 + ", y0=" + y0 + ", y1=" + y1 );
-    logger.debug("------------------------------------------------------------" );
+    logger.debug( "------------------------------------------------------------" );
+    logger.debug( "width=" + getWidth() + ", height=" + getHeight() );
+    logger.debug( "x0=" + x0 + ", y0=" + y0 + ", y1=" + y1 );
+    logger.debug( "------------------------------------------------------------" );
 
     // draw the axis line itself...
     // ------------------------
@@ -521,7 +573,7 @@ public void renderLeftYAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     c = axis.getMinimumValue();
     for( int i = 0; i <= axis.getNumberIntervals(); i++ )
     {
-		g.setColor( config.getColour() );
+		g.setColor(config.getColour());
         g.setStroke( standardStroke );
         y1 = ( getHeight() - BOTTOM_AXIS_BORDER ) - axis.getPosition( c, config );
         tickLabel = axis.getDataLabel( c );
@@ -539,12 +591,9 @@ public void renderLeftYAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     }
     g.setStroke( standardStroke );
 
-/* just for now!!
-    g.translate( 16, getHeight() - ( BOTTOM_AXIS_BORDER + 40 ) );
-    g.rotate( - ( Math.PI / 2 ) );
-*/
 
-    g.setFont( axisLabelFont );
+    g.setFont( verticalAxisFont );
+    g.setColor( config.getColour() );
 
 
     // And now place the label...
@@ -554,9 +603,9 @@ public void renderLeftYAxis( Graphics2D g, Axis axis, AxisConfiguration config )
          && ( ( units.length() > 0 ) )
     )
     {
-        g.drawString( config.getLabel() + " (" + units + ")" ,  0, 0 );
+        g.drawString( config.getLabel() + " (" + units + ")" ,  0, 50 );
     } else {
-        g.drawString( config.getLabel(), 0, 0 );
+        g.drawString( config.getLabel(), 0, 50 );
     }
 
     g.setTransform( identity );
@@ -570,7 +619,6 @@ public void renderRightYAxis( Graphics2D g, Axis axis, AxisConfiguration config 
     int y1 = ( getHeight() -BOTTOM_AXIS_BORDER ) - ( config.getPlotLength() );
     double c;
     String tickLabel;
-    String funcName = "renderRightYAxis(): ";
     String units;
     Stroke standardStroke;
     Stroke dashedStroke;
@@ -642,6 +690,108 @@ public void setDoRegression( boolean flag )
 public boolean doRegression()
 {
     return this.doRegression;
+}
+
+/**
+ * 
+ * @param styles the line styles which have been requested
+ * @return a line drawing stroke appropriate to the requested line style.
+ * 
+ * This method could probably be deferred off into a utility class of some description.
+ * Doesn't really fit perfectly in this class!!
+ */
+public static Stroke obtainAppropriateStroke( EnumSet<PlotData.LineStyle> styles )
+{
+    Stroke result = null;
+    
+    do {
+        
+        // if NONE specified, or no styles, then we are not drawing any lines...
+        // ----------------------------------------------------------------------
+        if ( styles.contains( PlotData.LineStyle.NONE ) || styles.isEmpty() )
+        {
+            break;
+        }
+        
+        // the line style must be either joined or stepped, or no line is to be drawn at all...
+        // --------------------------------------------------------------------------------------
+        if ( !styles.contains( PlotData.LineStyle.JOINED ) && !styles.contains( PlotData.LineStyle.STEPPED ) )
+        {
+            break;
+        }
+        
+        if ( styles.contains( PlotData.LineStyle.THIN ) )
+        {
+            if ( styles.contains( PlotData.LineStyle.DASHED ) )
+            {
+                result = thinRegularDashStroke;
+                break;
+            }
+            
+            if ( styles.contains( PlotData.LineStyle.FINE_DASHED ) )
+            {
+                result = thinFineDashStroke;
+                break;
+            }
+
+            result = thinNoDashStroke;
+            break;
+        }
+
+        if ( styles.contains( PlotData.LineStyle.THICK ) )
+        {
+            if ( styles.contains( PlotData.LineStyle.DASHED ) )
+            {
+                result = thickRegularDashStroke;
+                break;
+            }
+
+            if ( styles.contains( PlotData.LineStyle.FINE_DASHED ) )
+            {
+                result = thickFineDashStroke;
+                break;
+            }
+
+            result = thickNoDashStroke;
+            break;
+        }
+
+        if ( styles.contains( PlotData.LineStyle.EXTRA_THICK ) )
+        {
+            if ( styles.contains( PlotData.LineStyle.DASHED ) )
+            {
+                result = extraThickRegularDashStroke;
+                break;
+            }
+
+            if ( styles.contains( PlotData.LineStyle.FINE_DASHED ) )
+            {
+                result = extraThickFineDashStroke;
+                break;
+            }
+
+            result = extraThickNoDashStroke;
+            break;
+        }
+
+        if ( styles.contains( PlotData.LineStyle.DASHED ) )
+        {
+            result = regularRegularDashStroke;
+            break;
+        }
+
+        if ( styles.contains( PlotData.LineStyle.FINE_DASHED ) )
+        {
+            result = regularFineDashStroke;
+            break;
+        }
+
+        result = regularNoDashStroke;
+        break;
+
+    } while( false );
+    
+    return result;
 }
 
 }

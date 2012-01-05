@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -22,6 +22,7 @@ package au.com.polly.plotter;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,13 +33,15 @@ import java.util.List;
  */
 public class PlotData<X extends Number,Y extends Number>
 {
-enum PointMarkerStyle { CROSSHAIR, SQUARE, FILLED_SQUARE, CIRCLE, FILLED_CIRCLE };
+public enum PointMarkerStyle { CROSSHAIR, SQUARE, FILLED_SQUARE, CIRCLE, FILLED_CIRCLE }
 DataSeries<X> xDataSeries;
 DataSeries<Y> yDataSeries;
 List<DataPoint<X,Y>> plotData = null;
 Color colour = Color.BLACK;
 PointMarkerStyle markerStyle = PointMarkerStyle.CROSSHAIR;
 int markerSize = 20;
+public enum LineStyle { NONE, JOINED, STEPPED, DASHED, FINE_DASHED, THIN, THICK, EXTRA_THICK }
+EnumSet<LineStyle> lineStyles = EnumSet.of(LineStyle.NONE);
 
 public PlotData()
 {
@@ -132,6 +135,21 @@ public void add( DataPoint<X,Y> dp )
     return;
 }
 
+/**
+ *
+ * @param i index of the data point to be retrieved.
+ * @return the actual data point. NULL if no such data point exists.
+ */
+public DataPoint<X,Y> getDataPoint( int i )
+{
+    DataPoint<X,Y> result = null;
+    if ( ( plotData != null ) && ( i < plotData.size() ) )
+    {
+        result = plotData.get( i );
+    }
+    return result;
+}
+
 public X getMinX()
 {
     return xDataSeries.getMin();
@@ -180,6 +198,41 @@ public void setMarkerSize( int size )
 public int getMarkerSize()
 {
     return this.markerSize;
+}
+
+public EnumSet<LineStyle> getLineStyles()
+{
+    return this.lineStyles;
+}
+
+public void setLineStyles( EnumSet<LineStyle> styles )
+{
+    this.lineStyles = styles;
+}
+ 
+public String toString()
+{
+    StringBuilder out = new StringBuilder();
+    out.append( "x data series: size=" + xDataSeries.getData().size() + ", " );
+    out.append( "min=" + xDataSeries.getMin() + ", " );
+    out.append( "max=" + xDataSeries.getMax() + ", " );
+    out.append( "markerStyle=" + getMarkerStyle() + ", " );
+    out.append( "markerSize=" + getMarkerSize() + ", " );
+    out.append( "colour=" + getColour() + ", " );
+    out.append( "lineStyle=" + getLineStyles() + ", " );
+    out.append( "data={ " );
+    for( int i = 0; ( i < 5 ) && ( i < xDataSeries.size() ) && ( i < yDataSeries.size() ); i++ )
+    {
+        out.append( getDataPoint( i ) );
+        out.append( "," );
+    }
+    if ( xDataSeries.size() > 5 )
+    {
+        out.append( "..." );
+    }
+    out.append( " }" );
+    
+    return out.toString();
 }
 
 }

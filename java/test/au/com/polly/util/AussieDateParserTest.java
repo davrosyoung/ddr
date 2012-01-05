@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -21,6 +21,7 @@
 package au.com.polly.util;
 
 import junit.framework.JUnit4TestAdapter;
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +30,8 @@ import org.junit.runners.JUnit4;
 import static org.junit.Assert.*;
 
 import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 
 /**
@@ -37,6 +40,7 @@ import java.util.Calendar;
 @RunWith(JUnit4.class)
 public class AussieDateParserTest
 {
+private final static Logger logger = Logger.getLogger(AussieDateParserTest.class);
 private final static String davesBirthdayText = "13/june/1968 04:00.924";
 private final static String kertelsBirthdayText = "13/june/1968 04:00";
 private final static String angusBirthdayText = "7/6/2002 15:23:09";
@@ -118,6 +122,26 @@ public void testParsingNullString() throws Exception
 public void testParsingEmptySring() throws Exception
 {
     aussieDateParser.parse( "" );
+}
+
+@Test
+public void testDefaultTimeZone()
+{
+    TimeZone tz = TimeZone.getDefault();
+    Date now = new Date();
+    assertNotNull( tz );
+    logger.debug("displayname=" + tz.getDisplayName());
+    logger.debug( "id=" + tz.getID() );
+    logger.debug( "offset=" + tz.getOffset( now.getTime() ) );
+}
+
+@Test
+public void testConstructingParser()
+{
+    AussieDateParser parser = new AussieDateParser();
+    assertNotNull( parser.getTimeZone() );
+    assertEquals( "Australia/Perth", parser.getTimeZone().getID() );
+    assertEquals( 28800000L, parser.getTimeZone().getOffset( (new Date()).getTime() ) );
 }
 
 @Test
@@ -294,6 +318,25 @@ public void testParsingEighthAugust2006AtTwentyFivePastEight()
     assertEquals( 25, result.get( Calendar.MINUTE ) );
     assertEquals( 0, result.get( Calendar.SECOND ) );
     assertEquals( 0, result.get( Calendar.MILLISECOND ) );
+}
+
+@Test
+public void testParsingEightAugust2006AtTwentyFivePastEightUsingTwoDifferentTimeZones()
+{
+    TimeZone perth = TimeZone.getTimeZone( "Australia/Perth" );
+    TimeZone gmt = TimeZone.getTimeZone( "GMT" );
+    Date perthStamp;
+    Date gmtStamp;
+    
+    AussieDateParser perthParser = new AussieDateParser( perth );
+    AussieDateParser gmtParser = new AussieDateParser( gmt );
+    
+    perthStamp = perthParser.parse( "28/AUG/2006 08:25" ).getTime();
+    gmtStamp = gmtParser.parse( "28/AUG/2006 08:25" ).getTime();
+    
+    assertEquals( gmtStamp.getTime() - perthStamp.getTime(), 8 * 3600 * 1000L );
+    
+    assertEquals( gmtStamp.getTime(), perthParser.parse( "28/AUG/2006 16:25" ).getTime().getTime() );
 }
 
 public static junit.framework.Test suite() {

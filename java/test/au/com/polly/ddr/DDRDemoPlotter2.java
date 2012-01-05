@@ -23,7 +23,6 @@ package au.com.polly.ddr;
 import au.com.polly.plotter.Axis;
 import au.com.polly.plotter.AxisConfiguration;
 import au.com.polly.plotter.DataPlotter;
-import au.com.polly.plotter.DataPoint;
 import au.com.polly.plotter.NumericAxis;
 import au.com.polly.plotter.PlotData;
 import au.com.polly.plotter.TimestampAxis;
@@ -46,9 +45,9 @@ import java.util.EnumSet;
  *
  * authored by dave young, out of frustration on the lack of available graphing software.
  */
-public class DDRDemoPlotter extends JFrame implements ActionListener
+public class DDRDemoPlotter2 extends JFrame implements ActionListener
 {
-    private final static Logger logger = Logger.getLogger(DDRDemoPlotter.class);
+    private final static Logger logger = Logger.getLogger(DDRDemoPlotter2.class);
     private JLabel label;
     private DataPlotter dataPlotter;
     private static String labelPrefix = "Number of button clicks: ";
@@ -60,7 +59,7 @@ public class DDRDemoPlotter extends JFrame implements ActionListener
     Axis<Double> yAxis = null;
     Axis<Double> y2Axis = null;
 
-    public DDRDemoPlotter()
+    public DDRDemoPlotter2()
     {
         super( "Disk IO Performance" );
         TimestampArmyKnife knife = new TimestampArmyKnife();
@@ -80,10 +79,10 @@ public class DDRDemoPlotter extends JFrame implements ActionListener
         Canvas canvas = new GraphCanvas( dataPlotter );
         canvas.setBounds(0, 0, 800, 800);
 
-        GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+        GasWellDataSet ds = TestGasWellDataSet.getBY11DataSet();
         
-        PlotData<Long,Double> oilPlotData = ds.getPlotData( WellMeasurementType.OIL_FLOW );
-        oilPlotData.setColour( Color.RED );
+        PlotData<Long,Double> oilPlotData = ds.getPlotData( WellMeasurementType.CONDENSATE_FLOW );
+        oilPlotData.setColour( Color.GREEN );
 		oilPlotData.setMarkerSize(8);
         
         PlotData<Long,Double> waterPlotData = ds.getPlotData( WellMeasurementType.WATER_FLOW );
@@ -95,12 +94,12 @@ public class DDRDemoPlotter extends JFrame implements ActionListener
 		gasPlotData.setMarkerSize( 8 );
 
         // now plot the reduced data too.
-        ReductionParameters reductionParameters = new ReductionParameters( WellMeasurementType.OIL_FLOW );
+        ReductionParameters reductionParameters = new ReductionParameters( WellMeasurementType.CONDENSATE_FLOW );
         DataRateReducer reducer = new SimpleDiscontinuityDataRateReducerV2( reductionParameters );
         GasWellDataSet rds = reducer.reduce( ds );
 
-        PlotData<Long,Double> reducedOilPlotData = rds.getPlotData( WellMeasurementType.OIL_FLOW );
-        reducedOilPlotData.setColour(Color.RED);
+        PlotData<Long,Double> reducedOilPlotData = rds.getPlotData( WellMeasurementType.CONDENSATE_FLOW );
+        reducedOilPlotData.setColour(Color.GREEN);
         reducedOilPlotData.setMarkerSize(2);
         reducedOilPlotData.setLineStyles( EnumSet.of( PlotData.LineStyle.STEPPED, PlotData.LineStyle.FINE_DASHED, PlotData.LineStyle.THICK ) );
 
@@ -150,7 +149,7 @@ public class DDRDemoPlotter extends JFrame implements ActionListener
 
     public static void main(String[] args) {
 
-        JFrame frame = new DDRDemoPlotter();
+        JFrame frame = new DDRDemoPlotter2();
 
         WindowListener l = new WindowAdapter() {
             public void windowClosing(WindowEvent e) {

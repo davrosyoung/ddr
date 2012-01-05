@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -21,7 +21,6 @@
 package au.com.polly.plotter.csvgrapher;
 
 import junit.framework.JUnit4TestAdapter;
-import junit.framework.TestCase;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;

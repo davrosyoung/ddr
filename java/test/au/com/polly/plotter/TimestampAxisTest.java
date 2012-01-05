@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -50,17 +50,18 @@ private final static double ACCEPTABLE_ERROR = 1E-8;
     public void testCalculateTimeUnit()
     {
         TimestampAxis<Long> axis = new TimestampAxis<Long>();
-        assertEquals( TimestampAxis.TimeUnit.MILLISECOND, axis.calculateAxisTimeUnit( 0L ) );
-        assertEquals( TimestampAxis.TimeUnit.MILLISECOND, axis.calculateAxisTimeUnit( 1L ) );
-        assertEquals( TimestampAxis.TimeUnit.MILLISECOND, axis.calculateAxisTimeUnit( 999L ) );
-        assertEquals( TimestampAxis.TimeUnit.SECOND, axis.calculateAxisTimeUnit( 1000L ) );
-        assertEquals( TimestampAxis.TimeUnit.SECOND, axis.calculateAxisTimeUnit( 59999L ) );
-        assertEquals( TimestampAxis.TimeUnit.MINUTE, axis.calculateAxisTimeUnit( 60000L ) );
-        assertEquals( TimestampAxis.TimeUnit.MINUTE, axis.calculateAxisTimeUnit( 3599999L ) );
-        assertEquals( TimestampAxis.TimeUnit.HOUR, axis.calculateAxisTimeUnit( 3600000L ) );
-        assertEquals( TimestampAxis.TimeUnit.HOUR, axis.calculateAxisTimeUnit( 86399999L ) );
-        assertEquals( TimestampAxis.TimeUnit.DAY, axis.calculateAxisTimeUnit( 86400000L ) );
-        assertEquals( TimestampAxis.TimeUnit.WEEK, axis.calculateAxisTimeUnit( 10000086400000L ) );
+        assertEquals( TimeUnit.MILLISECOND, axis.calculateAxisTimeUnit( 0L ) );
+        assertEquals( TimeUnit.MILLISECOND, axis.calculateAxisTimeUnit( 1L ) );
+        assertEquals( TimeUnit.MILLISECOND, axis.calculateAxisTimeUnit( 999L ) );
+        assertEquals( TimeUnit.SECOND, axis.calculateAxisTimeUnit( 1000L ) );
+        assertEquals( TimeUnit.SECOND, axis.calculateAxisTimeUnit( 59999L ) );
+        assertEquals( TimeUnit.MINUTE, axis.calculateAxisTimeUnit( 60000L ) );
+        assertEquals( TimeUnit.MINUTE, axis.calculateAxisTimeUnit( 3599999L ) );
+        assertEquals( TimeUnit.HOUR, axis.calculateAxisTimeUnit( 3600000L ) );
+        assertEquals( TimeUnit.HOUR, axis.calculateAxisTimeUnit( 86399999L ) );
+        assertEquals( TimeUnit.DAY, axis.calculateAxisTimeUnit( 86400000L ) );
+        assertEquals( TimeUnit.MONTH, axis.calculateAxisTimeUnit( 86400000L * 31L ) );
+        assertEquals( TimeUnit.YEAR, axis.calculateAxisTimeUnit( 86400000L * 366L ) );
     }
 
     // demonstrate that we can accurately calculate the next smallest power of ten

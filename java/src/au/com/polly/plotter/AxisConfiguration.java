@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -49,8 +49,8 @@ int length;
 boolean autoScale = true;
 Number min = null;
 Number max = null;
-Pattern integerPattern = Pattern.compile("^\\-?\\d+$");
-Pattern doublePattern = Pattern.compile("^\\-?\\d+\\.?\\d?$");
+final private static Pattern integerPattern = Pattern.compile("^\\-?\\d+$");
+final private static Pattern doublePattern = Pattern.compile("^\\-?\\d+\\.?\\d?$");
 protected GraphConfiguration graphConfiguration = null;
 
 public AxisConfiguration()
@@ -288,7 +288,7 @@ public void setGridColour( String colourName )
 
     if ( colour != null )
     {
-        setGridColour( colour );
+        setGridColour(colour);
     }
 }
 

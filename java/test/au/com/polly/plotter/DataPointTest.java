@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -20,9 +20,10 @@
 
 package au.com.polly.plotter;
 
-import au.com.polly.plotter.csvgrapher.RootConfigurationTest;
 import junit.framework.JUnit4TestAdapter;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -32,9 +33,11 @@ import static org.junit.Assert.assertNotNull;
  * Battery of tests of the data series class.
  *
  */
+@RunWith(JUnit4.class)
 public class DataPointTest
 {
 private final static double ACCEPTABLE_ERROR = 1E-6;
+
     @Test
     public void testCreatingFloatingPointDataPoint()
     {
@@ -44,23 +47,25 @@ private final static double ACCEPTABLE_ERROR = 1E-6;
         assertEquals( 6.23, point.getY(), ACCEPTABLE_ERROR );
         assertEquals( 5, point.getX().intValue() );
         assertEquals( 6, point.getY().intValue() );
+        assertEquals( "( 5.6, 6.23 )", point.toString() );
+
     }
 
     @Test
     public void testCreatingIntegerPointDataPoint()
     {
         DataPoint<Long,Long> point = new DataPoint<Long,Long>( 5L, 6L );
-        assertNotNull( point );
+        assertNotNull(point);
         assertEquals( 5L, point.getX().longValue() );  // why do we need the .longValue() here??
         assertEquals( 6L, point.getY().longValue() );  // why do we need the .longValue() here??
         assertEquals( 5.0, point.getX().doubleValue(),ACCEPTABLE_ERROR );
         assertEquals( 6.0, point.getY().doubleValue(), ACCEPTABLE_ERROR );
+        assertEquals( "( 5, 6 )", point.toString() );
     }
-
 
     public static junit.framework.Test suite()
     {
-        return new JUnit4TestAdapter( RootConfigurationTest.class );
+        return new JUnit4TestAdapter( DataPointTest.class );
     }
 
 }

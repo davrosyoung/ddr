@@ -1,3 +1,23 @@
+/*
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
+ *  All rights reserved. This code is not to be distributed in binary
+ * or source form without express consent of Polly Enterprises Pty Ltd.
+ *
+ *
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ *  IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ *  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ *  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ *  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package au.com.polly.util;
 
 import sun.util.resources.CalendarData_ro;
@@ -5,6 +25,7 @@ import sun.util.resources.CalendarData_ro;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,14 +59,16 @@ final static protected int MINUTE_GROUP=15;
 final static protected int SECOND_GROUP=17;
 final static protected int MILLISECOND_GROUP=19;
 
-protected Pattern dateTimePattern;
-protected Pattern numberPattern;
+final static protected Pattern dateTimePattern = Pattern.compile( dateTimeRegexp );
 
 public AussieDateParser()
 {
-    super();
-    dateTimePattern = Pattern.compile( dateTimeRegexp );
-    numberPattern = Pattern.compile( "\\d+" );
+    this(TimeZone.getDefault());
+}
+
+public AussieDateParser( TimeZone tz )
+{
+    super( tz );
 }
 
 @Override
@@ -77,7 +100,7 @@ public Calendar parse(String text)
         throw new IllegalArgumentException( "Failed to parse date from [" + trimmed + "]" );
     }
 
-    result = Calendar.getInstance();
+    result = Calendar.getInstance( getTimeZone() );
     result.set( Calendar.DAY_OF_MONTH, Integer.parseInt( matcher.group( DOM_GROUP ) ) );
     result.set( Calendar.MONTH, MonthParser.parseMonth( matcher.group( MONTH_GROUP )));
     int year = Integer.parseInt( matcher.group( YEAR_GROUP ) );
