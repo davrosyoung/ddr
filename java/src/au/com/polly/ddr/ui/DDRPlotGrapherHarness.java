@@ -35,19 +35,19 @@ import java.io.ObjectInputStream;
 import java.util.Date;
 
 /**
- * Simple yoke harness to enable us to display a plot of graph data with
- * some controls...
+ * Yoke harness to use the csv graphing/plotting tools with our control panel and
+ * interval editor.
  */
-public class SimplePlotGrapherHarness extends JPanel
+public class DDRPlotGrapherHarness extends JPanel
 {
-private static Logger logger = Logger.getLogger( SimplePlotGrapherHarness.class );
-SimpleOverlayPlotGrapher overlayGrapher = null;
+private static Logger logger = Logger.getLogger( DDRPlotGrapherHarness.class );
+DDRPlotGrapher overlayGrapher = null;
 GraphControlPanel controlPanel = null;
 static GasWellDataSet dataSet = null;
 static GasWellDataSet overlayDataSet = null;
 
 
-public SimplePlotGrapherHarness()
+public DDRPlotGrapherHarness()
 {
     super( new GridBagLayout() );
     GridBagConstraints gbc = new GridBagConstraints();
@@ -79,7 +79,7 @@ public SimplePlotGrapherHarness()
             until = overlayDataSet.until();
         }
     }
-    overlayGrapher = new SimpleOverlayPlotGrapher( dataSet, overlayDataSet );
+    overlayGrapher = new DDRPlotGrapher( dataSet, overlayDataSet, 800, 800 );
     controlPanel = new GraphControlPanel( from, until );
 
     controlPanel.setPlotGrapher( overlayGrapher );
@@ -102,7 +102,7 @@ public static void createAndShowGUI()
     JFrame f = new JFrame( "Data Plot" );
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     f.setSize(1400, 800);
-    f.setContentPane(new SimplePlotGrapherHarness());
+    f.setContentPane(new DDRPlotGrapherHarness());
     f.pack();
     f.setVisible( true );
 }
@@ -114,8 +114,6 @@ public static void main( String... args )
         String filename = args[ 0 ];
         File file = new File( filename );
         FileReader reader = null;
-        FileInputStream fis;
-        ObjectInputStream ois;
         GasWellDataExtractorFactory factory = GasWellDataExtractorFactory.getInstance();
         GasWellDataExtractor extractor;
                 

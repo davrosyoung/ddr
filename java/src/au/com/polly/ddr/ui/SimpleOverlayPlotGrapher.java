@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -18,9 +18,12 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package au.com.polly.ddr;
+package au.com.polly.ddr.ui;
 
-import au.com.polly.ddr.ui.PlotGrapher;
+import au.com.polly.ddr.DataRateReducer;
+import au.com.polly.ddr.GasWellDataEntry;
+import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.WellMeasurementType;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -167,7 +167,7 @@ public void testMergingOneElementListWithEmptyList()
     List<GasWellDataBoundary> result = GasWellDataBoundary.merge( list, new ArrayList<GasWellDataBoundary>() );
     assertNotNull( result );
     assertEquals( 1, result.size() );
-    assertEquals( boundary, result.get( 0 ) );
+    assertEquals(boundary, result.get(0));
 }
 
 @Test
@@ -181,9 +181,8 @@ public void testMergingTwoOneElementListsWithSameDate()
     listBeta.add( b );
     List<GasWellDataBoundary> result = GasWellDataBoundary.merge( listAlpha, listBeta );
     assertNotNull( result );
-    assertEquals( 2, result.size() );
-    assertEquals( a, result.get( 0 ) );
-    assertEquals( b, result.get( 1 ) );
+    assertEquals( 1, result.size() );
+    assertEquals(a, result.get(0));
 }
 
 @Test
@@ -197,9 +196,9 @@ public void testMergingTwoOneElementListsWithDifferentDates()
     listBeta.add( b );
     List<GasWellDataBoundary> result = GasWellDataBoundary.merge( listAlpha, listBeta );
     assertNotNull( result );
-    assertEquals( 2, result.size() );
-    assertEquals( a, result.get( 0 ) );
-    assertEquals( b, result.get( 1 ) );
+    assertEquals(2, result.size());
+    assertEquals( a, result.get(0) );
+    assertEquals(b, result.get(1));
 }
 
 @Test
@@ -213,8 +212,8 @@ public void testMergingTwoOneElementListsWithDifferentDatesAroundTheOtherWay()
     listBeta.add( b );
     List<GasWellDataBoundary> result = GasWellDataBoundary.merge( listAlpha, listBeta );
     assertNotNull( result );
-    assertEquals( 2, result.size() );
-    assertEquals( a, result.get( 1 ) );
+    assertEquals(2, result.size());
+    assertEquals( a, result.get(1) );
     assertEquals( b, result.get( 0 ) );
 }
 
@@ -258,6 +257,150 @@ public void testMergingTwoListsWithFiveBoundariesEach()
     assertEquals( a4, result.get(7) );
     assertEquals( b3, result.get( 8 ) );
     assertEquals( b4, result.get( 9 ) );
+}
+
+@Test
+public void testMergingTwoListsWithFiveBoundariesEachAndTwoClashes()
+{
+    GasWellDataBoundary a0 = new GasWellDataBoundary( parser.parse( "13/JAN/2012 06:00:03" ).getTime(), "start", GasWellDataBoundary.BoundaryType.START );
+    GasWellDataBoundary a1 = new GasWellDataBoundary( parser.parse( "14/JAN/2012 06:00:03" ).getTime(), "day two", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY );
+    GasWellDataBoundary a2 = new GasWellDataBoundary( parser.parse( "15/JAN/2012 06:00:03" ).getTime(), "day three", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY );
+    GasWellDataBoundary a3 = new GasWellDataBoundary( parser.parse( "16/JAN/2012 06:00:03" ).getTime(), "day four", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY );
+    GasWellDataBoundary a4 = new GasWellDataBoundary( parser.parse( "17/JAN/2012 06:00:03" ).getTime(), "day five", GasWellDataBoundary.BoundaryType.END );
+
+    GasWellDataBoundary b0 = new GasWellDataBoundary( parser.parse( "13/JAN/2012 18:45:47" ).getTime(), "start maintenance", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_OUTAGE_START );
+    GasWellDataBoundary b1 = new GasWellDataBoundary( parser.parse( "14/JAN/2012 05:59:59" ).getTime(), "end maintenance", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_OUTAGE_END );
+    GasWellDataBoundary b2 = new GasWellDataBoundary( parser.parse( "15/JAN/2012 06:00:03" ).getTime(), "there she blows!", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_MEDIAN_CROSSING );
+    GasWellDataBoundary b3 = new GasWellDataBoundary( parser.parse( "17/JAN/2012 06:00:03" ).getTime(), "pipe broken", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_OUTAGE_START );
+    GasWellDataBoundary b4 = new GasWellDataBoundary( parser.parse( "17/JAN/2012 13:35:28" ).getTime(), "pipe fixed", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_OUTAGE_END );
+
+    List<GasWellDataBoundary> listAlpha = new ArrayList<GasWellDataBoundary>();
+    List<GasWellDataBoundary> listBeta = new ArrayList<GasWellDataBoundary>();
+    listAlpha.add( a0 );
+    listAlpha.add( a1 );
+    listAlpha.add( a2 );
+    listAlpha.add( a3 );
+    listAlpha.add( a4 );
+    listBeta.add( b0 );
+    listBeta.add( b1 );
+    listBeta.add( b2 );
+    listBeta.add( b3 );
+    listBeta.add( b4 );
+    List<GasWellDataBoundary> result = GasWellDataBoundary.merge( listAlpha, listBeta );
+    assertNotNull(result);
+    
+    assertFalse(result.contains(b2));
+    assertFalse(result.contains(b3));
+
+    assertEquals( 8, result.size());
+    assertEquals( a0, result.get( 0 ) );
+    assertEquals( b0, result.get( 1 ) );
+    assertEquals( b1, result.get( 2 ) );
+    assertEquals( a1, result.get( 3 ) );
+    assertEquals( a2, result.get( 4 ) );
+    assertEquals( a3, result.get( 5 ) );
+    assertEquals( a4, result.get( 6 ) );
+    assertEquals( b4, result.get( 7 ) );
+}
+
+@Test( expected = NullPointerException.class )
+public void testNullListContainsDate()
+{
+    List<GasWellDataBoundary> listAlpha = null;
+    
+    GasWellDataBoundary.listContains( listAlpha, parser.parse( "13/JUN/2012 05:24" ).getTime() );
+   
+}
+
+@Test( expected=IllegalArgumentException.class)
+public void testEmptyListContainsDate()
+{
+    List<GasWellDataBoundary> listAlpha = new ArrayList<GasWellDataBoundary>();
+    assertFalse(GasWellDataBoundary.listContains(listAlpha, parser.parse("13/JUN/2012 05:24").getTime()));
+}
+
+@Test
+public void singleElementListContainsDateExactly()
+{
+    List<GasWellDataBoundary> listAlpha = new ArrayList<GasWellDataBoundary>();
+    listAlpha.add( new GasWellDataBoundary( parser.parse( "13/JUN/2012 05:24" ).getTime(), "hello", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY ) );
+    assertTrue(GasWellDataBoundary.listContains(listAlpha, parser.parse("13/JUN/2012 05:24").getTime()));
+}
+
+@Test
+public void listContainsDateExactly()
+{
+    List<GasWellDataBoundary> listAlpha = new ArrayList<GasWellDataBoundary>();
+    listAlpha.add( new GasWellDataBoundary( parser.parse( "11/JUN/2012 05:24" ).getTime(), "hello", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY ) );
+    listAlpha.add(new GasWellDataBoundary(parser.parse("12/JUN/2012 05:24").getTime(), "hello", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY));
+    listAlpha.add( new GasWellDataBoundary( parser.parse( "13/JUN/2012 05:24:13.456" ).getTime(), "hello", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY ) );
+    listAlpha.add( new GasWellDataBoundary( parser.parse( "14/JUN/2012 05:24" ).getTime(), "hello", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY ) );
+    assertTrue(GasWellDataBoundary.listContains(listAlpha, parser.parse("13/JUN/2012 05:24:13.456").getTime()));
+}
+
+@Test
+public void listContainsDateOutByOneMillisecond()
+{
+    List<GasWellDataBoundary> listAlpha = new ArrayList<GasWellDataBoundary>();
+    listAlpha.add( new GasWellDataBoundary( parser.parse( "11/JUN/2012 05:24" ).getTime(), "hello", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY ) );
+    listAlpha.add(new GasWellDataBoundary(parser.parse("12/JUN/2012 05:24").getTime(), "hello", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY));
+    listAlpha.add( new GasWellDataBoundary( parser.parse( "13/JUN/2012 05:24:13.456" ).getTime(), "hello", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY ) );
+    listAlpha.add( new GasWellDataBoundary( parser.parse( "14/JUN/2012 05:24" ).getTime(), "hello", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY ) );
+    assertFalse(GasWellDataBoundary.listContains(listAlpha, parser.parse("13/JUN/2012 05:24:13.455").getTime()));
+}
+
+@Test( expected = NullPointerException.class )
+public void testExtractingTimestampArrayFromNullBoundaryList()
+{
+    long[] stamps = GasWellDataBoundary.getTimestampList( null );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testExtractingTimestampArrayFromEmptyBoundaryList()
+{
+    long[] stamps = GasWellDataBoundary.getTimestampList( new ArrayList<GasWellDataBoundary>() );
+}
+
+@Test
+public void testExtractingTimestampArrayFromSingleElementBoundaryList()
+{
+    List<GasWellDataBoundary> list = new ArrayList<GasWellDataBoundary>();
+    list.add( new GasWellDataBoundary( parser.parse( "13/JAN/2012 06:00:03" ).getTime(), "start", GasWellDataBoundary.BoundaryType.START ) );
+
+    long[] stamps = GasWellDataBoundary.getTimestampList( list );
+    assertNotNull( stamps );
+    assertEquals( 1, stamps.length );
+    assertEquals( parser.parse( "13/JAN/2012 06:00:03" ).getTime().getTime(), stamps[ 0 ] );
+}
+
+@Test
+public void testExtractingTimestampArrayFromLargeBoundaryList()
+{
+    List<GasWellDataBoundary> list = new ArrayList<GasWellDataBoundary>();
+    list.add( new GasWellDataBoundary( parser.parse( "13/JAN/2012 06:00:03" ).getTime(), "start", GasWellDataBoundary.BoundaryType.START ) );
+    list.add( new GasWellDataBoundary( parser.parse( "13/JAN/2012 18:45:47" ).getTime(), "start maintenance", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_OUTAGE_START ) );
+    list.add( new GasWellDataBoundary( parser.parse( "14/JAN/2012 05:59:59" ).getTime(), "end maintenance", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_OUTAGE_END ) );
+    list.add( new GasWellDataBoundary( parser.parse( "14/JAN/2012 06:00:03" ).getTime(), "day two", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY ) );
+    list.add( new GasWellDataBoundary( parser.parse( "15/JAN/2012 06:00:03" ).getTime(), "day three", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY ) );
+    list.add( new GasWellDataBoundary( parser.parse( "15/JAN/2012 08:43:17" ).getTime(), "there she blows!", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_MEDIAN_CROSSING ) );
+    list.add( new GasWellDataBoundary( parser.parse( "16/JAN/2012 06:00:03" ).getTime(), "day four", GasWellDataBoundary.BoundaryType.AUTOMATED_REGULAR_BOUNDARY ) );
+    list.add( new GasWellDataBoundary( parser.parse( "17/JAN/2012 06:00:03" ).getTime(), "day five", GasWellDataBoundary.BoundaryType.END ) );
+    list.add( new GasWellDataBoundary( parser.parse( "17/JAN/2012 08:45:16" ).getTime(), "pipe broken", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_OUTAGE_START ) );
+    list.add( new GasWellDataBoundary( parser.parse( "17/JAN/2012 13:35:28" ).getTime(), "pipe fixed", GasWellDataBoundary.BoundaryType.PRIMARY_INDICATOR_OUTAGE_END ) );
+    
+    long[] stamps = GasWellDataBoundary.getTimestampList( list );
+    assertNotNull( stamps );
+    assertEquals( 10, stamps.length);
+    assertEquals( parser.parse( "13/JAN/2012 06:00:03" ).getTime().getTime(), stamps[0]);
+    assertEquals( parser.parse( "13/JAN/2012 18:45:47" ).getTime().getTime(), stamps[1]);
+    assertEquals( parser.parse( "14/JAN/2012 05:59:59" ).getTime().getTime(), stamps[2]);
+    assertEquals( parser.parse( "14/JAN/2012 06:00:03" ).getTime().getTime(), stamps[3]);
+    assertEquals( parser.parse( "15/JAN/2012 06:00:03" ).getTime().getTime(), stamps[4]);
+    assertEquals( parser.parse( "15/JAN/2012 08:43:17" ).getTime().getTime(), stamps[5]);
+    assertEquals( parser.parse( "16/JAN/2012 06:00:03" ).getTime().getTime(), stamps[6]);
+    assertEquals( parser.parse( "17/JAN/2012 06:00:03" ).getTime().getTime(), stamps[7]);
+    assertEquals( parser.parse( "17/JAN/2012 08:45:16" ).getTime().getTime(), stamps[ 8 ] );
+    assertEquals( parser.parse( "17/JAN/2012 13:35:28" ).getTime().getTime(), stamps[ 9 ] );
 }
 
 }

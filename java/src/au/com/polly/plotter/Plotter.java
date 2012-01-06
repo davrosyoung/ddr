@@ -172,6 +172,15 @@ public class Plotter extends JFrame implements ActionListener
     public static void main(String[] args) {
 
         JFrame frame = new Plotter();
+ /*
+        try {
+            UIManager.setLookAndFeel(
+                    UIManager.getCrossPlatformLookAndFeelClassName());
+        } catch (Exception e) {
+            System.err.println("Couldn't use the cross-platform "
+                    + "look and feel: " + e);
+        }
+   */
 
         WindowListener l = new WindowAdapter() {
             public void windowClosing(WindowEvent e) {

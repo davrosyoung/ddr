@@ -24,13 +24,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 
-/**
- * Created by IntelliJ IDEA.
- * User: dave
- * Date: 4/01/12
- * Time: 1:48 PM
- * To change this template use File | Settings | File Templates.
- */
 public class RotatedTextDemo extends JPanel
 {
 JFrame frame;
@@ -46,9 +39,7 @@ public RotatedTextDemo()
 public void paint( Graphics gfx )
 {
     Graphics2D g2d = (Graphics2D)gfx;
-    Font originalFont = g2d.getFont();
-//    g2d.drawString( "Hello world", 600, 300 );
-    originalFont =  new Font("SansSerif", Font.PLAIN, 20 );
+    Font originalFont =  new Font("SansSerif", Font.PLAIN, 20 );
 
     
 
@@ -64,7 +55,7 @@ public void paint( Graphics gfx )
         
         g2d.drawLine( 100, 100, 200, 200 );
         
-        g2d.drawString( "  osho", 200, 300 );
+        g2d.drawString( "  gnash!", 200, 300 );
 
     }
     
@@ -87,6 +78,7 @@ public static void createAndShowGUI()
 
 public static void main( String... args )
 {
+    /* Don't use this!!
     try {
         UIManager.setLookAndFeel(
                 UIManager.getCrossPlatformLookAndFeelClassName());
@@ -94,6 +86,7 @@ public static void main( String... args )
         System.err.println("Couldn't use the cross-platform "
                 + "look and feel: " + e);
     }
+    */
 
 
     Runnable doCreateAndShowGUI = new Runnable() {

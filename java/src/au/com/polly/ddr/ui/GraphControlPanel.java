@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -322,6 +322,8 @@ public void actionPerformed(ActionEvent evt)
                     availableDateLabel.setText(dateAvailabilityText.toString());
                     fromDateField.setText( dateFormatter.format(from) );
                     untilDateField.setText( dateFormatter.format( until ) );
+                    fromDateField.setEnabled( true );
+                    untilDateField.setEnabled( true );
                 }
                 break;
             }
@@ -370,7 +372,12 @@ public void actionPerformed(ActionEvent evt)
                         {
                             try {
                                 FileWriter writer = new FileWriter( file );
-                                grapher.getOverlayData().outputCSV( new PrintWriter( writer ) );
+                                if ( file.getName().toLowerCase().endsWith( ".csv" ) )
+                                {
+                                    grapher.getOverlayData().outputCSV( new PrintWriter( writer ) );
+                                } else {
+                                    grapher.getOverlayData().outputAmitsFormat(new PrintWriter(writer));
+                                }
                                 writer.close();
                             } catch (IOException e) {
                                 JOptionPane.showMessageDialog( this, "Failed to save overlay data to \"" + file.getAbsolutePath() + "\"" );
@@ -483,6 +490,7 @@ protected GasWellDataSet loadDataFromFileChooser( JFileChooser chooser )
             GasWellDataExtractorFactory factory = GasWellDataExtractorFactory.getInstance();
             if ( file.getName().toLowerCase().endsWith( ".csv" ) )
             {
+                logger.info( "About to attempt to extract data from file \"" + file.getAbsolutePath() + "\"" );
                 try
                 {
                     FileReader fr = new FileReader( file );

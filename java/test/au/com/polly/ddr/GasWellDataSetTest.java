@@ -778,4 +778,58 @@ public void testGetPlotDataForSAA2FragmentOilFlow()
 
 }
 
+@Test
+public void testGetPlotDataForSAA2FragmentOilFlowBetween18OctAnd30Oct2009()
+{
+    DateRange range = new DateRange( "18/OCT/2009", "30/OCT/2009" );
+    PlotData pd = TestGasWellDataSet.getSAA2FragmentDataSet().getPlotData( WellMeasurementType.OIL_FLOW, range );
+    assertNotNull(pd);
+    assertEquals( 12, pd.size() );
+
+    List<DataPoint<Long,Double>> dataPointList = pd.getDataPoints();
+    assertNotNull(dataPointList);
+    assertEquals( 12, dataPointList.size() );
+
+    DataPoint<Long,Double> p = dataPointList.get( 0 );
+    assertEquals( dateParser.parse( "18/OCT/2009" ).getTime().getTime(), (long)p.getX() );
+    assertEquals( 4228.99, p.getY(), ACCEPTABLE_ERROR );
+
+
+    p = dataPointList.get( 1 );
+    assertEquals( dateParser.parse( "19/OCT/2009" ).getTime().getTime(), (long)p.getX() );
+    assertEquals( 4212.03, p.getY(), ACCEPTABLE_ERROR );
+
+
+    p = dataPointList.get( 11 );
+    assertEquals( dateParser.parse( "29/OCT/2009" ).getTime().getTime(), (long)p.getX() );
+    assertEquals( 3601.06, p.getY(), ACCEPTABLE_ERROR );
+}
+
+@Test
+public void testGetPlotDataForSAA2FragmentOilFlowBetween18OctMiddayAnd30Oct2009()
+{
+    DateRange range = new DateRange( "18/OCT/2009 12:00", "30/OCT/2009" );
+    PlotData pd = TestGasWellDataSet.getSAA2FragmentDataSet().getPlotData( WellMeasurementType.OIL_FLOW, range );
+    assertNotNull( pd );
+    assertEquals( 12, pd.size() );
+
+    List<DataPoint<Long,Double>> dataPointList = pd.getDataPoints();
+    assertNotNull( dataPointList );
+    assertEquals( 12, dataPointList.size() );
+
+    DataPoint<Long,Double> p = dataPointList.get( 0 );
+    assertEquals( dateParser.parse( "18/OCT/2009 12:00" ).getTime().getTime(), (long)p.getX() );
+    assertEquals( 4228.99, p.getY(), ACCEPTABLE_ERROR );
+
+
+    p = dataPointList.get( 1 );
+    assertEquals( dateParser.parse( "19/OCT/2009" ).getTime().getTime(), (long)p.getX() );
+    assertEquals( 4212.03, p.getY(), ACCEPTABLE_ERROR );
+
+
+    p = dataPointList.get( 11 );
+    assertEquals( dateParser.parse( "29/OCT/2009" ).getTime().getTime(), (long)p.getX() );
+    assertEquals( 3601.06, p.getY(), ACCEPTABLE_ERROR );
+}
+
 }

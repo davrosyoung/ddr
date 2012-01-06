@@ -147,7 +147,7 @@ public GasWellDataSet( GasWellDataSet original, List<GasWellDataBoundary> interv
     {
         if ( intervalBoundaries.get( i ).getTimestamp().getTime() >=  intervalBoundaries.get( i + 1 ).getTimestamp().getTime() )
         {
-            throw new IllegalArgumentException( "interval boundary array must contain date/times which get larger from start to finish." );
+            throw new IllegalArgumentException( "interval boundary array must contain date/times which get larger from start to finish. i=" + i  + ", first date=[" + intervalBoundaries.get( i ).getTimestamp() + "], second date=[" + intervalBoundaries.get( i + 1 ).getTimestamp() + "]" );
         }
     }
 
@@ -440,7 +440,7 @@ public GasWellDataEntry getEntry( int idx )
  * @return the index within the list of data entries corresponding to the specified date or -1 if
  * no matching entry was located.
  */
-protected int locateEntryIndex( Date when )
+public int locateEntryIndex( Date when )
 {
     int result = -1;
     GasWellDataEntry candidate = null;
@@ -786,6 +786,102 @@ public void outputCSV( PrintWriter writer, boolean outputColumnHeadings, boolean
 }
 
 
+/**
+ * Used to output this data set to CSV file. Written a couple of weeks after output() method, and it shows!!
+ *
+ *
+ * @param writer
+ */
+public void outputAmitsFormat( PrintWriter writer )
+{
+    Formatter formatter = new Formatter( writer, Locale.UK );
+    long durationSeconds = 0;
+    long ds = 0;
+    long dm = 0;
+    long dh = 0;
+    long dd = 0;
+
+    durationSeconds = ( until().getTime() - from().getTime() ) / 1000L;
+    ds = durationSeconds % 60;
+    dm = ( durationSeconds / 60 ) % 60;
+    dh = ( durationSeconds / 3600 ) % 24;
+    dd = durationSeconds / 86400;
+
+    logger.debug( "durationSeconds=" + durationSeconds + ", ds=" + ds + ", dm=" + dm + ", dh=" + dh + ", dd=" + dd );
+
+    writer.println( "# Well:" + well.getName() );
+    writer.println( "# Date Range:" + DateArmyKnife.formatWithMinutes( from() ) + " - " + DateArmyKnife.formatWithMinutes( until() ) );
+    formatter.format("# Duration: %4d days %2d hours %2d mins %2d seconds.   |\n", dd, dh, dm, ds);
+
+    StringBuilder firstHeadingLine = new StringBuilder();
+    StringBuilder secondHeadingLine = new StringBuilder();
+    
+    firstHeadingLine.append(  "           " );
+    secondHeadingLine.append( "           " );
+
+    if ( containsMeasurement( WellMeasurementType.OIL_FLOW ) )
+    {
+        //                          nnnnn.nnnn
+        firstHeadingLine.append(  "    oil flow" );
+        secondHeadingLine.append( "    stdb/day" );
+    }
+
+
+    if ( containsMeasurement( WellMeasurementType.CONDENSATE_FLOW ) )
+    {
+        //                          nnnnn.nnnn
+        firstHeadingLine.append(  "   cond flow" );
+        secondHeadingLine.append( "    stdb/day" );
+    }
+
+    if ( containsMeasurement( WellMeasurementType.GAS_FLOW ) )
+    {
+        //                          nnnnn.nnnn
+        firstHeadingLine.append(  "    gas flow" );
+        secondHeadingLine.append( "   MMscf/day" );
+    }
+
+    if ( containsMeasurement( WellMeasurementType.WATER_FLOW ) )
+    {
+        //                          nnnnn.nnnn
+        firstHeadingLine.append(  "  water flow" );
+        secondHeadingLine.append( "    stdb/day" );
+    }
+    
+    writer.println( firstHeadingLine.toString() );
+    writer.println( secondHeadingLine.toString() );
+
+    for( GasWellDataEntry entry : list )
+    {
+        writer.print( DateArmyKnife.formatJustDate( entry.from(), false, '-' ) );
+        writer.print( "       " );
+        
+        for( WellMeasurementType wmt : WellMeasurementType.values() )
+        {
+            if ( containsMeasurement( wmt ) )
+            {
+                if ( entry.containsMeasurement( wmt ) )
+                {
+                    formatter.format( "%7.2f", entry.getMeasurement( wmt ) );
+                    writer.print( "     " );
+                } else {
+                    writer.print( "-------  ");
+                }
+            }
+        }
+/*
+        if ( entry.getComment() != null )
+        {
+            writer.print( "      " );
+            writer.print( entry.getComment() );
+        }
+*/
+        writer.println();
+
+    } // end-FOR( each gas well data entry )
+}
+
+
 
 
 public String toString()
@@ -921,6 +1017,7 @@ public int hashCode()
  */
 public PlotData<Long,Double> getPlotData( WellMeasurementType wmt )
 {
+/*
     PlotData<Long,Double> result = new PlotData<Long,Double>();
     Iterator<GasWellDataEntry> i = getIterator();
     Double y = 0.0;
@@ -937,7 +1034,49 @@ public PlotData<Long,Double> getPlotData( WellMeasurementType wmt )
     }
 
     return result;
+    */
+    return getPlotData( wmt, null );
 }
+
+/**
+ * To enable the plotting classes from the watson project to be able to plot data for the DDR project,
+ * this method enables a PlotData object to be extracted for a specific well measurement type.
+ *
+ * @param wmt measurement type to obtaint the plot data for.
+ * @param range the range of dates which should be plotted.
+ * @return
+ */
+public PlotData<Long,Double> getPlotData( WellMeasurementType wmt, DateRange range )
+{
+    PlotData<Long,Double> result = new PlotData<Long,Double>();
+    Iterator<GasWellDataEntry> i = getIterator();
+    Double y = 0.0;
+    Date when = null;
+    GasWellDataEntry entry = null;
+
+    while( i.hasNext() )
+    {
+        entry = i.next();
+        if ( entry.containsMeasurement( wmt ) )
+        {
+            if ( ( range == null ) || ( range.contains( entry.getDateRange() ) ) )
+            {
+                result.add( new DataPoint<Long, Double>( entry.getDateRange().from().getTime(), entry.getMeasurement( wmt ) ) );
+            } else {
+                // if this measurement interval starts before the plot range, but ends within it (but after the
+                // start and not on the start), and there are no data plot points yet, then "squeeze" this point in....
+                // ------------------------------------------------------------------------------------------------
+                if ( ( range != null ) && ( result.size() == 0 ) && ( ( range.contains( entry.until() ) ) && ( entry.until().getTime() > range.from().getTime() )  ) )
+                {
+                    result.add( new DataPoint<Long, Double>( range.from().getTime(), entry.getMeasurement( wmt ) ) );
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
 
 /**
  *

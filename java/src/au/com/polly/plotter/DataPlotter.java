@@ -21,6 +21,7 @@
 package au.com.polly.plotter;
 
 import org.apache.log4j.Logger;
+import org.apache.poi.hssf.util.HSSFColor;
 import sun.beans.editors.FontEditor;
 
 import java.awt.*;
@@ -63,7 +64,7 @@ private List<AxisConfiguration> yAxisConfig;
 
 final static int LEFT_AXIS_BORDER = 40;
 final static int RIGHT_AXIS_BORDER = 80;
-final static int BOTTOM_AXIS_BORDER = 100;
+final static int BOTTOM_AXIS_BORDER = 150;
 final static int TITLE_BORDER = 20;    
 /*
 protected boolean showGrid = false;
@@ -90,8 +91,8 @@ private static Stroke regularDashedStroke;
 
 protected int pointSize = 10;
 
-private final int width;  // width in pixels of our drawing region
-private final int height; // height (in pixels) of our drawing region/canvas
+private int width;  // width in pixels of our drawing region
+private int height; // height (in pixels) of our drawing region/canvas
 
 private final static Stroke thinNoDashStroke = new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f );
 private final static Stroke thinFineDashStroke = new BasicStroke( 1.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f, new float[] { 3, 3, 3, 3 }, 0.0f );
@@ -138,6 +139,31 @@ public int getWidth()
 public int getHeight()
 {
     return height;
+}
+
+public void setDimension( Dimension size )
+{
+    setWidth( size.width );
+    setHeight( size.height );
+}
+
+public void setWidth( int pixels )
+{
+    this.width = pixels;
+}
+
+public void setHeight( int pixels )
+{
+    this.height = pixels;
+}
+
+public void clearPlotData()
+{
+    this.graphData = new ArrayList<PlotData<Integer,Integer>>();
+    this.xAxis = null;
+    this.xAxisConfig = null;
+    this.yAxis = new ArrayList<Axis>();
+    this.yAxisConfig = new ArrayList<AxisConfiguration>();
 }
 
 /**
@@ -278,7 +304,10 @@ public void paint(Graphics g)
     g2d.drawLine(  minX, midY, maxX, midY );
     g2d.drawLine(  midX, minY, midX, maxY );
 */
-    plotData( g2d, graphData );
+    if ( graphData != null )
+    {
+        plotData( g2d, graphData );
+    }
 
     // now place the title... roughly in the middle ;-)
     // -----------------------------------------------------
@@ -454,7 +483,7 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
 {
     int x0 = LEFT_AXIS_BORDER;
     int y0 = getHeight() - BOTTOM_AXIS_BORDER;
-    int x1 = LEFT_AXIS_BORDER + config.getPlotLength();
+    int x1 = LEFT_AXIS_BORDER + ( ( config != null ) ? config.getPlotLength() : 0 );
     double c;
     String units;
     Stroke standardStroke;
@@ -474,7 +503,7 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
 
     // draw the axis line itself...
     // ------------------------
-    g.setColor( config.getColour() );
+    g.setColor( config != null ? config.getColour() : Color.WHITE );
     g.drawLine(x0, y0, x1, y0);
 
     Font rotatedFont;
@@ -492,22 +521,22 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     for( int i = 0; i <= axis.getNumberIntervals(); i++, c += axis.getIntervalSize() )
     {
         String dateText;
-		g.setColor(config.getColour());
+		g.setColor( config != null ? config.getColour() : Color.WHITE );
         g.setStroke( standardStroke );
         x0 = axis.getPosition( c, config ) + LEFT_AXIS_BORDER;
         dateText = axis.getDataLabel(c);
         logger.debug("for i=" + i + ", c=" + c + ", tickLabel=" + dateText);
         g.drawLine( x0, y0, x0, y0 + 5 );
 
-        // muck about with the coordinate system to draw the x-axis labels on an angle, then
-        // set back to regular "identity" transformation ..... avoids complications...
+        // We use a modified/dervied font which causes the x-axis label to be drawn on an angle.
         // -----------------------------------------------------------------------------------
         g.drawString(dateText, x0 - 4, y0 + 8);
+//        g.drawString(dateText, x0 - 4, getHeight() - 15 );
         g.setTransform( identity );
 
         // now draw a thin dashed line to mark this interval
         // -----------------------------------------------------
-		g.setColor( config.getGridColour()  );
+		g.setColor( config != null ? config.getGridColour() : Color.WHITE );
         g.setStroke( dashedStroke );
         g.drawLine( x0, y0, x0, TITLE_BORDER );
     }

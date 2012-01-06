@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -237,8 +237,32 @@ public GasWellDataSet reduce( GasWellDataSet original )
     // ok ... now we have to merge them....
     // ------------------------------------
     if ( regularBoundaries != null )
-    {
+    {  
+        logger.debug( "Before Merge;\n");
+        logger.debug( "Regular Boundaries:" );
+        logger.debug( "-------- ------------");
+
+        for( GasWellDataBoundary gwdb : regularBoundaries )
+        {
+            logger.debug( gwdb );
+        }
+        logger.debug( "Discontinuity Boundaries:" );
+        logger.debug( "-------- ------------");
+
+        for( GasWellDataBoundary gwdb : discontinuityBoundaries )
+        {
+            logger.debug( gwdb );
+        }
         combinedBoundaries = GasWellDataBoundary.merge( regularBoundaries, discontinuityBoundaries );
+
+        logger.debug( "Combined Boundaries:" );
+        logger.debug( "-------- ------------");
+
+        for( GasWellDataBoundary gwdb : combinedBoundaries )
+        {
+            logger.debug( gwdb );
+        }
+
     } else {
         combinedBoundaries = discontinuityBoundaries;
     }

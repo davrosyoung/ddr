@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -25,6 +25,7 @@ import au.com.polly.util.HashCodeUtil;
 import au.com.polly.util.StringArmyKnife;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -126,8 +127,7 @@ public int compareTo( Object other )
         a = getTimestamp().getTime();
         b = otherBoundary.getTimestamp().getTime();
         
-        if ( a == b ) { break; }
-        result = a < b ? -1 : 1;
+        result = ((Long)a).compareTo(b);
     } while( false );
     
     return result;
@@ -200,6 +200,8 @@ public String toString()
  */
 protected static List<GasWellDataBoundary> merge( List<GasWellDataBoundary> alpha, List<GasWellDataBoundary> beta )
 {
+    List<GasWellDataBoundary> refinedBeta = new ArrayList<GasWellDataBoundary>();
+            
     if ( ( alpha == null ) ||  ( beta == null ) )
     {
         throw new NullPointerException( "Both lists of boundaries must be non-NULL!" );
@@ -213,11 +215,77 @@ protected static List<GasWellDataBoundary> merge( List<GasWellDataBoundary> alph
     {
         throw new IllegalArgumentException( "Both lists are empty!" );
     }
-    
+
+    // remove any identical dates from the second list which are also in the first list...
+    // (first list takes precedence).
+    // ------------------------------------------------------------------------------------
+    for( GasWellDataBoundary boundary : beta )
+    {
+        if ( ! listContains( alpha, boundary.getTimestamp() ) )
+        {
+            refinedBeta.add( boundary );   
+        }
+    }
+
     List<GasWellDataBoundary> result = new ArrayList<GasWellDataBoundary>();
-    result.addAll(alpha);
-    result.addAll(beta);
+    result.addAll( alpha );
+    result.addAll( refinedBeta );
     Collections.sort( result );
+    
+    return result;
+}
+
+
+/**
+ * 
+ * @param list
+ * @param timestamp
+ * @return whether the specified timestamp is present within the list of gas well data boundaries.
+ */
+public static boolean listContains( List<GasWellDataBoundary> list, Date timestamp )
+{
+    boolean result = false;
+    int i;
+
+    // assume that list is sorted from earliest to latest!!
+    // -----------------------------------------------------
+    long[] stamps = getTimestampList( list );
+    
+    i = Arrays.binarySearch(stamps, 0, stamps.length, timestamp.getTime());
+    
+    return( i >= 0 );
+}
+
+/**
+ * 
+ * @param list list of gas well data boundaries
+ * @return the same list, but expressed as an array of longs, each entry in the array being
+ * the millisecond representation of the timestamp.
+ */
+protected static long[] getTimestampList( List<GasWellDataBoundary> list )
+{
+    long[] result = null;
+    
+    if ( list == null )
+    {
+        throw new NullPointerException( "Cannot extract array from null list" );
+    }
+    
+    if ( list.size() == 0 )
+    {
+        throw new IllegalArgumentException( "Cannot extract array from empty list" );
+    }
+    
+    if ( list.size() > 0 )
+    {
+        result = new long[ list.size() ];
+        for( int i = 0; i < list.size(); i++ )
+        {
+            GasWellDataBoundary boundary = list.get( i );
+            result[ i ] = boundary.getTimestamp().getTime();
+        }
+    }
+
     return result;
 }
 

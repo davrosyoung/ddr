@@ -20,6 +20,8 @@
 
 package au.com.polly.util;
 
+import org.apache.log4j.Logger;
+
 import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,6 +31,7 @@ import java.util.Date;
  */
 public class DateArmyKnife
 {
+private final static Logger logger = Logger.getLogger( DateArmyKnife.class );
 private static NumberFormat twoDigitFormatter;
 private static NumberFormat threeDigitFormatter;
 private static NumberFormat fourDigitFormatter;
@@ -249,9 +252,19 @@ public static String formatJustDate( Date stamp )
  */
 public static String formatJustDate( Date stamp, boolean fourDigitYear )
 {
+    return formatJustDate( stamp, fourDigitYear, '/' );
+}
+/**
+ *
+ * @param stamp
+ * @param fourDigitYear whether or not to output year as four digits.
+ * @return date formatted as dd/MMM/yy or dd/MMM/yyyy
+ */
+public static String formatJustDate( Date stamp, boolean fourDigitYear, char monthSeparator )
+{
     Calendar cal = Calendar.getInstance();
     cal.setTime( stamp );
-    return formatJustDate( cal, fourDigitYear );    
+    return formatJustDate( cal, fourDigitYear, monthSeparator );
 }
 
 /**
@@ -268,14 +281,24 @@ public static String formatJustDate( Calendar cal )
  * @param fourDigitYear whether to output four digit year or not.
  * @return date formatted as dd/MMM/yyyy  or dd/MMM/yy
  */
-public static String formatJustDate(Calendar cal, boolean fourDigitYear )
+public static String formatJustDate(Calendar cal, boolean fourDigitYear  )
+{
+    return formatJustDate( cal, fourDigitYear, '/' );
+}
+
+/**
+ * @param cal
+ * @param fourDigitYear whether to output four digit year or not.
+ * @return date formatted as dd/MMM/yyyy  or dd/MMM/yy
+ */
+public static String formatJustDate(Calendar cal, boolean fourDigitYear, char monthSeparator )
 {
     StringBuilder out = new StringBuilder();
 
     out.append( twoDigitFormatter.format( cal.get( Calendar.DAY_OF_MONTH ) ));
-    out.append( "/" );
+    out.append( monthSeparator );
     out.append( MonthParser.monthAbbreviation( cal.get( Calendar.MONTH ) ).toUpperCase() );
-    out.append( "/" );
+    out.append( monthSeparator );
     out.append( fourDigitYear ? fourDigitFormatter.format( cal.get( Calendar.YEAR ) ) : twoDigitFormatter.format( cal.get( Calendar.YEAR ) ) );
     return out.toString();
 }

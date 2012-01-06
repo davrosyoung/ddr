@@ -22,6 +22,7 @@ package au.com.polly.plotter;
 
 import au.com.polly.util.DateArmyKnife;
 import au.com.polly.util.TimestampArmyKnife;
+import org.apache.log4j.Logger;
 
 import java.text.NumberFormat;
 import java.util.Date;
@@ -42,6 +43,7 @@ public class TimestampAxis<Long extends Number>
 extends BaseAxis<Long>
 implements Axis<Long>
 {
+Logger logger = Logger.getLogger(TimestampAxis.class);
 DateArmyKnife knife = new DateArmyKnife();
 // our units of time.    
 boolean empty = true;
@@ -141,7 +143,7 @@ public void calculate( long min, long max )
         // ---------------------------------------------------------
         if ( ( numberUnits / intervalFactor) >= 8 )
         {
-            this.intervalSize = (int) Math.ceil((intervalFactor / 2) * unitLength);
+            this.intervalSize = Math.ceil((intervalFactor / 2) * unitLength);
             break;
         }
 
@@ -155,7 +157,7 @@ public void calculate( long min, long max )
             // this is because once we get past seconds, into minutes, things divide better
             // by six than by five..
             // -----------------------------------------------------------------------------------------------------
-            this.intervalSize = (int) Math.ceil((intervalFactor / ((unitLength >= 60000 ? 6 : 5))) * unitLength);
+            this.intervalSize = Math.ceil((intervalFactor / ((unitLength >= 60000 ? 6 : 5))) * unitLength);
             break;
         }
 
@@ -163,7 +165,7 @@ public void calculate( long min, long max )
         // ---------------------------------------------------------
 //        this.intervalSize = Math.ceil( intervalFactor / 10 ) * unitLength;
         // once we get past minutes, divide by 12 rather than by 10
-        this.intervalSize = (int) Math.ceil((intervalFactor / ((unitLength >= 60000 ? 12 : 10))) * unitLength);
+        this.intervalSize = Math.ceil((intervalFactor / ((unitLength >= 60000 ? 12 : 10))) * unitLength);
 
     } while( false ); // end-do-WHILE(false)
 
@@ -215,9 +217,19 @@ public String getDataLabel( Long value)
     NumberFormat formatter;
     String result = null;
 
-    result = knife.formatJustDate( new Date( value.longValue() ), false );
+    // if the interval size is less than a day, then include the time, otherwise, just the date.
+    result = ( this.intervalSize < 86400000 ) ? knife.formatWithSeconds( new Date( value.longValue() ), false ) : knife.formatJustDate( new Date( value.longValue() ), false );
 
     return result;
+}
+
+/**
+ *
+ * @return How long a single interval is, in milliseconds.
+ */
+public double getIntervalSize()
+{
+    return this.intervalSize;
 }
 
 
