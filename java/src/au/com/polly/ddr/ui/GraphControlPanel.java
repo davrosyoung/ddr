@@ -334,6 +334,7 @@ public void actionPerformed(ActionEvent evt)
                 if ( newData != null )
                 {
                     grapher.loadOverlayData( newData );
+                    ((JComponent)grapher).repaint();
                 }
                 break;
             }
@@ -375,7 +376,7 @@ public void actionPerformed(ActionEvent evt)
                                 FileWriter writer = new FileWriter( file );
                                 if ( file.getName().toLowerCase().endsWith( ".csv" ) )
                                 {
-                                    grapher.getOverlayData().outputCSV( new PrintWriter( writer ) );
+                                    grapher.getOverlayData().outputCSV( new PrintWriter( writer )  );
                                 } else {
                                     grapher.getOverlayData().outputAmitsFormat(new PrintWriter(writer));
                                 }
@@ -623,7 +624,6 @@ public void saveIntervalEditor(GasWellDataSet data)
     intervalEditorDialog = null;
     intervalEditorPane = null;
 
-    // todo: cause update on grapher!!
     ((JComponent)grapher).repaint();
 }
 

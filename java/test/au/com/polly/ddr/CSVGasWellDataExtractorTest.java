@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -79,6 +79,7 @@ Sheet sheetBeta;
 Workbook testBook;
 DateParser parser;
 StringReader testCSVReader = null;
+StringReader SAA10ST1CSVReader = null;
 StringReader dummyCSVReader = null;
 StringReader saa2CSVReader = null;
 
@@ -107,6 +108,58 @@ public void setup()
     testCSVData.append( "17/JUN/2011 05:00:00, osho-9b, 24, 515.3, 113.9, 917.5\n" );
     testCSVData.append( "18/JUN/2011 05:00:00, osho-9b, 24, 519.3, 110.9, 913.5, \"end of data\"\n" );
     testCSVReader = new StringReader( testCSVData.toString() );
+
+    StringBuilder text = new StringBuilder();
+    text.append( "# Well:SAA-10ST1" );
+    text.append( "# Date Range:16/JUN/2006 00:00 - 01/AUG/2011 00:00" );
+    text.append( "# Duration: 1872 days  0 hours  0 mins  0 seconds.   |" );
+    text.append( "well,date/time,interval length (hours),oil flow,gas flow,water flow,comment" );
+    text.append( "SAA-10ST1,16/JUN/2006 00:00,00504.0000,001594.70857,000000.64952,000000.00000,\"Start of data\"" );
+    text.append( "SAA-10ST1,07/JUL/2006 00:00,00192.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,15/JUL/2006 00:00,01872.0000,001694.36821,000000.62538,000009.50744,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,01/OCT/2006 00:00,00072.0000,001088.42000,000000.41333,000103.81000,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,04/OCT/2006 00:00,00024.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,05/OCT/2006 00:00,00264.0000,002023.91727,000000.80182,000309.24273,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,16/OCT/2006 00:00,00024.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,17/OCT/2006 00:00,00600.0000,001784.13400,000000.65480,000247.59520,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,11/NOV/2006 00:00,00072.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,14/NOV/2006 00:00,01151.0000,000972.34655,000000.36886,000328.06645,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,01/JAN/2007 00:00,02161.0000,000777.59345,000000.31674,000699.32346,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/APR/2007 00:00,01968.0000,000510.40951,000000.26659,000727.57415,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,22/JUN/2007 00:00,00144.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,28/JUN/2007 00:00,00072.0000,000302.85667,000000.14000,000075.92000,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,01/JUL/2007 00:00,02208.0000,000596.36870,000000.34076,000709.37902,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/OCT/2007 00:00,02207.0000,000709.02122,000000.40159,000896.13466,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/JAN/2008 00:00,02185.0000,000737.67509,000000.40311,001243.29128,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/APR/2008 00:00,02184.0000,000583.43857,000000.34659,001230.13088,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/JUL/2008 00:00,00744.0000,000306.18806,000000.21000,001116.46323,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/AUG/2008 00:00,00120.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,06/AUG/2008 00:00,01344.0000,000314.97964,000000.18071,001223.67768,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,01/OCT/2008 00:00,02207.0000,000834.11451,000000.36343,001395.15143,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/JAN/2009 00:00,00408.0000,000317.91588,000000.17824,000465.51588,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,18/JAN/2009 00:00,00048.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,20/JAN/2009 00:00,00456.0000,000272.37684,000000.16158,000558.12263,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,08/FEB/2009 00:00,00096.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,12/FEB/2009 00:00,01153.0000,000433.54907,000000.24604,000842.68371,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,01/APR/2009 00:00,02184.0000,000943.40341,000000.44527,001151.16209,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/JUL/2009 00:00,01008.0000,000790.77690,000000.43190,001038.30976,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,12/AUG/2009 00:00,00072.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,15/AUG/2009 00:00,01128.0000,000676.63234,000000.40298,000882.39702,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,01/OCT/2009 00:00,02208.0000,000788.50707,000000.40478,001010.60641,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/JAN/2010 00:00,02160.0000,000601.36022,000000.27378,000943.18544,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/APR/2010 00:00,01368.0000,000517.95316,000000.23228,000952.27000,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,28/MAY/2010 00:00,00120.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,02/JUN/2010 00:00,00696.0000,000455.27379,000000.20448,000973.12172,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,01/JUL/2010 00:00,02208.0000,000361.27239,000000.14772,001016.53043,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/OCT/2010 00:00,02208.0000,000363.55717,000000.12565,001431.82196,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/JAN/2011 00:00,02160.0000,000488.70444,000000.22078,001442.29789,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,01/APR/2011 00:00,00552.0000,000456.29435,000000.18870,001360.85261,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,24/APR/2011 00:00,00048.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,26/APR/2011 00:00,01584.0000,000415.27727,000000.16667,001281.18909,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,01/JUL/2011 00:00,00216.0000,000426.95667,000000.17444,001296.30000,\"automated regular boundary marker\"" );
+    text.append( "SAA-10ST1,10/JUL/2011 00:00,00096.0000,000000.00000,000000.00000,000000.00000,\"Outage starts on primary indicator (OIL_FLOW)\"" );
+    text.append( "SAA-10ST1,14/JUL/2011 00:00,00432.0000,000442.94833,000000.17222,001285.64889,\"Outage ends on primary indicator (OIL_FLOW)\"" );
+    SAA10ST1CSVReader = new StringReader( text.toString() );
 
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter( sw );
@@ -476,6 +529,29 @@ public void testExtractingDataFromSAA2CSV()
     assertEquals( 119, dataSet.getData().size() );
     assertEquals( parser.parse( "30/JUL/2009" ).getTime(), dataSet.from() );
     assertEquals( parser.parse( "26/NOV/2009" ).getTime(), dataSet.until() );
+}
+
+
+@Test
+public void testExtractingDataFromReducedSAA10ST1CSVData()
+{
+    CSVGasWellDataExtractor extractor = new CSVGasWellDataExtractor( SAA10ST1CSVReader );
+    MultipleWellDataMap mwdm = extractor.extract();
+    assertNotNull( mwdm );
+
+    GasWell saa2 = new GasWell( "SAA-10" );
+
+    Map<GasWell,GasWellDataSet> dataSetMap = mwdm.getDataMap();
+    assertNotNull( dataSetMap );
+    assertNotNull(dataSetMap.keySet());
+    assertEquals(1, dataSetMap.keySet().size());
+    assertTrue(dataSetMap.containsKey(saa2)) ;
+
+    GasWellDataSet dataSet = dataSetMap.get( saa2 );
+    assertNotNull( dataSet );
+    assertEquals( 60, dataSet.getData().size() );
+    assertEquals( parser.parse( "16/JUN/2006" ).getTime(), dataSet.from() );
+    assertEquals( parser.parse( "1/AUG/2011" ).getTime(), dataSet.until() );
 }
 
 

@@ -874,7 +874,10 @@ public void outputCSV( PrintWriter writer, boolean outputColumnHeadings, boolean
             {
                 formatter.format( ",%012.5f", entry.getMeasurement( wmt ) );
             } else {
-                if ( outputAllColumns )
+                // if we are outputting all columns OR the measurement type does exist in this data set,
+                // but just not particularly for the current data entry...
+                // --------------------------------------------------------------------------------------
+                if ( outputAllColumns || containsMeasurement( wmt ))
                 {
                     writer.print(",------------");
                 }

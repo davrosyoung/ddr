@@ -62,7 +62,7 @@ protected GasWellDataSet actualData = null;
 enum ColumnType {
     START_TIMESTAMP( 220, Date.class, true, "Start date", MyDateRenderer.class, MyDateEditor.class ),
     UNTIL_TIMESTAMP( 220, Date.class, true, "End date", MyDateRenderer.class, MyDateEditor.class ),
-    INTERVAL_LENGTH( 80, Double.class, true, "Interval length" ),
+    INTERVAL_LENGTH( 80, Double.class, false, "Interval length" ),
     OIL_FLOW( 80, Double.class, false, "Oil Flow Rate", true, WellMeasurementType.OIL_FLOW ),
     CONDENSATE_FLOW( 80, Double.class, false, "Cond. Flow Rate", WellMeasurementType.CONDENSATE_FLOW ),
     GAS_FLOW( 80, Double.class, false, "Gas Flow Rate", WellMeasurementType.GAS_FLOW ),
@@ -376,12 +376,14 @@ public void setValueAt( Object value, int row, int col)
                 break;
             
             case INTERVAL_LENGTH:
+                // todo: either comment this out or make it work properly!! The user can edit the interval
+                // start and end dates ... which is probably sufficient!!
                 intervalLengthHours = (Double)value;
                 span = (long)Math.round( intervalLengthHours * 3600.0 ) * 1000L;
                 range = new DateRange( entry.from(), new Date( entry.from().getTime() + span ) );
                 entry.setDateRange( range );
-                fireTableCellUpdated(row, getColumnIndex(ColumnType.INTERVAL_LENGTH));
-                fireTableCellUpdated(row, getColumnIndex(ColumnType.START_TIMESTAMP));
+                fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH));
+                fireTableCellUpdated( row, getColumnIndex( ColumnType.START_TIMESTAMP));
                 fireTableCellUpdated( row, getColumnIndex( ColumnType.UNTIL_TIMESTAMP ));
                 break;
             
@@ -400,8 +402,9 @@ public void setValueAt( Object value, int row, int col)
                 text = (String)value;
                 if ( ( text != null ) && ( text.trim().length() > 0 ) )
                 {
-                    entry.setComment(text.trim());
+                    entry.setComment( text.trim() );
                 }
+                fireTableCellUpdated( row, getColumnIndex( ColumnType.COMMENT ) );
                 break;
         }
     }
