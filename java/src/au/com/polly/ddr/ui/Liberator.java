@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -398,7 +398,7 @@ protected void handleExtractButton(ActionEvent evt)
         chooser.setCurrentDirectory( dataDirectory );
     }
 
-    // choose directory to save files in...
+    // choose directory to saveIntervalEditor files in...
     // ------------------------------------
     int returnVal = chooser.showSaveDialog( this );
 
@@ -410,7 +410,7 @@ protected void handleExtractButton(ActionEvent evt)
             Object[] options = { "Yes I am sure", "Whoops!! No thank you" };
             if ( JOptionPane.showOptionDialog(
                     overlordPanel,
-                    "You have chosen to save the data to a non .csv file. This is not recommended. Are you sure you wish to proceed?",
+                    "You have chosen to saveIntervalEditor the data to a non .csv file. This is not recommended. Are you sure you wish to proceed?",
                     "Dubious file suffix",
                     JOptionPane.WARNING_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION,
@@ -454,12 +454,12 @@ protected void handleExtractButton(ActionEvent evt)
             writer.close();
             fos.close();
             long now = System.currentTimeMillis();
-            logger.info( "It took " + ( now - then ) + "ms to save data to [" + file.getAbsolutePath() + "]" );
+            logger.info( "It took " + ( now - then ) + "ms to saveIntervalEditor data to [" + file.getAbsolutePath() + "]" );
             JOptionPane.showMessageDialog( this, "Saved data to file \"" + file.getAbsolutePath() + "\"", "Gas data saved", JOptionPane.INFORMATION_MESSAGE );
         } catch ( IOException e ) {
             logger.error( "Failed to write out data file " + file.getAbsolutePath() );
             logger.error(e);
-            String errorMsg = "Failed to save data to file \"" +file.getAbsolutePath() + "\" - " + e.getMessage();
+            String errorMsg = "Failed to saveIntervalEditor data to file \"" +file.getAbsolutePath() + "\" - " + e.getMessage();
             JOptionPane.showMessageDialog( overlordPanel, errorMsg, "Oh dear!!", JOptionPane.ERROR_MESSAGE );
         }
     }
@@ -497,7 +497,7 @@ protected List<GasWellDataLocator> showAvailableWells( Workbook book )
         result = explorer.getLocations();
         if ( ( result != null ) && ( result.size() > 0 )  )
         {
-            // we can extract the data and proceed to the save file selection page...
+            // we can extract the data and proceed to the saveIntervalEditor file selection page...
             // -----------------------------------------------------------------------
             numberWells = result.size();
             for( i = 0; i < numberWells; i++ )

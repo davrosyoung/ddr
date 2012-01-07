@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -23,6 +23,8 @@ package au.com.polly.ddr.ui;
 import au.com.polly.ddr.GasWellDataSet;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -45,36 +47,45 @@ public class IntervalEditorPane extends JPanel implements ActionListener, TableM
 private final static Logger logger = Logger.getLogger(  IntervalEditorPane.class  );
 protected GasWellDataSet dataSet = null;
 
+protected JLabel spacerLabel;
 protected JButton saveButton;
 protected JButton cancelButton;
 protected JButton csvButton;
 protected JScrollPane scrollPane;
 protected JTable dataDisplayTable;
 protected GasWellDataSetTableModel dataTableModel;
+protected List<IntervalEditorListener> editorListenerList;
 
 
 protected IntervalEditorPane( GasWellDataSet dataSet )
 {
+    editorListenerList = new ArrayList<IntervalEditorListener>();
     dataTableModel = new GasWellDataSetTableModel( dataSet );
     populate();
 }
 
 protected void populate()
 {
+    spacerLabel = new JLabel();
+    spacerLabel.setText( " " );
+    
     saveButton = new JButton();
     saveButton.setName( "save" );
-    saveButton.setText("save");
+    saveButton.setText( "Apply");
+    saveButton.setActionCommand( "saveIntervalEditor" );
     saveButton.setEnabled( true );
     saveButton.addActionListener( this );
     
     cancelButton = new JButton();
     cancelButton.setName( "cancel" );
-    cancelButton.setText("cancel");
+    cancelButton.setText( "Cancel" );
+    cancelButton.setActionCommand( "cancel" );
     cancelButton.addActionListener( this );
     
     csvButton = new JButton();
     csvButton.setName("csv");
     csvButton.setText("csv");
+    csvButton.setActionCommand( "csv" );
     csvButton.setEnabled( true );
     csvButton.addActionListener(this);
 
@@ -104,16 +115,16 @@ protected void populate()
     Action delRow = new AbstractAction( "Del" )
     {
         @Override
-        public void actionPerformed(ActionEvent e)
+        public void actionPerformed( ActionEvent e )
         {
             JTable table = (JTable) e.getSource();
-            int row = Integer.valueOf(e.getActionCommand());
+            int row = Integer.valueOf( e.getActionCommand() );
             GasWellDataSetTableModel model = (GasWellDataSetTableModel)table.getModel();
-            model.deleteRow(row);
+            model.deleteRow( row  );
         }
     };
 
-    ButtonColumn removeColumn = new ButtonColumn( dataDisplayTable, delRow, dataTableModel.getColumnIndex(GasWellDataSetTableModel.ColumnType.DELETE)  );
+    ButtonColumn removeColumn = new ButtonColumn( dataDisplayTable, delRow, dataTableModel.getColumnIndex( GasWellDataSetTableModel.ColumnType.DELETE ) );
 
 
     for( int i = 0; i < dataTableModel.getColumnCount(); i++ )
@@ -136,6 +147,16 @@ protected void populate()
                 column.setCellRenderer( renderer );
             } catch ( Throwable t ) {
                 t.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+
+        }
+        
+        if ( ( klass = ct.getEditorClass() ) != null )
+        {
+
+            if ( klass == GasWellDataSetTableModel.MyDateEditor.class )
+            {
+                column.setCellEditor( new GasWellDataSetTableModel.MyDateEditor( new JTextField() ) );
             }
 
         }
@@ -173,18 +194,26 @@ protected void populate()
     gbc.gridwidth = 1;
     gbc.gridheight = 1;
     
-    gbc.gridx = 7;
+    gbc.gridwidth = 7;
+    gbc.gridx = 1;
+    add( spacerLabel, gbc );
+
+    gbc.gridwidth = 1;
+    
+    gbc.gridx = 8;
     gbc.gridy = 11;
     add( saveButton, gbc );
     
+ /* CSV button is only really for debugging ... not intended for production purposes...
     gbc.gridx = 8;
     gbc.gridy = 11;
     
     add( csvButton, gbc );
-    
+*/
     gbc.gridx=9;
     
     add( cancelButton, gbc );
+
 
     scrollPane.setPreferredSize( new Dimension( 1200, 550 ) );
     setPreferredSize(new Dimension( 1200, 600 ) );
@@ -201,13 +230,29 @@ public void actionPerformed( ActionEvent e )
 		// close down this panel!!! How to do this?!?
 		// todo: close down this panel
 		this.setVisible(  false );
+        for( IntervalEditorListener listener : editorListenerList )
+        {
+            listener.cancelIntervalEditor();
+        }
+        
 	}
+    
+    if ( e.getActionCommand().equals( "saveIntervalEditor" ) )
+    {
+        logger.debug( "requested to saveIntervalEditor the data!!" );
+        for( IntervalEditorListener listener : editorListenerList )
+        {
+            listener.saveIntervalEditor(dataTableModel.actualData);
+        }
+    }
     
     if ( e.getActionCommand().equals( "csv" ) )
     {
         logger.debug( "requested to output csv" );
         logger.debug( "we have " + dataTableModel.getRowCount() + " rows in model. actualData.getSize()=" + dataTableModel.actualData.getData().size() );
-        dataTableModel.actualData.outputCSV(new PrintWriter(System.out));
+        PrintWriter writer = new PrintWriter( System.out );
+        dataTableModel.actualData.outputCSV( writer );
+        writer.flush();
         logger.debug( "csv output finished" );
     }
     
@@ -224,6 +269,16 @@ public void actionPerformed( ActionEvent e )
     //To change body of implemented methods use File | Settings | File Templates.
 }
 
+public void addEditorListener( IntervalEditorListener listener )
+{
+    if ( ( editorListenerList != null ) && ! editorListenerList.contains( listener ) )
+    {
+        editorListenerList.add( listener );
+    }
+    return;
+}
+
+
 	@Override
 	public void tableChanged( TableModelEvent tableModelEvent )
 	{
@@ -237,7 +292,14 @@ public void actionPerformed( ActionEvent e )
 
 
 	}
-	
+
+/**
+ * Internal convenience method. Enables us to obtain a human readable version of
+ * a table model event type.
+ *
+ * @param type
+ * @return
+ */
 	protected static String getTableModelEventTypeText( int type )
 	{           
 		String result = "unbekannt (" + type + ")";

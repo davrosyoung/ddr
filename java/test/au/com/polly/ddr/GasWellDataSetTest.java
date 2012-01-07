@@ -84,6 +84,7 @@ public static junit.framework.Test suite() {
 @Before
 public void setupData()
 {
+    TestGasWellDataSet.repopulate();
     dateParser = new AussieDateParser();
     twentyThirdApril = dateParser.parse( "23/APRIL/2011" );
     twentyThirdAprilFiveInTheMorning = dateParser.parse( "23/APRIL/2011 05:00" );
@@ -831,5 +832,243 @@ public void testGetPlotDataForSAA2FragmentOilFlowBetween18OctMiddayAnd30Oct2009(
     assertEquals( dateParser.parse( "29/OCT/2009" ).getTime().getTime(), (long)p.getX() );
     assertEquals( 3601.06, p.getY(), ACCEPTABLE_ERROR );
 }
+
+
+@Test( expected = NullPointerException.class )
+public void testMovingNullBoundaryOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( null, null );
+}
+
+@Test( expected = NullPointerException.class )
+public void testMovingBoundaryToNullValueOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( null, dateParser.parse( "30/Jul/2009 12:00:00" ).getTime() );
+}
+
+/*
+       new OilDataSet( parser.parse( "30/Jul/2009 00:00:00" ).getTime(), 286.510,0.190,951.640, 24.0 ),
+        new OilDataSet( parser.parse( "31/Jul/2009 00:00:00" ).getTime(), 276.880,0.190,923.830, 24.0 ),
+        new OilDataSet( parser.parse( "01/Aug/2009 00:00:00" ).getTime(), 284.430,0.190,926.970, 24.0 ),
+        new OilDataSet( parser.parse( "02/Aug/2009 00:00:00" ).getTime(), 290.260,0.190,935.960, 24.0 ),
+        new OilDataSet( parser.parse( "03/Aug/2009 00:00:00" ).getTime(), 248.420,0.170,783.260, 24.0 ),
+ */
+
+
+@Test( expected = IllegalArgumentException.class )
+public void testMovingStartOfDataBoundaryOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "30/Jul/2009 12:00:00" ).getTime(), dateParser.parse( "30/Jul/2009 18:00:00" ).getTime() );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testMovingEndOfDataBoundaryOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "26/NOV/2009 00:00:00" ).getTime(), dateParser.parse( "25/NOV/2009 12:00:00" ).getTime() );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testMovingNonExistantBoundaryOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "30/JUL/2009 12:00:00" ).getTime(), dateParser.parse( "30/JUL/2009 13:00:00" ).getTime() );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testMovingBoundaryBeforeStartOfDataOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "31/JUL/2009" ).getTime(), dateParser.parse( "29/JUL/2009 13:00:00" ).getTime() );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testMovingBoundaryBeforeStartOfPreviousEntryOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "31/JUL/2009" ).getTime(), dateParser.parse( "29/JUL/2009 23:59:59" ).getTime() );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testMovingBoundaryToStartOfPreviousEntryOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "31/JUL/2009" ).getTime(), dateParser.parse( "30/JUL/2009" ).getTime() );
+}
+
+@Test
+public void testMovingBoundaryToOneSecondAfterStartOfPreviousEntryOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    Date stampBefore = dateParser.parse( "31/JUL/2009" ).getTime();
+    Date stampAfter = dateParser.parse( "30/JUL/2009 00:00:01" ).getTime();
+
+    ds.moveBoundary( stampBefore, stampAfter );
+    GasWellDataEntry e0 = ds.getEntry( 0 );
+    GasWellDataEntry e1 = ds.getEntry( 1 );
+    GasWellDataEntry e2 = ds.getEntry( 2 );
+    
+    assertEquals( dateParser.parse( "30/JUL/2009").getTime(), e0.from() );
+    assertEquals( dateParser.parse( "30/JUL/2009 00:00:01" ).getTime(), e0.until() );
+    assertEquals( 1000, e0.getIntervalLengthMS() );
+    
+    assertEquals( 286.51, e0.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.19, e0.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 951.64, e0.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+    assertEquals( dateParser.parse( "30/JUL/2009 00:00:01").getTime(), e1.from() );
+    assertEquals( dateParser.parse( "1/AUG/2009" ).getTime(), e1.until() );
+    assertEquals( 86400000 + 86399000, e1.getIntervalLengthMS() );
+
+    assertEquals( ( ( 86399.0 / 172799.0 ) * 286.51 ) + ( ( 86400.0 / 172799.0 ) * 276.88 ), e1.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( ( ( 86399.0 / 172799.0 ) * 0.19   ) + ( ( 86400.0 / 172799.0 ) * 0.19   ), e1.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( ( ( 86399.0 / 172799.0 ) * 951.64 ) + ( ( 86400.0 / 172799.0 ) * 923.83 ), e1.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+    
+    assertEquals( dateParser.parse( "1/AUG/09" ).getTime(), e2.from() );
+    assertEquals( dateParser.parse( "2/AUG/09" ).getTime(), e2.until() );
+    assertEquals( 86400000L, e2.getIntervalLengthMS() );
+    assertEquals( 284.43, e2.getMeasurement(WellMeasurementType.OIL_FLOW) );
+    assertEquals( 0.19, e2.getMeasurement(WellMeasurementType.GAS_FLOW) );
+    assertEquals( 926.97, e2.getMeasurement( WellMeasurementType.WATER_FLOW ) );
+}
+
+
+
+
+
+@Test( expected = IllegalArgumentException.class )
+public void testMovingBoundaryAfterEndOfDataOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "25/NOV/2009" ).getTime(), dateParser.parse( "27/NOV/2009" ).getTime() );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testMovingBoundaryAfterEndOfNextEntryOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "31/JUL/2009" ).getTime(), dateParser.parse( "1/AUG/2009 00:00:01" ).getTime() );
+}
+
+@Test( expected = IllegalArgumentException.class )
+public void testMovingBoundaryToEndOfNextEntryOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "31/JUL/2009" ).getTime(), dateParser.parse( "1/AUG/2009" ).getTime() );
+}
+
+
+@Test
+public void testMovingBoundaryForwardTwelveHoursOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "31/JUL/2009" ).getTime(), dateParser.parse( "31/JUL/2009 12:00:00" ).getTime() );
+    GasWellDataEntry e0 = ds.getEntry( 0 );
+    GasWellDataEntry e1 = ds.getEntry( 1 );
+    GasWellDataEntry e2 = ds.getEntry( 2 );
+
+    assertEquals( dateParser.parse( "30/JUL/2009").getTime(), e0.from() );
+    assertEquals( dateParser.parse( "31/JUL/2009 12:00:00" ).getTime(), e0.until() );
+    assertEquals( ( 86400 + 43200 ) * 1000L, e0.getIntervalLengthMS() );
+
+    assertEquals( ( ( 2.0 / 3.0 ) * 286.51 ) + ( ( 1.0 / 3.0 ) * 276.88 ), e0.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.19, e0.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( ( ( 2.0 / 3.0 ) * 951.64 ) + ( ( 1.0 / 3.0 ) * 923.83) , e0.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+    assertEquals( dateParser.parse( "31/JUL/2009 12:00:00").getTime(), e1.from() );
+    assertEquals( dateParser.parse( "1/AUG/2009" ).getTime(), e1.until() );
+    assertEquals( 43200000, e1.getIntervalLengthMS() );
+
+    assertEquals( 276.88, e1.getMeasurement( WellMeasurementType.OIL_FLOW ),   ACCEPTABLE_ERROR );
+    assertEquals( 0.19,   e1.getMeasurement( WellMeasurementType.GAS_FLOW ),   ACCEPTABLE_ERROR );
+    assertEquals( 923.83, e1.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+    assertEquals( dateParser.parse( "1/AUG/09" ).getTime(), e2.from() );
+    assertEquals( dateParser.parse( "2/AUG/09" ).getTime(), e2.until() );
+    assertEquals( 86400000L, e2.getIntervalLengthMS() );
+    assertEquals( 284.43, e2.getMeasurement( WellMeasurementType.OIL_FLOW ) );
+    assertEquals( 0.19, e2.getMeasurement( WellMeasurementType.GAS_FLOW ) );
+    assertEquals( 926.97, e2.getMeasurement( WellMeasurementType.WATER_FLOW ) );
+
+}
+
+
+
+@Test
+public void testMovingBoundaryBackwardsTwelveHoursOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "31/JUL/2009" ).getTime(), dateParser.parse( "30/JUL/2009 06:00:00" ).getTime() );
+    GasWellDataEntry e0 = ds.getEntry( 0 );
+    GasWellDataEntry e1 = ds.getEntry( 1 );
+    GasWellDataEntry e2 = ds.getEntry( 2 );
+
+    assertEquals( dateParser.parse( "30/JUL/2009").getTime(), e0.from() );
+    assertEquals( dateParser.parse( "30/JUL/2009 06:00" ).getTime(), e0.until() );
+    assertEquals( 21600000L, e0.getIntervalLengthMS() );
+    assertEquals( 286.51, e0.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.19,   e0.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 951.64, e0.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+    assertEquals( dateParser.parse( "30/JUL/2009 06:00:00").getTime(), e1.from() );
+    assertEquals( dateParser.parse( "1/AUG/2009" ).getTime(), e1.until() );
+    assertEquals( ( 86400 + 86400 - 21600 ) * 1000L, e1.getIntervalLengthMS() );
+    assertEquals( ( ( 3.0 / 7.0 ) * 286.51 ) + ( ( 4.0 / 7.0 ) * 276.88 ), e1.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.19, e1.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( ( ( 3.0 / 7.0 ) * 951.64 ) + ( ( 4.0 / 7.0 ) * 923.83) , e1.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+
+    assertEquals( dateParser.parse( "1/AUG/09" ).getTime(), e2.from() );
+    assertEquals( dateParser.parse( "2/AUG/09" ).getTime(), e2.until() );
+    assertEquals( 86400000L, e2.getIntervalLengthMS() );
+    assertEquals( 284.43, e2.getMeasurement( WellMeasurementType.OIL_FLOW ) );
+    assertEquals( 0.19, e2.getMeasurement( WellMeasurementType.GAS_FLOW ) );
+    assertEquals( 926.97, e2.getMeasurement( WellMeasurementType.WATER_FLOW ) );
+
+}
+
+@Test
+public void testMovingBoundaryForwardSixHoursOnSAA2FragmentData()
+{
+    GasWellDataSet ds = TestGasWellDataSet.getSAA2FragmentDataSet();
+    ds.moveBoundary( dateParser.parse( "1/AUG/2009" ).getTime(), dateParser.parse( "1/AUG/2009 6:00:00" ).getTime() );
+    GasWellDataEntry e0 = ds.getEntry( 0 );
+    GasWellDataEntry e1 = ds.getEntry( 1 );
+    GasWellDataEntry e2 = ds.getEntry( 2 );
+
+    assertEquals( dateParser.parse( "30/JUL/2009").getTime(), e0.from() );
+    assertEquals( dateParser.parse( "31/JUL/2009" ).getTime(), e0.until() );
+    assertEquals( 86400000L, e0.getIntervalLengthMS() );
+    assertEquals( 286.51, e0.getMeasurement(WellMeasurementType.OIL_FLOW), ACCEPTABLE_ERROR );
+    assertEquals( 0.19, e0.getMeasurement(WellMeasurementType.GAS_FLOW), ACCEPTABLE_ERROR );
+    assertEquals( 951.64, e0.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+    assertEquals( dateParser.parse( "31/JUL/2009").getTime(), e1.from() );
+    assertEquals( dateParser.parse( "1/AUG/2009 06:00" ).getTime(), e1.until() );
+    assertEquals( 21600000L + 86400000L, e1.getIntervalLengthMS() );
+    assertEquals( ( ( 4.0 / 5.0 ) * 276.88 ) + ( ( 1.0 / 5.0 ) * 284.43 ), e1.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.19, e1.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( ( ( 4.0 / 5.0 ) * 923.83 ) + ( ( 1.0 / 5.0 ) * 926.97 ), e1.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+    assertEquals( dateParser.parse( "1/AUG/2009 06:00:00").getTime(), e2.from() );
+    assertEquals( dateParser.parse( "2/AUG/2009" ).getTime(), e2.until() );
+    assertEquals( 86400000L - 21600000, e2.getIntervalLengthMS() );
+
+    assertEquals( 284.43, e2.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 0.19,   e2.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+    assertEquals( 926.97, e2.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+}
+
+/*
+       new OilDataSet( parser.parse( "30/Jul/2009 00:00:00" ).getTime(), 286.510,0.190,951.640, 24.0 ),
+        new OilDataSet( parser.parse( "31/Jul/2009 00:00:00" ).getTime(), 276.880,0.190,923.830, 24.0 ),
+        new OilDataSet( parser.parse( "01/Aug/2009 00:00:00" ).getTime(), 284.430,0.190,926.970, 24.0 ),
+        new OilDataSet( parser.parse( "02/Aug/2009 00:00:00" ).getTime(), 290.260,0.190,935.960, 24.0 ),
+        new OilDataSet( parser.parse( "03/Aug/2009 00:00:00" ).getTime(), 248.420,0.170,783.260, 24.0 ),
+ */
+
 
 }

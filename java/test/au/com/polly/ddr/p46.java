@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -167,7 +167,7 @@ public class p46
 
     /**
      * Process the contents of a folder, convert the contents of each Excel
-     * workbook into CSV format and save the resulting file to the specified
+     * workbook into CSV format and saveIntervalEditor the resulting file to the specified
      * folder using the same name as the original workbook with the .xls or
      * .xlsx extension replaced by .csv
      *
@@ -237,7 +237,7 @@ public class p46
 
         // Step through each of the files in the source folder and for each
         // open the workbook, convert it's contents to CSV format and then
-        // save the resulting file away into the folder specified by the
+        // saveIntervalEditor the resulting file away into the folder specified by the
         // contents of the destination variable. Note that the name of the
         // csv file will be created by taking the name of the Excel file,
         // removing the extension and replacing it with .csv. Note that there
@@ -518,7 +518,7 @@ public class p46
     }
 
     /**
-     * Called to actually save the data recovered from the Excel workbook
+     * Called to actually saveIntervalEditor the data recovered from the Excel workbook
      * as a CSV file.
      *
      * @param file An instance of the File class that encapsulates a handle

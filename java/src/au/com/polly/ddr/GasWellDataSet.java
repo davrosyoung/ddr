@@ -37,6 +37,7 @@ import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -585,6 +586,115 @@ public GasWellDataEntry consolidateEntries( DateRange range )
     return result;
 }
 
+
+/**
+ * 
+ * @param original the original date/time boundary
+ * @param updated the revised date/time boundary.
+ *                
+ * @throws IllegalArgumentException if the original date could not be found, or if the updated
+ * date/time is either before the start of the previous boundary, or the original date/time is the
+ * start/end of all data or the updated dte/time is after the end of the next boundary.
+ */
+public void moveBoundary( Date original, Date updated )
+{
+    List<Date> stampList;
+    int pos;
+    GasWellDataEntry entry;
+    GasWellDataEntry previousEntry;
+    
+    // some rudimentary sanity checks....
+    // -----------------------------------
+    if ( original == null )
+    {
+        throw new NullPointerException( "original date/time must NOT be NULL" );
+    }
+    
+    if ( updated == null )
+    {
+        throw new NullPointerException( "updated date/time must NOT be NULL" );
+    }
+    
+    if ( from().after( original ) || from().equals( original ) )
+    {
+        throw new IllegalArgumentException( "original date/time (" + original + ") on or BEFORE start of data (" + from() + ")" );
+    }
+    
+    if ( until().before( original ) || until().equals( original ) )
+    {
+        throw new IllegalArgumentException( "original date/time (" + original + ") on or AFTER end of data (" + until() + ")" );
+    }
+    
+    if ( from().after( updated ) || from().equals( updated ) )
+    {
+        throw new IllegalArgumentException( "updated date/time (" + updated + ") on or BEFORE start of data (" + from() + ")" );
+    }
+    
+    if ( until().before( updated ) || until().equals( updated ) )
+    {
+        throw new IllegalArgumentException( "updated date/time (" + updated + ") on or AFTER end of data (" + until() + ")" );
+    }
+    
+    // endeavour to find the original timestamp ....
+    // ----------------------------------------------
+    stampList = getBoundaryTimestamps();
+    pos = Collections.binarySearch( stampList, original );
+    
+    if ( pos < 0 )
+    {
+        throw new IllegalArgumentException( "Oh no!!! The original date could not be found!!!" );
+    }
+    
+    entry = getEntry( pos );
+    previousEntry = getEntry( pos - 1 );
+    
+    logger.debug( "pos=" + pos );
+    logger.debug( "entry=" + entry );
+    logger.debug( "previousEntry=" + previousEntry );
+    
+    if ( updated.getTime() <= previousEntry.from().getTime() )
+    {
+        throw new IllegalArgumentException( "updated date/time (" + updated + ") is on or BEFORE previous interval start date/time " + previousEntry.from() );
+    }
+
+    if ( updated.getTime() >= entry.until().getTime() )
+    {
+        throw new IllegalArgumentException( "updated date/time (" + updated + ") is on or AFTER next interval start date/time " + previousEntry.from() );
+    }
+    
+    GasWellDataEntry replacementPreviousEntry = consolidateEntries( previousEntry.from(), updated );
+    replacementPreviousEntry.setComment( previousEntry.getComment() );
+    GasWellDataEntry replacementEntry = consolidateEntries( updated, entry.until() );
+    replacementEntry.setComment( entry.getComment() );
+    
+    getData().set( pos, replacementEntry );
+    getData().set(pos - 1, replacementPreviousEntry);
+
+}
+
+/**
+ * 
+ * @return the list of boundary timestamps.
+ */
+public List<Date> getBoundaryTimestamps()
+{
+    List<Date> result = new ArrayList<Date>();
+    boolean first = true;
+    
+    for( GasWellDataEntry entry : getData() )
+    {
+        if ( first )
+        {
+            result.add( entry.from() );
+        }
+        
+        result.add( entry.until() );
+        first = false;
+    }
+    
+    return result;
+}
+
 /**
  * Outputs the contents of the dataset to the specified print stream...
  * ... internal toString() method uses this.
@@ -858,7 +968,7 @@ public void outputAmitsFormat( PrintWriter writer )
         
         for( WellMeasurementType wmt : WellMeasurementType.values() )
         {
-            if ( containsMeasurement( wmt ) )
+            if ( containsMeasurement(wmt) )
             {
                 if ( entry.containsMeasurement( wmt ) )
                 {

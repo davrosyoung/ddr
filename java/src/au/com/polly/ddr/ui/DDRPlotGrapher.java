@@ -112,6 +112,8 @@ public void loadOverlayData( GasWellDataSet overlayDataSet )
         {
             this.overlayData = overlayDataSet;
             this.plotDataStale = true;
+        } else {
+            logger.debug( "NO change in overlay data!!" );
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -197,9 +197,9 @@ protected void populateWellSelectorPanel( JPanel panel )
 
     wellSelectionHeadingLabel = new JLabel( "Select one or more wells..." );
 
-    extractWellDataButton = new JButton( "save data" );
+    extractWellDataButton = new JButton( "saveIntervalEditor data" );
     extractWellDataButton.setName( "extractWellData" );
-    extractWellDataButton.setText("save");
+    extractWellDataButton.setText("saveIntervalEditor");
     extractWellDataButton.addActionListener( this );
 
     displayWellDataButton = new JButton( "display data" );

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -31,6 +31,7 @@ import javax.swing.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.List;
 
 /**
@@ -40,17 +41,44 @@ import java.util.List;
  *
  *
  */
-public class IntervalEditorPaneHarness
+public class IntervalEditorPaneHarness implements IntervalEditorListener
 {
 private final static Logger logger = Logger.getLogger( IntervalEditorPaneHarness.class );
-private static GasWellDataSet dataSet;
+private GasWellDataSet dataSet;
+private IntervalEditorPane editorPane;
 
-public static void createAndShowGUI()
+private static IntervalEditorPaneHarness harness;
+private static JFrame f;
+
+@Override
+public void cancelIntervalEditor()
 {
-    JFrame f = new JFrame( "Interval Boundaries" );
+    logger.debug( "cancelIntervalEditor() method invoked!!" );
+    f.setVisible(false);
+    f.dispose();
+}
+
+@Override
+public void saveIntervalEditor(GasWellDataSet data)
+{
+    logger.debug( "saveIntervalEditor() method invoked!!" );
+
+    f.setVisible( false );
+    f.dispose();
+    PrintWriter writer = new PrintWriter( System.out );
+    data.outputCSV( writer );
+    writer.flush();
+//    System.exit( 0 );
+}
+
+public void createAndShowGUI()
+{
+    f = new JFrame( "Interval Boundaries" );
     f.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     f.setSize(1400, 800);
-    f.setContentPane( new IntervalEditorPane( dataSet ) );
+    editorPane = new IntervalEditorPane( dataSet );
+    editorPane.addEditorListener( harness );
+    f.setContentPane( editorPane );
     f.pack();
     f.setVisible( true );
 }
@@ -60,6 +88,8 @@ public static void main( String... args )
     GasWellDataExtractor extractor = null;
     GasWellDataExtractorFactory factory = null;
     List<GasWellDataSet> dataSetList = null;
+    
+    harness = new IntervalEditorPaneHarness();
 
     if ( ( args != null ) && ( args.length > 0 ) )
     {
@@ -76,7 +106,7 @@ public static void main( String... args )
             dataSetList = mwdm.getDataSetList();
             if ( dataSetList.size() > 0 )
             {
-                IntervalEditorPaneHarness.dataSet = mwdm.getDataSetList().get( 0 );
+                harness.dataSet = mwdm.getDataSetList().get( 0 );
             } else {
                 logger.error("NO gas well data sets retrieved from CSV file \"" + filename + "\"");
             }
@@ -86,19 +116,18 @@ public static void main( String... args )
         }
     }
 
-    if ( IntervalEditorPaneHarness.dataSet == null )
+    if ( harness.dataSet == null )
     {
-        IntervalEditorPaneHarness.dataSet = TestGasWellDataSet.getNicksDataSet();
+        harness.dataSet = TestGasWellDataSet.getNicksDataSet();
     }
 
     Runnable doCreateAndShowGUI = new Runnable() {
         public void run() {
-            createAndShowGUI();
+            harness.createAndShowGUI();
         }
     };
 
     SwingUtilities.invokeLater( doCreateAndShowGUI );
-
 }
 
 }

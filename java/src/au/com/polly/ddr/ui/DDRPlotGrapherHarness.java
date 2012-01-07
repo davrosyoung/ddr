@@ -41,13 +41,15 @@ import java.util.Date;
 public class DDRPlotGrapherHarness extends JPanel
 {
 private static Logger logger = Logger.getLogger( DDRPlotGrapherHarness.class );
-DDRPlotGrapher overlayGrapher = null;
-GraphControlPanel controlPanel = null;
-static GasWellDataSet dataSet = null;
-static GasWellDataSet overlayDataSet = null;
+private DDRPlotGrapher overlayGrapher = null;
+private GraphControlPanel controlPanel = null;
+private GasWellDataSet dataSet = null;
+private GasWellDataSet overlayDataSet = null;
+private static DDRPlotGrapherHarness harness;
+private JFrame frame;
 
 
-public DDRPlotGrapherHarness()
+public DDRPlotGrapherHarness( GasWellDataSet dataSet, GasWellDataSet overlayDataSet )
 {
     super( new GridBagLayout() );
     GridBagConstraints gbc = new GridBagConstraints();
@@ -61,6 +63,9 @@ public DDRPlotGrapherHarness()
     gbc.anchor = GridBagConstraints.PAGE_START;
     Date from = null;
     Date until = null;
+
+    this.dataSet = dataSet;
+    this.overlayDataSet = overlayDataSet;
 
     if ( dataSet != null )
     {
@@ -97,18 +102,20 @@ public DDRPlotGrapherHarness()
 }
 
 
-public static void createAndShowGUI()
+public void createAndShowGUI()
 {
-    JFrame f = new JFrame( "Data Plot" );
-    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    f.setSize(1400, 800);
-    f.setContentPane(new DDRPlotGrapherHarness());
-    f.pack();
-    f.setVisible( true );
+    frame = new JFrame( "Data Plot" );
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setSize(1400, 800);
+    frame.setContentPane( this );
+    frame.pack();
+    frame.setVisible( true );
 }
 
 public static void main( String... args )
 {
+    GasWellDataSet dataSet = null;
+
     if ( ( args != null ) && ( args.length > 0 ) )
     {
         String filename = args[ 0 ];
@@ -116,7 +123,6 @@ public static void main( String... args )
         FileReader reader = null;
         GasWellDataExtractorFactory factory = GasWellDataExtractorFactory.getInstance();
         GasWellDataExtractor extractor;
-                
 
         if ( ( ! file.exists() ) || ( ! file.isFile() ) || ( ! file.canRead() ) )
         {
@@ -137,10 +143,12 @@ public static void main( String... args )
             System.exit( 1 );
         }
     }
+    
+    harness = new DDRPlotGrapherHarness( dataSet, null );
 
     Runnable doCreateAndShowGUI = new Runnable() {
         public void run() {
-            createAndShowGUI();
+            harness.createAndShowGUI();
         }
     };
 

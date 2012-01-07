@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2011 Polly Enterprises Pty Ltd and/or its affiliates.
+ * Copyright (c) 2011-2012 Polly Enterprises Pty Ltd and/or its affiliates.
  *  All rights reserved. This code is not to be distributed in binary
  * or source form without express consent of Polly Enterprises Pty Ltd.
  *
@@ -23,7 +23,9 @@ package au.com.polly.ddr.ui;
 import au.com.polly.ddr.GasWellDataEntry;
 import au.com.polly.ddr.GasWellDataSet;
 import au.com.polly.ddr.WellMeasurementType;
+import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateArmyKnife;
+import au.com.polly.util.DateParser;
 import au.com.polly.util.DateRange;
 import org.apache.log4j.Logger;
 
@@ -55,11 +57,11 @@ import java.util.Map;
  */
 public class GasWellDataSetTableModel extends AbstractTableModel
 {
-Logger logger = Logger.getLogger( GasWellDataSetTableModel.class );
+static final Logger logger = Logger.getLogger( GasWellDataSetTableModel.class );
 protected GasWellDataSet actualData = null;
 enum ColumnType {
-    START_TIMESTAMP( 220, Date.class, true, "Start date", MyDateRenderer.class, null ),
-    UNTIL_TIMESTAMP( 220, Date.class, true, "End date", MyDateRenderer.class, null ),
+    START_TIMESTAMP( 220, Date.class, true, "Start date", MyDateRenderer.class, MyDateEditor.class ),
+    UNTIL_TIMESTAMP( 220, Date.class, true, "End date", MyDateRenderer.class, MyDateEditor.class ),
     INTERVAL_LENGTH( 80, Double.class, true, "Interval length" ),
     OIL_FLOW( 80, Double.class, false, "Oil Flow Rate", true, WellMeasurementType.OIL_FLOW ),
     CONDENSATE_FLOW( 80, Double.class, false, "Cond. Flow Rate", WellMeasurementType.CONDENSATE_FLOW ),
@@ -324,18 +326,53 @@ public void setValueAt( Object value, int row, int col)
         {
             case START_TIMESTAMP:
                 stamp = (Date)value;
-                range = new DateRange( stamp, entry.until() );
-                span = range.span();
-                entry.setDateRange( range );
-                fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH ));
+
+                // this next line will update BOTH this entry and the subsequent... OR throw an error!!
+                // -------------------------------------------------------------------------------------
+                try {
+                    if ( row > 0 )
+                    {
+                        actualData.moveBoundary( entry.from(), stamp );
+                        fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH ));
+                        fireTableCellUpdated( row, getColumnIndex( ColumnType.UNTIL_TIMESTAMP ));
+
+                        fireTableCellUpdated( row - 1, getColumnIndex( ColumnType.INTERVAL_LENGTH ) );
+                        fireTableCellUpdated( row - 1, getColumnIndex( ColumnType.START_TIMESTAMP ) );
+                        fireTableCellUpdated( row - 1, getColumnIndex( ColumnType.UNTIL_TIMESTAMP ) );
+
+                    } else {
+                        // todo: inform the user that they may not alter the start of data date!!
+                        // ------------------------------------------------------------------------
+                    }
+
+                } catch( IllegalArgumentException iae ) {
+                    // reject the update...
+                    // todo: inform the user that the modification has not taken!!
+                }
+
                 break;
             
             case UNTIL_TIMESTAMP:
                 stamp = (Date)value;
-                range = new DateRange( entry.from(), stamp );
-                span = range.span();
-                entry.setDateRange(range);
-                fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH ));
+
+                // this next line will update BOTH this entry and the subsequent... OR throw an error!!
+                // -------------------------------------------------------------------------------------
+                try {
+                    actualData.moveBoundary( entry.until(), stamp );
+                    fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH ));
+                    fireTableCellUpdated( row, getColumnIndex( ColumnType.UNTIL_TIMESTAMP ));
+
+                    // update the start field of the subsequent row...
+                    if ( row < ( actualData.getData().size() - 1 ) )
+                    {
+                        fireTableCellUpdated( row + 1, getColumnIndex( ColumnType.INTERVAL_LENGTH ) );
+                        fireTableCellUpdated( row + 1, getColumnIndex( ColumnType.START_TIMESTAMP ) );
+                        fireTableCellUpdated( row + 1, getColumnIndex( ColumnType.UNTIL_TIMESTAMP ) );
+                    }
+
+                } catch( IllegalArgumentException iae ) {
+                    // reject the update...
+                }
                 break;
             
             case INTERVAL_LENGTH:
@@ -429,8 +466,57 @@ static class MyDateRenderer extends DefaultTableCellRenderer
 	public MyDateRenderer() { super(); }
 
 	public void setValue(Object value) {
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "MyDateRenderer::setValue(): invoked with value=" + value );
+        }
 		setText(  ( value == null ) || ( ! ( value instanceof Date ) ) ? "" : DateArmyKnife.formatWithSeconds( (Date)value ) );
 	}
+}
+
+/**
+ * Let's parse entered dates as we like them too!!
+ */
+static class MyDateEditor extends DefaultCellEditor
+{
+    DateParser parser;
+    JTextField textEntryField;
+
+    public MyDateEditor(JCheckBox checkBox)
+    {
+        super(checkBox);
+    }
+
+    public MyDateEditor(JComboBox comboBox)
+    {
+        super(comboBox);
+    }
+    
+    public MyDateEditor( JTextField textField )
+    {
+        super( textField );    // we don't want to call super!!!!   but we must apparently!?!!
+        logger.debug( "MyDateEditor::constructor() INVOKED!!" );
+        this.textEntryField = textField;
+        parser = new AussieDateParser();
+        editorComponent = textField;
+        this.clickCountToStart = 2;
+        delegate = new EditorDelegate() {
+            public void setValue( Object value )
+            {
+                String text = (value != null) ? DateArmyKnife.formatWithSeconds((Date) value) : "";
+                logger.debug( "setValue():: About to set textEntryField value to [" + text + "]" );
+                textEntryField.setText( text );
+            }
+
+            public Object getCellEditorValue() {
+                Object result;
+                result = parser.parse( textEntryField.getText() ).getTime();
+                logger.debug( "getCellEditorValue():: invoked. text field value=[" + textEntryField.getText() + "], about to return [" + result + "]" );
+                return result;
+            }
+        };
+        textField.addActionListener( delegate );
+    }
 }
 
 static class MyActionButtonRenderer extends JPanel implements TableCellRenderer

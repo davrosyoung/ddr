@@ -281,11 +281,18 @@ public void paint(Graphics g)
     
     logger.debug( "yAxis.size()=" + yAxis.size() );
     
-    renderXAxis(g2d, xAxis, xAxisConfig);
-    renderLeftYAxis( g2d, yAxis.get( 0 ), yAxisConfig.get( 0 ) );
-    if ( yAxis.size() > 1 )
+    if ( ( xAxis != null ) && ( xAxisConfig != null ) )
     {
-        renderRightYAxis( g2d, yAxis.get( 1 ), yAxisConfig.get( 1 ) );
+        renderXAxis(g2d, xAxis, xAxisConfig);
+    }
+    
+    if ( ( yAxis != null ) && ( yAxis.size() > 0 ) && ( yAxisConfig != null ) && ( yAxisConfig.size() > 0 ) )
+    {
+        renderLeftYAxis( g2d, yAxis.get( 0 ), yAxisConfig.get( 0 ) );
+        if ( yAxis.size() > 1 )
+        {
+            renderRightYAxis( g2d, yAxis.get( 1 ), yAxisConfig.get( 1 ) );
+        }
     }
 /*  ONLY UNCOMMENT FOR PRIMITIVE TESTING OF CANVAS EXTENT!!
     minX = (int) 0;
@@ -512,33 +519,36 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
     rotatedFont = axisLabelFont.deriveFont( fat );
     
     g.setFont( rotatedFont );
-    
-    logger.debug( "axis.getNumberIntervals=" + axis.getNumberIntervals() + ", axis.getMinimumValue()=" + axis.getMinimumValue() );
 
-    // now to mark the intervals...
-    // ------------------------------
-    c = axis.getMinimumValue();
-    for( int i = 0; i <= axis.getNumberIntervals(); i++, c += axis.getIntervalSize() )
+    if ( axis != null )
     {
-        String dateText;
-		g.setColor( config != null ? config.getColour() : Color.WHITE );
-        g.setStroke( standardStroke );
-        x0 = axis.getPosition( c, config ) + LEFT_AXIS_BORDER;
-        dateText = axis.getDataLabel(c);
-        logger.debug("for i=" + i + ", c=" + c + ", tickLabel=" + dateText);
-        g.drawLine( x0, y0, x0, y0 + 5 );
+        logger.debug( "axis.getNumberIntervals=" + axis.getNumberIntervals() + ", axis.getMinimumValue()=" + axis.getMinimumValue() );
 
-        // We use a modified/dervied font which causes the x-axis label to be drawn on an angle.
-        // -----------------------------------------------------------------------------------
-        g.drawString(dateText, x0 - 4, y0 + 8);
-//        g.drawString(dateText, x0 - 4, getHeight() - 15 );
-        g.setTransform( identity );
+        // now to mark the intervals...
+        // ------------------------------
+        c = axis.getMinimumValue();
+        for( int i = 0; i <= axis.getNumberIntervals(); i++, c += axis.getIntervalSize() )
+        {
+            String dateText;
+            g.setColor( config != null ? config.getColour() : Color.WHITE );
+            g.setStroke( standardStroke );
+            x0 = axis.getPosition( c, config ) + LEFT_AXIS_BORDER;
+            dateText = axis.getDataLabel(c);
+            logger.debug("for i=" + i + ", c=" + c + ", tickLabel=" + dateText);
+            g.drawLine( x0, y0, x0, y0 + 5 );
 
-        // now draw a thin dashed line to mark this interval
-        // -----------------------------------------------------
-		g.setColor( config != null ? config.getGridColour() : Color.WHITE );
-        g.setStroke( dashedStroke );
-        g.drawLine( x0, y0, x0, TITLE_BORDER );
+            // We use a modified/dervied font which causes the x-axis label to be drawn on an angle.
+            // -----------------------------------------------------------------------------------
+            g.drawString(dateText, x0 - 4, y0 + 8);
+    //        g.drawString(dateText, x0 - 4, getHeight() - 15 );
+            g.setTransform( identity );
+
+            // now draw a thin dashed line to mark this interval
+            // -----------------------------------------------------
+            g.setColor( config != null ? config.getGridColour() : Color.WHITE );
+            g.setStroke( dashedStroke );
+            g.drawLine( x0, y0, x0, TITLE_BORDER );
+        }
     }
 
     // restore the original stroke..
@@ -551,14 +561,17 @@ public void renderXAxis( Graphics2D g, Axis axis, AxisConfiguration config )
 
     // And now place the label...
     // ------------------------------
-    if (
-            ( ( units = config.getUnits() ) != null )
-         && ( ( units.length() > 0 ) )
-    )
+    if ( config != null )
     {
-        g.drawString( config.getLabel() + " (" + units + ")" ,  ( LEFT_AXIS_BORDER / 2 ), getHeight() - 5 );
-    } else {
-        g.drawString( config.getLabel(), ( LEFT_AXIS_BORDER / 2 ), getHeight() - 5);
+        if (
+                ( ( units = config.getUnits() ) != null )
+             && ( ( units.length() > 0 ) )
+            )
+        {
+            g.drawString( config.getLabel() + " (" + units + ")" ,  ( LEFT_AXIS_BORDER / 2 ), getHeight() - 5 );
+        } else {
+            g.drawString( config.getLabel(), ( LEFT_AXIS_BORDER / 2 ), getHeight() - 5);
+        }
     }
 }
 

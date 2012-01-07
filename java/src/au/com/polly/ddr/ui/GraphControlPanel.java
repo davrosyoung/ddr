@@ -55,7 +55,7 @@ import java.util.Date;
  *
  *
  */
-public class GraphControlPanel extends JPanel implements ActionListener, ReductionPanelListener
+public class GraphControlPanel extends JPanel implements ActionListener, ReductionPanelListener, IntervalEditorListener
 {
 static private Logger logger = Logger.getLogger( GraphControlPanel.class );
 SimpleDateFormat dateFormatter = new SimpleDateFormat( "dd/MMM/yyyy HH:mm:ss" );
@@ -347,11 +347,12 @@ public void actionPerformed(ActionEvent evt)
                     {
                         Frame frame = JOptionPane.getFrameForComponent( this );
                         intervalEditorDialog = new JDialog( frame, "Reduced data editor", Dialog.ModalityType.MODELESS );
-                        intervalEditorPane = new IntervalEditorPane( grapher.getOverlayData() );
-                        intervalEditorDialog.setContentPane(intervalEditorPane);
-                        intervalEditorPane.setVisible(true);
+                        intervalEditorPane = new IntervalEditorPane( grapher.getOverlayData().copy() );
+                        intervalEditorDialog.setContentPane( intervalEditorPane );
+                        intervalEditorPane.setVisible( true );
                         intervalEditorDialog.pack();
                         intervalEditorDialog.setVisible( true );
+                        intervalEditorPane.addEditorListener( this );
                     }
                 } else {
                     // todo : show error message explaining that we can't edit reduced/overlay data
@@ -380,14 +381,14 @@ public void actionPerformed(ActionEvent evt)
                                 }
                                 writer.close();
                             } catch (IOException e) {
-                                JOptionPane.showMessageDialog( this, "Failed to save overlay data to \"" + file.getAbsolutePath() + "\"" );
-                                logger.error( "Failed to save overlay data to file \"" + file.getAbsolutePath() + "\"" );
+                                JOptionPane.showMessageDialog( this, "Failed to saveIntervalEditor overlay data to \"" + file.getAbsolutePath() + "\"" );
+                                logger.error( "Failed to saveIntervalEditor overlay data to file \"" + file.getAbsolutePath() + "\"" );
                                 logger.error( e.getClass().getName() + " - " + e.getMessage() );
                             }
                         }
                     }
                 } else {
-                    JOptionPane.showMessageDialog( this, "No overlay data to save", "Cannot save overlay", JOptionPane.WARNING_MESSAGE );
+                    JOptionPane.showMessageDialog( this, "No overlay data to saveIntervalEditor", "Cannot saveIntervalEditor overlay", JOptionPane.WARNING_MESSAGE );
                 }
             }
 
@@ -596,6 +597,34 @@ public void reduce( ReductionParameters reductionParameters )
     reductionDialog = null;
     reducerControlPanel = null;
 
+}
+
+
+@Override
+public void cancelIntervalEditor()
+{
+    intervalEditorPane.setVisible( false );
+    intervalEditorDialog.dispose();
+    intervalEditorDialog = null;
+    intervalEditorPane = null;
+}
+
+@Override
+public void saveIntervalEditor(GasWellDataSet data)
+{
+    logger.debug( "Called by interval editor to replace overlay/reduced data." );
+    
+    // update our graph's reduced data with the specified data set!!
+    // -------------------------------------------------------------
+    grapher.loadOverlayData( data );
+    
+    intervalEditorPane.setVisible( false );
+    intervalEditorDialog.dispose();
+    intervalEditorDialog = null;
+    intervalEditorPane = null;
+
+    // todo: cause update on grapher!!
+    ((JComponent)grapher).repaint();
 }
 
 /* ImageFilter.java is used by FileChooserDemo2.java. */
