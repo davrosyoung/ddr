@@ -21,16 +21,21 @@
 package au.com.polly.ddr.ui;
 
 import au.com.polly.ddr.GasWellDataEntry;
+import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.GasWellDataSetUtil;
 import au.com.polly.ddr.TestGasWellDataSet;
 import au.com.polly.ddr.WellMeasurementType;
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateParser;
+import au.com.polly.util.DateRange;
 import junit.framework.JUnit4TestAdapter;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.util.Date;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -69,13 +74,13 @@ public void setupData()
 @Test( expected = NullPointerException.class )
 public void testConstructingWithNullArg()
 {
-    new GasWellDataSetTableModel( null );
+    new GasWellDataSetTableModel( null, null );
 }
 
 @Test
 public void testConstructingWithSAA2FragmentData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet(), TestGasWellDataSet.getReducedSAA2FragmentDataSet() );
     assertEquals( 119, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     assertEquals(GasWellDataSetTableModel.ColumnType.START_TIMESTAMP, model.getColumnType(0) );
@@ -93,13 +98,12 @@ public void testConstructingWithSAA2FragmentData()
     assertTrue( model.containsColummnType( GasWellDataSetTableModel.ColumnType.OIL_FLOW ));
     assertTrue( model.containsColummnType( GasWellDataSetTableModel.ColumnType.GAS_FLOW ));
     assertTrue( model.containsColummnType( GasWellDataSetTableModel.ColumnType.WATER_FLOW ));
-    
 }
 
 @Test
 public void testContainsColummnTypeWithSAA2FragmentData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet(), TestGasWellDataSet.getReducedSAA2FragmentDataSet() );
     assertEquals( 119, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     assertEquals(GasWellDataSetTableModel.ColumnType.START_TIMESTAMP, model.getColumnType(0) );
@@ -123,7 +127,7 @@ public void testContainsColummnTypeWithSAA2FragmentData()
 @Test
 public void testContainsGetValueWithSAA2FragmentData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet(), TestGasWellDataSet.getReducedSAA2FragmentDataSet() );
     assertEquals( 119, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     
@@ -147,7 +151,7 @@ public void testContainsGetValueWithSAA2FragmentData()
 @Test
 public void testGetColumnNameWithSAA2FragmentData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet(), TestGasWellDataSet.getReducedSAA2FragmentDataSet() );
     assertEquals( 119, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
 
@@ -174,7 +178,7 @@ public void testGetColumnNameWithSAA2FragmentData()
 @Test
 public void testGetColumnIndexWithSAA2FragmentData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet(), TestGasWellDataSet.getReducedSAA2FragmentDataSet() );
     assertEquals( 119, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     
@@ -193,10 +197,10 @@ public void testGetColumnIndexWithSAA2FragmentData()
 @Test
 public void testSetValueWithSAA2FragmentData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet(), TestGasWellDataSet.getReducedSAA2FragmentDataSet() );
     assertEquals( 119, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
-    
+
     assertEquals( parser.parse( "30/JUL/2009").getTime(), model.getValueAt( 0, 0 ) );
     assertEquals( parser.parse( "31/JUL/2009").getTime(), model.getValueAt( 0, 1 ) );
     assertEquals( 24.0, (Double)model.getValueAt( 0, 2 ), ACCEPTABLE_ERROR );
@@ -204,7 +208,9 @@ public void testSetValueWithSAA2FragmentData()
     assertEquals( 0.19, (Double)model.getValueAt( 0, 4 ), ACCEPTABLE_ERROR );
     assertEquals( 951.64, (Double)model.getValueAt( 0, 5 ), ACCEPTABLE_ERROR );
     assertEquals( null, model.getValueAt( 0, 6 ) );
-    
+
+	// this will silently fail. we may NOT modify the start date/time of the first interval!!
+	// ---------------------------------------------------------------------------------------
     model.setValueAt( parser.parse( "30/JUL/2009 12:00" ).getTime(), 0, 0 );
     model.setValueAt( 18.0, 0, 2 );
     model.setValueAt( 287.51, 0, 3 );
@@ -212,8 +218,8 @@ public void testSetValueWithSAA2FragmentData()
     model.setValueAt( 952.64, 0, 5 );
     model.setValueAt( "You betcha!?!", 0, 6 );
 
-    assertEquals( parser.parse( "30/JUL/2009 12:00").getTime(), model.getValueAt( 0, 0 ) );
-    assertEquals( parser.parse( "31/JUL/2009 06:00").getTime(), model.getValueAt( 0, 1 ) );
+    assertEquals( parser.parse( "30/JUL/2009 00:00").getTime(), model.getValueAt( 0, 0 ) );
+    assertEquals( parser.parse( "30/JUL/2009 18:00").getTime(), model.getValueAt( 0, 1 ) );
     assertEquals( 18.0, (Double)model.getValueAt( 0, 2 ), ACCEPTABLE_ERROR );
     assertEquals( 287.51, (Double)model.getValueAt( 0, 3 ), ACCEPTABLE_ERROR );
     assertEquals( 1.19, (Double)model.getValueAt( 0, 4 ), ACCEPTABLE_ERROR );
@@ -221,9 +227,9 @@ public void testSetValueWithSAA2FragmentData()
     assertEquals( "You betcha!?!", model.getValueAt( 0, 6 ) );
     
     model.setValueAt( parser.parse( "31/JUL/2009 09:00" ).getTime(), 0, 1 );
-    assertEquals( parser.parse( "30/JUL/2009 12:00").getTime(), model.getValueAt( 0, 0 ) );
+    assertEquals( parser.parse( "30/JUL/2009 00:00").getTime(), model.getValueAt( 0, 0 ) );
     assertEquals( parser.parse( "31/JUL/2009 09:00").getTime(), model.getValueAt( 0, 1 ) );
-    assertEquals( 21.0, (Double)model.getValueAt( 0, 2 ), ACCEPTABLE_ERROR );
+    assertEquals( 33.0, (Double)model.getValueAt( 0, 2 ), ACCEPTABLE_ERROR );
 
     model.setValueAt( parser.parse( "30/JUL/2009" ).getTime(), 0, 0 );
     model.setValueAt( parser.parse( "31/JUL/2009" ).getTime(), 0, 1 );
@@ -246,7 +252,7 @@ public void testSetValueWithSAA2FragmentData()
 @Test
 public void testIsCellEditableWithSAA2FragmentData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getSAA2FragmentDataSet(), TestGasWellDataSet.getReducedSAA2FragmentDataSet() );
     assertEquals( 119, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     assertEquals(GasWellDataSetTableModel.ColumnType.START_TIMESTAMP, model.getColumnType( 0 ) );
@@ -259,7 +265,7 @@ public void testIsCellEditableWithSAA2FragmentData()
     
     assertTrue( model.isCellEditable( 0, 0 ) );
     assertTrue( model.isCellEditable( 0, 1 ) );
-    assertTrue( model.isCellEditable( 0, 2 ) );
+    assertFalse( model.isCellEditable( 0, 2 ) );
     assertFalse( model.isCellEditable( 0, 3 ) );
     assertFalse( model.isCellEditable( 0, 4 ) );
     assertFalse( model.isCellEditable( 0, 5 ) );
@@ -268,7 +274,7 @@ public void testIsCellEditableWithSAA2FragmentData()
 
     assertTrue( model.isCellEditable( 118, 0 ) );
     assertTrue( model.isCellEditable( 118, 1 ) );
-    assertTrue( model.isCellEditable( 118, 2 ) );
+    assertFalse( model.isCellEditable( 118, 2 ) );
     assertFalse( model.isCellEditable( 118, 3 ) );
     assertFalse( model.isCellEditable( 118, 4 ) );
     assertFalse( model.isCellEditable( 118, 5 ) );
@@ -298,7 +304,7 @@ public void testIsCellEditableWithSAA2FragmentData()
 @Test
 public void testConstructingWithBY11Data()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet(), TestGasWellDataSet.getBY11DataSet() );
     assertEquals( 595, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     assertEquals(GasWellDataSetTableModel.ColumnType.START_TIMESTAMP, model.getColumnType(0) );
@@ -322,7 +328,7 @@ public void testConstructingWithBY11Data()
 @Test
 public void testContainsColummnTypeWithBY11Data()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet(), TestGasWellDataSet.getReducedBY11DataSet() );
     assertEquals( 595, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     assertEquals(GasWellDataSetTableModel.ColumnType.START_TIMESTAMP, model.getColumnType(0) );
@@ -346,7 +352,7 @@ public void testContainsColummnTypeWithBY11Data()
 @Test
 public void testContainsGetValueWithBY11Data()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet(), TestGasWellDataSet.getReducedBY11DataSet() );
     assertEquals( 595, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
 
@@ -373,7 +379,7 @@ public void testContainsGetValueWithBY11Data()
 @Test
 public void testGetColumnNameWithBY11Data()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet(), TestGasWellDataSet.getReducedBY11DataSet() );
     assertEquals( 595, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
 
@@ -400,7 +406,7 @@ public void testGetColumnNameWithBY11Data()
 @Test
 public void testGetColumnIndexWithBY11Data()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet(), TestGasWellDataSet.getReducedBY11DataSet() );
     assertEquals( 595, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
 
@@ -419,7 +425,7 @@ public void testGetColumnIndexWithBY11Data()
 @Test
 public void testSetValueWithBY11Data()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet(), TestGasWellDataSet.getReducedBY11DataSet() );
     assertEquals( 595, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
 
@@ -431,24 +437,25 @@ public void testSetValueWithBY11Data()
     assertEquals( 79.07, (Double)model.getValueAt( 0, 5 ), ACCEPTABLE_ERROR );
     assertEquals( null, model.getValueAt( 0, 6 ) );
 
-
-    model.setValueAt( parser.parse( "27/OCT/2009 12:00" ).getTime(), 0, 0 );
+    model.setValueAt( parser.parse( "27/OCT/2009 12:00" ).getTime(), 0, 0 ); // cannot change start date/time
+																			// of the first interval!! This will
+																			// silently fail.
     model.setValueAt( parser.parse( "28/OCT/2009 09:00" ).getTime(), 0, 1 );
     model.setValueAt( 23.38, 0, 3 );
     model.setValueAt( 8.28, 0, 4 );
     model.setValueAt( 80.07, 0, 5 );
     model.setValueAt( "You betcha!?!", 0, 6 );
 
-    assertEquals( parser.parse( "27/OCT/2009 12:00").getTime(), model.getValueAt( 0, 0 ) );
+    assertEquals( parser.parse( "27/OCT/2009 00:00").getTime(), model.getValueAt( 0, 0 ) );
     assertEquals( parser.parse( "28/OCT/2009 09:00").getTime(), model.getValueAt( 0, 1 ) );
-    assertEquals( 21.0, (Double)model.getValueAt( 0, 2 ), ACCEPTABLE_ERROR );
+    assertEquals( 33.0, (Double)model.getValueAt( 0, 2 ), ACCEPTABLE_ERROR );
 
     assertEquals( 23.38, (Double)model.getValueAt( 0, 3 ), ACCEPTABLE_ERROR );
     assertEquals( 8.28, (Double)model.getValueAt( 0, 4 ), ACCEPTABLE_ERROR );
     assertEquals( 80.07, (Double)model.getValueAt( 0, 5 ), ACCEPTABLE_ERROR );
     assertEquals( "You betcha!?!", model.getValueAt( 0, 6 ) );
 
-    model.setValueAt( parser.parse( "27/OCT/2009" ).getTime(), 0, 0 );
+    model.setValueAt( parser.parse( "27/OCT/2009" ).getTime(), 0, 0 ); //sowieso!!
     model.setValueAt( parser.parse( "28/OCT/2009" ).getTime(), 0, 1 );
     model.setValueAt( 24.0, 0, 2 );
     model.setValueAt( 22.38, 0, 3 );
@@ -469,7 +476,7 @@ public void testSetValueWithBY11Data()
 @Test
 public void testIsCellEditableWithBY11Data()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet() );
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getBY11DataSet(), TestGasWellDataSet.getReducedBY11DataSet() );
     assertEquals( 595, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     assertEquals(GasWellDataSetTableModel.ColumnType.START_TIMESTAMP, model.getColumnType(0) );
@@ -482,7 +489,7 @@ public void testIsCellEditableWithBY11Data()
 
     assertTrue( model.isCellEditable( 0, 0 ) );
     assertTrue( model.isCellEditable( 0, 1 ) );
-    assertTrue( model.isCellEditable( 0, 2 ) );
+    assertFalse( model.isCellEditable( 0, 2 ) );
     assertFalse( model.isCellEditable( 0, 3 ) );
     assertFalse( model.isCellEditable( 0, 4 ) );
     assertFalse( model.isCellEditable( 0, 5 ) );
@@ -490,7 +497,7 @@ public void testIsCellEditableWithBY11Data()
 
     assertTrue( model.isCellEditable( 594, 0 ) );
     assertTrue( model.isCellEditable( 594, 1 ) );
-    assertTrue( model.isCellEditable( 594, 2 ) );
+    assertFalse( model.isCellEditable( 594, 2 ) );
     assertFalse( model.isCellEditable( 594, 3 ) );
     assertFalse( model.isCellEditable( 594, 4 ) );
     assertFalse( model.isCellEditable( 594, 5 ) );
@@ -520,7 +527,9 @@ public void testIsCellEditableWithBY11Data()
 @Test
 public void testRemovingFirstTwoRowsFromReductionTestData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getReductionTestDataSet() );
+	GasWellDataSet testData = TestGasWellDataSet.getReductionTestDataSet();
+	GasWellDataSet originalData = testData.copy();
+    GasWellDataSetTableModel model = new GasWellDataSetTableModel( testData, originalData );
     assertEquals( 26, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     assertEquals( GasWellDataSetTableModel.ColumnType.START_TIMESTAMP, model.getColumnType(0) );
@@ -536,10 +545,10 @@ public void testRemovingFirstTwoRowsFromReductionTestData()
     GasWellDataEntry thirdRow;
     GasWellDataEntry fourthRow;
 
-    firstRow = model.actualData.getData().get( 0 );
-    secondRow = model.actualData.getData().get( 1 );
-    thirdRow = model.actualData.getData().get( 2 );
-    fourthRow = model.actualData.getData().get( 3 );
+    firstRow = model.averagedData.getData().get( 0 );
+    secondRow = model.averagedData.getData().get( 1 );
+    thirdRow = model.averagedData.getData().get( 2 );
+    fourthRow = model.averagedData.getData().get( 3 );
 
     assertEquals( parser.parse( "01/JUN/2012").getTime(), firstRow.from() );
     assertEquals( parser.parse( "02/JUN/2012").getTime(), firstRow.until() );
@@ -578,10 +587,10 @@ public void testRemovingFirstTwoRowsFromReductionTestData()
     assertEquals( GasWellDataSetTableModel.ColumnType.WATER_FLOW, model.getColumnType(5) );
     assertEquals( GasWellDataSetTableModel.ColumnType.COMMENT, model.getColumnType( 6 ) );
 
-    firstRow = model.actualData.getData().get( 0 );
-    secondRow = model.actualData.getData().get( 1 );
-    thirdRow = model.actualData.getData().get( 2 );
-    fourthRow = model.actualData.getData().get( 3 );
+    firstRow = model.averagedData.getData().get( 0 );
+    secondRow = model.averagedData.getData().get( 1 );
+    thirdRow = model.averagedData.getData().get( 2 );
+    fourthRow = model.averagedData.getData().get( 3 );
 
     assertEquals( parser.parse( "01/JUN/2012").getTime(), firstRow.from() );
     assertEquals( parser.parse( "03/JUN/2012").getTime(), firstRow.until() );
@@ -621,10 +630,10 @@ public void testRemovingFirstTwoRowsFromReductionTestData()
     assertEquals( GasWellDataSetTableModel.ColumnType.WATER_FLOW, model.getColumnType(5) );
     assertEquals( GasWellDataSetTableModel.ColumnType.COMMENT, model.getColumnType( 6 ) );
 
-    firstRow = model.actualData.getData().get( 0 );
-    secondRow = model.actualData.getData().get( 1 );
-    thirdRow = model.actualData.getData().get( 2 );
-    fourthRow = model.actualData.getData().get( 3 );
+    firstRow = model.averagedData.getData().get( 0 );
+    secondRow = model.averagedData.getData().get( 1 );
+    thirdRow = model.averagedData.getData().get( 2 );
+    fourthRow = model.averagedData.getData().get( 3 );
 
     assertEquals( parser.parse( "01/JUN/2012").getTime(), firstRow.from() );
     assertEquals( parser.parse( "04/JUN/2012").getTime(), firstRow.until() );
@@ -656,7 +665,9 @@ public void testRemovingFirstTwoRowsFromReductionTestData()
 @Test
 public void testRemovingLastTwoRowsFromReductionTestData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getReductionTestDataSet() );
+	GasWellDataSet testData = TestGasWellDataSet.getReductionTestDataSet();
+	GasWellDataSet originalData = testData.copy();
+	GasWellDataSetTableModel model = new GasWellDataSetTableModel( testData, originalData );
     assertEquals( 26, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     assertEquals( GasWellDataSetTableModel.ColumnType.START_TIMESTAMP, model.getColumnType(0) );
@@ -672,10 +683,10 @@ public void testRemovingLastTwoRowsFromReductionTestData()
     GasWellDataEntry thirdLastRow;
     GasWellDataEntry fourthLastRow;
     
-    lastRow = model.actualData.getData().get( 25 );
-    secondLastRow = model.actualData.getData().get( 24 );
-    thirdLastRow = model.actualData.getData().get( 23 );
-    fourthLastRow = model.actualData.getData().get( 22 );
+    lastRow = model.averagedData.getData().get( 25 );
+    secondLastRow = model.averagedData.getData().get( 24 );
+    thirdLastRow = model.averagedData.getData().get( 23 );
+    fourthLastRow = model.averagedData.getData().get( 22 );
     
     assertEquals( parser.parse( "26/JUN/2012" ).getTime(), lastRow.from() );
     assertEquals( parser.parse( "27/JUN/2012" ).getTime(), lastRow.until() );
@@ -706,10 +717,10 @@ public void testRemovingLastTwoRowsFromReductionTestData()
 
     assertEquals( 25, model.getRowCount() );
 
-    lastRow = model.actualData.getData().get( 24 );
-    secondLastRow = model.actualData.getData().get( 23 );
-    thirdLastRow = model.actualData.getData().get( 22 );
-    fourthLastRow = model.actualData.getData().get( 21 );
+    lastRow = model.averagedData.getData().get( 24 );
+    secondLastRow = model.averagedData.getData().get( 23 );
+    thirdLastRow = model.averagedData.getData().get( 22 );
+    fourthLastRow = model.averagedData.getData().get( 21 );
 
     assertEquals( parser.parse( "25/JUN/2012" ).getTime(), lastRow.from() );
     assertEquals( parser.parse( "27/JUN/2012" ).getTime(), lastRow.until() );
@@ -740,7 +751,9 @@ public void testRemovingLastTwoRowsFromReductionTestData()
 @Test
 public void testAddingFirstRowIntoReductionTestData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getReductionTestDataSet() );
+	GasWellDataSet testData = TestGasWellDataSet.getReductionTestDataSet();
+	GasWellDataSet originalData = testData.copy();
+	GasWellDataSetTableModel model = new GasWellDataSetTableModel( testData, originalData );
     assertEquals( 26, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     assertEquals( GasWellDataSetTableModel.ColumnType.START_TIMESTAMP, model.getColumnType(0) );
@@ -756,10 +769,10 @@ public void testAddingFirstRowIntoReductionTestData()
     GasWellDataEntry thirdRow;
     GasWellDataEntry fourthRow;
 
-    firstRow = model.actualData.getData().get( 0 );
-    secondRow = model.actualData.getData().get( 1 );
-    thirdRow = model.actualData.getData().get( 2 );
-    fourthRow = model.actualData.getData().get( 3 );
+    firstRow = model.averagedData.getData().get( 0 );
+    secondRow = model.averagedData.getData().get( 1 );
+    thirdRow = model.averagedData.getData().get( 2 );
+    fourthRow = model.averagedData.getData().get( 3 );
 
     assertEquals( parser.parse( "01/JUN/2012").getTime(), firstRow.from() );
     assertEquals( parser.parse( "02/JUN/2012").getTime(), firstRow.until() );
@@ -798,10 +811,10 @@ public void testAddingFirstRowIntoReductionTestData()
     assertEquals( GasWellDataSetTableModel.ColumnType.WATER_FLOW, model.getColumnType(5) );
     assertEquals( GasWellDataSetTableModel.ColumnType.COMMENT, model.getColumnType( 6 ) );
 
-    firstRow = model.actualData.getData().get( 0 );
-    secondRow = model.actualData.getData().get( 1 );
-    thirdRow = model.actualData.getData().get( 2 );
-    fourthRow = model.actualData.getData().get( 3 );
+    firstRow = model.averagedData.getData().get( 0 );
+    secondRow = model.averagedData.getData().get( 1 );
+    thirdRow = model.averagedData.getData().get( 2 );
+    fourthRow = model.averagedData.getData().get( 3 );
 
     assertEquals( parser.parse( "01/JUN/2012 00:00").getTime(), firstRow.from() );
     assertEquals( parser.parse( "01/JUN/2012 12:00").getTime(), firstRow.until() );
@@ -829,9 +842,60 @@ public void testAddingFirstRowIntoReductionTestData()
 }
 
 @Test
+public void testSplittingFirstIntervalForReducedSAA2Data()
+{
+	GasWellDataSet originalData = TestGasWellDataSet.getSAA2FragmentDataSet();
+	GasWellDataSet averagedData = TestGasWellDataSet.getReducedSAA2FragmentDataSet();
+	GasWellDataSetTableModel model = new GasWellDataSetTableModel( averagedData, originalData );
+	assertNotNull(  model  );
+	
+	GasWellDataEntry e0 = model.averagedData.getEntry( 0 );
+	GasWellDataEntry e1 = model.averagedData.getEntry( 1 );
+	
+	assertNotNull(  e0  );
+	assertNotNull(  e1  );
+	
+	assertEquals( parser.parse(  "30/JUL/2009" ).getTime(), e0.from() );
+	assertEquals( parser.parse(  "12/AUG/2009" ).getTime(), e0.until() );
+	assertEquals(  238.44923077, e0.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(    0.16846154, e0.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  799.06384615, e0.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+	assertEquals( parser.parse(  "12/AUG/2009" ).getTime(), e1.from() );
+	assertEquals( parser.parse(  "15/AUG/2009" ).getTime(), e1.until() );
+	assertEquals(  0, e1.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  0, e1.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  0, e1.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+	
+	model.addRow( 0 );
+
+	e0 = model.averagedData.getEntry( 0 );
+	e1 = model.averagedData.getEntry( 1 );
+
+	assertNotNull(  e0  );
+	assertNotNull(  e1  );
+
+	assertEquals( parser.parse(  "30/JUL/2009" ).getTime(), e0.from() );
+	assertEquals( parser.parse(  "05/AUG/2009 12:00" ).getTime(), e0.until() );
+	assertEquals(  268.86307692, e0.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  0.18230769,   e0.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  883.67846154, e0.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+	assertEquals( parser.parse(  "05/AUG/2009 12:00" ).getTime(), e1.from() );
+	assertEquals( parser.parse(  "12/AUG/2009" ).getTime(), e1.until() );
+	assertEquals(  208.03538462, e1.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  0.15461538,   e1.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  714.44923077, e1.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+
+}
+
+@Test
 public void testAddingLastRowIntoReductionTestData()
 {
-    GasWellDataSetTableModel model = new GasWellDataSetTableModel( TestGasWellDataSet.getReductionTestDataSet() );
+	GasWellDataSet testData = TestGasWellDataSet.getReductionTestDataSet();
+	GasWellDataSet originalData = testData.copy();
+	GasWellDataSetTableModel model = new GasWellDataSetTableModel( testData, originalData );
     assertEquals( 26, model.getRowCount() );
     assertEquals( 9, model.getColumnCount() );
     assertEquals( GasWellDataSetTableModel.ColumnType.START_TIMESTAMP, model.getColumnType(0) );
@@ -847,10 +911,10 @@ public void testAddingLastRowIntoReductionTestData()
     GasWellDataEntry thirdLastRow;
     GasWellDataEntry fourthLastRow;
 
-    lastRow = model.actualData.getData().get( 25 );
-    secondLastRow = model.actualData.getData().get( 24 );
-    thirdLastRow = model.actualData.getData().get( 23 );
-    fourthLastRow = model.actualData.getData().get( 22 );
+    lastRow = model.averagedData.getData().get( 25 );
+    secondLastRow = model.averagedData.getData().get( 24 );
+    thirdLastRow = model.averagedData.getData().get( 23 );
+    fourthLastRow = model.averagedData.getData().get( 22 );
 
     assertEquals( parser.parse( "26/JUN/2012" ).getTime(), lastRow.from() );
     assertEquals( parser.parse( "27/JUN/2012" ).getTime(), lastRow.until() );
@@ -882,10 +946,10 @@ public void testAddingLastRowIntoReductionTestData()
     assertEquals( 27, model.getRowCount() );
 
 
-    lastRow = model.actualData.getData().get( 26 );
-    secondLastRow = model.actualData.getData().get( 25 );
-    thirdLastRow = model.actualData.getData().get( 24 );
-    fourthLastRow = model.actualData.getData().get( 23 );
+    lastRow = model.averagedData.getData().get( 26 );
+    secondLastRow = model.averagedData.getData().get( 25 );
+    thirdLastRow = model.averagedData.getData().get( 24 );
+    fourthLastRow = model.averagedData.getData().get( 23 );
 
     assertEquals( parser.parse( "26/JUN/2012 12:00" ).getTime(), lastRow.from() );
     assertEquals( parser.parse( "27/JUN/2012" ).getTime(), lastRow.until() );
@@ -911,5 +975,91 @@ public void testAddingLastRowIntoReductionTestData()
     assertEquals( 00.0, fourthLastRow.getMeasurement( WellMeasurementType.GAS_FLOW ));
     assertEquals( 00.0, fourthLastRow.getMeasurement( WellMeasurementType.WATER_FLOW ));
 }
+	
 
+@Test
+public void testRemovingThenRestoringInterval()
+{
+	GasWellDataSet original = TestGasWellDataSet.getSAA2FragmentDataSet();
+	GasWellDataSet averaged = TestGasWellDataSet.getReducedSAA2FragmentDataSet();
+	GasWellDataSetTableModel model = new GasWellDataSetTableModel( averaged, original );
+
+	assertEquals( 16, model.getRowCount()  );
+	
+	// take note of the timestamps that the first two intervals start upon
+	GasWellDataEntry entry0 = model.averagedData.getEntry(  0  ).copy();
+	GasWellDataEntry entry1 = model.averagedData.getEntry(  1  ).copy();
+	GasWellDataEntry entry2 = model.averagedData.getEntry(  2  ).copy();
+	GasWellDataEntry entry3 = model.averagedData.getEntry(  3  ).copy();
+
+	Date stamp0 = entry0.from();
+	Date stamp1 = entry1.from();
+	Date stamp2 = entry2.from();
+	Date stamp3 = entry3.from();
+	
+	assertEquals(  parser.parse(  "30/JUL/2009" ).getTime(), stamp0  );
+	assertEquals(  parser.parse(  "12/AUG/2009" ).getTime(), stamp1  );
+	assertEquals(  parser.parse(  "15/AUG/2009" ).getTime(), stamp2  );
+	assertEquals(  parser.parse(  "19/AUG/2009" ).getTime(), stamp3  );
+
+	// remove second and third intervals .... then restore them
+	model.deleteRow( 1 );
+	model.deleteRow( 1 );
+
+	// the second interval in the averaged data is now the "old interval four"
+	// ------------------------------------------------------------------------
+	assertEquals( entry3, model.averagedData.getEntry(  1  ) );
+	assertEquals( stamp3, model.averagedData.getEntry( 0 ).until() );
+	assertEquals( stamp3, model.averagedData.getEntry( 1 ).from() );
+
+	assertEquals( 14, model.getRowCount()  );
+	
+	// the from timestamp of the second interval, should now be the same as the fourth used to be!!
+	assertEquals( stamp3, model.averagedData.getData().get(  1 ).from() );
+
+	// split the first interval back up into three intervals again...
+	// --------------------------------------------------------------
+	model.addRow( 0 );
+	model.addRow( 0 );
+
+	assertEquals(  16, model.getRowCount()  );
+	
+	// the combined timespan of the first four intervals is now redistributed back across as follows;
+	// first interval - 25%
+	// second interval - 25%
+	// third interval - 50%
+	// ------------------------
+	stamp0 = model.averagedData.getEntry( 0 ).from();
+	stamp1 = model.averagedData.getEntry( 1 ).from();
+	stamp2 = model.averagedData.getEntry( 2 ).from();
+	stamp3 = model.averagedData.getEntry( 3 ).from();
+
+	long span = stamp3.getTime() - stamp0.getTime();
+	Date newStamp1 = new Date( stamp0.getTime() + (long)( span * 0.25 ) );
+	Date newStamp2 = new Date( stamp0.getTime() + (long)( span * 0.5 ) );
+	
+	assertEquals( stamp0, model.averagedData.getEntry( 0 ).from() );
+	assertEquals( newStamp1, model.averagedData.getEntry( 0 ).until() );
+	assertEquals( newStamp1, model.averagedData.getEntry( 1 ).from() );
+	assertEquals( newStamp2, model.averagedData.getEntry( 1 ).until() );
+	assertEquals( newStamp2, model.averagedData.getEntry( 2 ).from() );
+	assertEquals( stamp3, model.averagedData.getEntry( 2 ).until() );
+
+	// the from timestamp of the fourth interval should be as it was before...
+	assertEquals( stamp3, model.averagedData.getData().get( 3 ).from() );
+	
+	logger.debug(  "About to move interval two start date from " + model.averagedData.getEntry( 2 ).from() + " to " + entry2.from() );
+	logger.debug(  "About to move interval one start date from " + model.averagedData.getEntry( 1 ).from() + " to " + entry1.from() );
+
+	GasWellDataSetUtil.moveAveragedDataBoundary( model.averagedData.getData().get( 2 ).from(), entry2.from(), model.originalData, model.averagedData );
+	GasWellDataSetUtil.moveAveragedDataBoundary( model.averagedData.getData().get( 1 ).from(), entry1.from(), model.originalData, model.averagedData );
+
+	// the first four intervals should be back as they were in the first place again!!!
+	// ---------------------------------------------------------------------------------
+	assertEquals(  entry0, model.averagedData.getEntry(  0  ) );
+	assertEquals(  entry3, model.averagedData.getEntry(  3  ) );
+	assertEquals(  entry1, model.averagedData.getEntry(  1  ) );
+	assertEquals(  entry2, model.averagedData.getEntry(  2  ) );
+}
+	
 }

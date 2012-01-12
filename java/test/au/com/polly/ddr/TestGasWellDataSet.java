@@ -38,10 +38,12 @@ static Logger logger = Logger.getLogger( TestGasWellDataSet.class );
 static DateParser parser = new AussieDateParser();
 static protected GasWellDataSet nicksDataSet = null;
 static protected GasWellDataSet saa2FragmentDataSet = null;
+static protected GasWellDataSet saa2FragmentReducedDataSet = null;
 static protected GasWellDataSet dummyDataSet = null;
 static protected GasWellDataSet smallDataSet = null;
 static protected GasWellDataSet smallReducedDataSet = null;
 static protected GasWellDataSet by11DataSet = null;
+static protected GasWellDataSet by11ReducedDataSet = null;
 static protected GasWellDataSet reductionTestDataSet = null;
 static protected GasWellDataSet oldFaithfulDataSet = null;
 static protected GasWell saa2Well = new GasWell( "SAA-2" );
@@ -82,6 +84,8 @@ static final private DataSet[] nicksRawData = {
         new OilDataSet( parser.parse( "21/SEP/2010 08:57" ).getTime(), 0497.0, 0600.0, 0009.0, 0135.4667 ),
         new OilDataSet( parser.parse( "27/SEP/2010 00:25" ).getTime(), 0000.0, 0000.0, 0000.0, 8760.770 )
 };
+	
+
 
 static final private DataSet[] saa2FragmentRawData = {
         new OilDataSet( parser.parse( "30/Jul/2009 00:00:00" ).getTime(), 286.510,0.190,951.640, 24.0 ),
@@ -203,7 +207,25 @@ static final private DataSet[] saa2FragmentRawData = {
         new OilDataSet( parser.parse( "23/Nov/2009 00:00:00" ).getTime(), 2310.150,0.900,5721.170, 24.0 ),
         new OilDataSet( parser.parse( "24/Nov/2009 00:00:00" ).getTime(), 2236.950,0.890,5643.950, 24.0 ),
         new OilDataSet( parser.parse( "25/Nov/2009 00:00:00" ).getTime(), 2367.340,0.900,5474.260, 24.0 )
+};
 
+static final private DataSet[] saa2FragmentRawReducedData = {
+		new OilDataSet( parser.parse( "30/JUL/2009" ).getTime(), 238.44923077, 0.16846154, 799.06384615, 312.0),
+		new OilDataSet( parser.parse( "12/AUG/2009" ).getTime(), 0.0, 0.0, 0.0, 72.0),
+		new OilDataSet( parser.parse( "15/AUG/2009" ).getTime(), 113.1075, 0.08, 397.39, 96.0),
+		new OilDataSet( parser.parse( "19/AUG/2009" ).getTime(), 0.0, 0.0, 0.0, 24.0),
+		new OilDataSet( parser.parse( "20/AUG/2009" ).getTime(), 11.58, 0.01, 40.62, 24.0),
+		new OilDataSet( parser.parse( "21/AUG/2009" ).getTime(), 0.0, 0.0, 0.0, 48.0),
+		new OilDataSet( parser.parse( "23/AUG/2009" ).getTime(), 528.61, 0.27571, 1698.53, 168.0),
+		new OilDataSet( parser.parse( "30/AUG/2009" ).getTime(), 356.46, 0.2, 1294.65, 384.0),
+		new OilDataSet( parser.parse( "15/SEP/2009" ).getTime(), 0.0, 0.0, 0.0, 24.0),
+		new OilDataSet( parser.parse( "16/SEP/2009" ).getTime(), 250.35, 0.12, 936.93, 24.0),
+		new OilDataSet( parser.parse( "17/SEP/2009" ).getTime(), 0.0, 0.0, 0.0, 48.0),
+		new OilDataSet( parser.parse( "19/SEP/2009" ).getTime(), 528.53, 0.23, 1692.98, 24.0),
+		new OilDataSet( parser.parse( "20/SEP/2009" ).getTime(), 0.0, 0.0, 0.0, 24.0),
+		new OilDataSet( parser.parse( "21/SEP/2009" ).getTime(), 5599.80556, 2.09667, 5024.19111, 216.0),
+		new OilDataSet( parser.parse( "30/SEP/2009" ).getTime(), 4432.93567, 1.59767, 5458.646, 720.0),
+		new OilDataSet( parser.parse( "30/OCT/2009" ).getTime(), 3031.76741, 1.14519, 5171.56185, 648.0)
 };
 
 static final private DataSet[] dummyRawData = {
@@ -921,6 +943,41 @@ static final private DataSet[] by11RawData = {
         new CondensateDataSet( parser.parse( "12/JUN/2011" ).getTime(),  25.30,   6.13,  50.62, 24.0 ),
         new CondensateDataSet( parser.parse( "13/JUN/2011" ).getTime(),  25.32,   5.33,  49.92, 24.0 )
 };
+	
+private final static DataSet[] reducedBY11RawData = {
+		new CondensateDataSet( parser.parse( "27/OCT/2009" ).getTime(), 21.87516, 7.32806, 77.90452, 744.0 ),
+		new CondensateDataSet( parser.parse( "27/NOV/2009" ).getTime(), 14.63667, 5.66333, 54.58333, 72.0 ),
+		new CondensateDataSet( parser.parse( "30/NOV/2009" ).getTime(), 0.0, 0.0, 0.0, 96.0),
+		new CondensateDataSet( parser.parse( "04/DEC/2009" ).getTime(), 3.87, 2.27, 12.74, 24.0),
+		new CondensateDataSet( parser.parse( "05/DEC/2009" ).getTime(), 0.0, 0.0, 0.0, 24.0),
+		new CondensateDataSet( parser.parse( "06/DEC/2009" ).getTime(), 21.56, 7.02, 82.03381, 504.0),
+		new CondensateDataSet( parser.parse( "27/DEC/2009" ).getTime(), 18.573, 8.632, 72.527, 240.0),
+		new CondensateDataSet( parser.parse( "06/JAN/2010" ).getTime(), 0.0, 0.0, 0.0, 504.0),
+		new CondensateDataSet( parser.parse( "27/JAN/2010" ).getTime(), 0.0, 0.0, 0.0, 48.0),
+		new CondensateDataSet( parser.parse( "29/JAN/2010" ).getTime(), 19.29, 7.095, 78.485, 48.0),
+		new CondensateDataSet( parser.parse( "31/JAN/2010" ).getTime(), 0.0, 0.0, 0.0, 408.0),
+		new CondensateDataSet( parser.parse( "17/FEB/2010" ).getTime(), 19.138, 7.29, 72.711, 240.0),
+		new CondensateDataSet( parser.parse( "27/FEB/2010" ).getTime(), 27.67036, 8.41179, 95.82143, 672.0),
+		new CondensateDataSet( parser.parse( "27/MAR/2010" ).getTime(), 27.39871, 9.37161, 86.10871, 744.0),
+		new CondensateDataSet( parser.parse( "27/APR/2010" ).getTime(), 27.44833, 9.21967, 83.651, 720.0),
+		new CondensateDataSet( parser.parse( "27/MAY/2010" ).getTime(), 27.49097, 1.28032, 69.77871, 744.0),
+		new CondensateDataSet( parser.parse( "27/JUN/2010" ).getTime(), 26.90767, 7.15367, 71.94767, 720.0),
+		new CondensateDataSet( parser.parse( "27/JUL/2010" ).getTime(), 26.76, 6.64625, 68.96625, 192.0),
+		new CondensateDataSet( parser.parse( "04/AUG/2010" ).getTime(), 0.0, 0.0, 0.0, 24.0),
+		new CondensateDataSet( parser.parse( "05/AUG/2010" ).getTime(), 26.50318, 4.12955, 71.76091, 528.0),
+		new CondensateDataSet( parser.parse( "27/AUG/2010" ).getTime(), 26.15161, 5.04839, 72.56161, 744.0),
+		new CondensateDataSet( parser.parse( "27/SEP/2010" ).getTime(), 25.33933, 5.99233, 67.74933, 720.0),
+		new CondensateDataSet( parser.parse( "27/OCT/2010" ).getTime(), 25.36609, 6.26348, 68.25652, 552.0),
+		new CondensateDataSet( parser.parse( "19/NOV/2010" ).getTime(), 0.0, 0.0, 0.0, 48.0),
+		new CondensateDataSet( parser.parse( "21/NOV/2010" ).getTime(), 23.40833, 7.12, 81.34667, 144.0),
+		new CondensateDataSet( parser.parse( "27/NOV/2010" ).getTime(), 25.349, 6.69367, 68.03633, 720.0),
+		new CondensateDataSet( parser.parse( "27/DEC/2010" ).getTime(), 26.35516, 6.64806, 70.83742, 744.0),
+		new CondensateDataSet( parser.parse( "27/JAN/2011" ).getTime(), 26.81968, 6.46097, 57.57968, 744.0),
+		new CondensateDataSet( parser.parse( "27/FEB/2011" ).getTime(), 25.58821, 6.12, 51.66821, 672.0),
+		new CondensateDataSet( parser.parse( "27/MAR/2011" ).getTime(), 25.16161, 5.21161, 50.92581, 744.0),
+		new CondensateDataSet( parser.parse( "27/APR/2011" ).getTime(), 25.352, 5.41233, 50.14267, 720.0),
+		new CondensateDataSet( parser.parse( "27/MAY/2011" ).getTime(), 25.39444, 5.57167, 49.03778, 432.0)
+};
 
 private final static DataSet[] reductionTestRawData = {
         new OilDataSet( parser.parse( "01/JUN/2012" ).getTime(), 10.0, 00.0, 08.0, 24.0 ), 
@@ -969,6 +1026,7 @@ public static void repopulate()
     // populate the SAA2 Fragment data set...
     // --------------------------------------
     saa2FragmentDataSet = populateFromRawData( saa2Well, saa2FragmentRawData );
+	saa2FragmentReducedDataSet = populateFromRawData( saa2Well, saa2FragmentRawReducedData );
 
     // populate the dummy data set...
     // -----------------------------------
@@ -984,7 +1042,8 @@ public static void repopulate()
 
     // four years of gas condensate data..
     by11DataSet = populateFromRawData( new GasWell( "BY11" ), by11RawData );
-    
+    by11ReducedDataSet = populateFromRawData( new GasWell( "BY11" ), reducedBY11RawData );
+
     reductionTestDataSet = populateFromRawData( new GasWell( "osho" ), reductionTestRawData );
 
     oldFaithfulDataSet = populateOldFaithful();
@@ -1009,6 +1068,11 @@ public static GasWellDataSet getNicksDataSet()
 public static GasWellDataSet getSAA2FragmentDataSet()
 {
     return saa2FragmentDataSet;
+}
+
+public static GasWellDataSet getReducedSAA2FragmentDataSet()
+{
+	return saa2FragmentReducedDataSet;
 }
 
 
@@ -1044,6 +1108,11 @@ public static GasWellDataSet getBY11DataSet()
     return by11DataSet;
 }
 
+public static GasWellDataSet getReducedBY11DataSet()
+{
+	return by11ReducedDataSet;
+}
+
 public static GasWellDataSet getReductionTestDataSet()
 {
     return reductionTestDataSet;
@@ -1074,7 +1143,7 @@ protected static GasWellDataSet populateOldFaithful()
         entry = new GasWellDataEntry();
         entry.setWell( dataSet.getWell() );
         until = cal.getTime();
-        entry.setDateRange( new DateRange( from, until ) );
+        entry.setDateRange( new DateRange( from, until, 1000L ) );
         r = ( r + ( Math.random() * 50.0 ) ) / 2.0;
         entry.setMeasurement( WellMeasurementType.OIL_FLOW, 1200.0 + r );
         entry.setMeasurement( WellMeasurementType.WATER_FLOW, 1300.0 - ( r * 2 ) );

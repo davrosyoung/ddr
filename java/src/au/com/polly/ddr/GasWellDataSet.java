@@ -507,7 +507,7 @@ public int locateEntryIndex( Date when )
  */
 public GasWellDataEntry consolidateEntries( Date segmentStart, Date segmentEnd )
 {
-    DateRange range = new DateRange( segmentStart, segmentEnd );
+    DateRange range = new DateRange( segmentStart, segmentEnd, 1000L );
     return consolidateEntries( range );
 }
 
@@ -525,7 +525,7 @@ public GasWellDataEntry consolidateEntries( DateRange range )
     GasWellDataEntry result = null;
     int cursor;
     long segmentLength;
-    DateRange ourRange = new DateRange( from(), until() );
+    DateRange ourRange = new DateRange( from(), until(), 1000L );
 
     if ( range == null )
     {
@@ -596,6 +596,7 @@ public GasWellDataEntry consolidateEntries( DateRange range )
  * date/time is either before the start of the previous boundary, or the original date/time is the
  * start/end of all data or the updated dte/time is after the end of the next boundary.
  */
+@Deprecated
 public void moveBoundary( Date original, Date updated )
 {
     List<Date> stampList;

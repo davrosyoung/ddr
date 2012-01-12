@@ -75,8 +75,8 @@ public void createAndShowGUI()
 {
     f = new JFrame( "Interval Boundaries" );
     f.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    f.setSize(1400, 800);
-    editorPane = new IntervalEditorPane( dataSet );
+    f.setSize( 1400, 800 );
+    editorPane = new IntervalEditorPane( dataSet.copy(), dataSet );
     editorPane.addEditorListener( harness );
     f.setContentPane( editorPane );
     f.pack();

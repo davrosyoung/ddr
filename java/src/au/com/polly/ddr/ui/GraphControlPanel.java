@@ -348,7 +348,7 @@ public void actionPerformed(ActionEvent evt)
                     {
                         Frame frame = JOptionPane.getFrameForComponent( this );
                         intervalEditorDialog = new JDialog( frame, "Reduced data editor", Dialog.ModalityType.MODELESS );
-                        intervalEditorPane = new IntervalEditorPane( grapher.getOverlayData().copy() );
+                        intervalEditorPane = new IntervalEditorPane( grapher.getOverlayData().copy(), grapher.getData() );
                         intervalEditorDialog.setContentPane( intervalEditorPane );
                         intervalEditorPane.setVisible( true );
                         intervalEditorDialog.pack();

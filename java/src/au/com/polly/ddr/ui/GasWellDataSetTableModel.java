@@ -58,7 +58,8 @@ import java.util.Map;
 public class GasWellDataSetTableModel extends AbstractTableModel
 {
 static final Logger logger = Logger.getLogger( GasWellDataSetTableModel.class );
-protected GasWellDataSet actualData = null;
+protected GasWellDataSet averagedData = null;
+protected GasWellDataSet originalData = null;
 enum ColumnType {
     START_TIMESTAMP( 220, Date.class, true, "Start date", MyDateRenderer.class, MyDateEditor.class ),
     UNTIL_TIMESTAMP( 220, Date.class, true, "End date", MyDateRenderer.class, MyDateEditor.class ),
@@ -145,17 +146,18 @@ static {
     }
 }
         
-public GasWellDataSetTableModel( GasWellDataSet actualData )
+public GasWellDataSetTableModel( GasWellDataSet averagedData, GasWellDataSet originalData )
 {
-    this.actualData = actualData;
+    this.averagedData = averagedData;
+	this.originalData = originalData;
     columnList = new ArrayList<ColumnType>();
     columnList.add( ColumnType.START_TIMESTAMP);
     columnList.add( ColumnType.UNTIL_TIMESTAMP);
     columnList.add( ColumnType.INTERVAL_LENGTH );
     for( WellMeasurementType wmt : WellMeasurementType.values() )
     {
-        logger.debug( "containsMeasurement( " + wmt + ")=" + actualData.containsMeasurement( wmt ) );
-        if ( actualData.containsMeasurement( wmt ) )
+        logger.debug( "containsMeasurement( " + wmt + ")=" + averagedData.containsMeasurement( wmt ) );
+        if ( averagedData.containsMeasurement( wmt ) )
         {
             columnList.add(wmtColumnTypeLUT.get(wmt));
         }
@@ -185,7 +187,7 @@ public GasWellDataSetTableModel( GasWellDataSet actualData )
 @Override
 public int getRowCount()
 {
-    return actualData.getData().size();
+    return averagedData.getData().size();
 }
 
 @Override
@@ -231,7 +233,7 @@ protected ColumnType getColumnType( int i )
 public Object getValueAt( int rowIndex, int columnIndex )
 {
     Object result = null;
-    GasWellDataEntry entry = actualData.getData().get( rowIndex );
+    GasWellDataEntry entry = averagedData.getData().get( rowIndex );
     ColumnType ct = columnList.get( columnIndex );
     
     switch( ct )
@@ -320,7 +322,7 @@ public void setValueAt( Object value, int row, int col)
        &&   ( row >= 0 )
        &&   ( row < getRowCount() ) )
     {
-        GasWellDataEntry entry = actualData.getEntry( row );
+        GasWellDataEntry entry = averagedData.getEntry( row );
         ColumnType ct = getColumnType( col );
         switch( ct )
         {
@@ -330,9 +332,8 @@ public void setValueAt( Object value, int row, int col)
                 // this next line will update BOTH this entry and the subsequent... OR throw an error!!
                 // -------------------------------------------------------------------------------------
                 try {
-                    if ( row > 0 )
-                    {
-                        actualData.moveBoundary( entry.from(), stamp );
+                    if ( row >= 0 ) {
+						averagedData.moveBoundary( entry.from(), stamp );
                         fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH ));
                         fireTableCellUpdated( row, getColumnIndex( ColumnType.UNTIL_TIMESTAMP ));
 
@@ -357,13 +358,13 @@ public void setValueAt( Object value, int row, int col)
 
                 // this next line will update BOTH this entry and the subsequent... OR throw an error!!
                 // -------------------------------------------------------------------------------------
-                try {
-                    actualData.moveBoundary( entry.until(), stamp );
+				try {
+                    averagedData.moveBoundary( entry.until(), stamp );
                     fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH ));
                     fireTableCellUpdated( row, getColumnIndex( ColumnType.UNTIL_TIMESTAMP ));
 
                     // update the start field of the subsequent row...
-                    if ( row < ( actualData.getData().size() - 1 ) )
+                    if ( row < ( averagedData.getData().size() - 1 ) )
                     {
                         fireTableCellUpdated( row + 1, getColumnIndex( ColumnType.INTERVAL_LENGTH ) );
                         fireTableCellUpdated( row + 1, getColumnIndex( ColumnType.START_TIMESTAMP ) );
@@ -422,15 +423,24 @@ public void setValueAt( Object value, int row, int col)
  */
 public void addRow( int row )
 {
-    GasWellDataEntry existing = actualData.getEntry( row );
-    GasWellDataEntry another = existing.copy();
-    long span = existing.getDateRange().span();
-    Date midway = new Date( existing.from().getTime() + ( span / 2 ) );
-    existing.setDateRange( new DateRange( existing.from(), midway ) );
-    another.setDateRange( new DateRange( midway, another.until() ) );
-    another.setComment( "" );
-    
-    actualData.getData().add(row + 1, another);
+    GasWellDataEntry existing = averagedData.getEntry( row );
+	DateRange firstHalfRange;
+	DateRange secondHalfRange;
+	GasWellDataEntry firstHalfEntry;
+	GasWellDataEntry secondHalfEntry;
+	long span = existing.getDateRange().span();
+	Date midway = new Date( existing.from().getTime() + ( span / 2 ) );
+
+	firstHalfRange = new DateRange(  existing.from(), midway );
+	secondHalfRange = new DateRange( midway, existing.until() );
+
+	firstHalfEntry = originalData.consolidateEntries( firstHalfRange );
+	secondHalfEntry = originalData.consolidateEntries( secondHalfRange );
+
+	firstHalfEntry.setComment( existing.getComment() );
+
+	averagedData.getData().set( row, firstHalfEntry );
+    averagedData.getData().add(row + 1, secondHalfEntry );
     fireTableRowsInserted( row, row + 1 );
 }
 
@@ -451,14 +461,14 @@ public void deleteRow( int row )
     // need to delete this row, then replace the row above this row, with
     // a revised version containing the data from both rows...
     // ----------------------------------------------------------------
-    GasWellDataEntry priorEntry = actualData.getEntry( row - 1 );
-    GasWellDataEntry redundantEntry = actualData.getEntry( row );
-    GasWellDataEntry replacementEntry = actualData.consolidateEntries( priorEntry.from(), redundantEntry.until() );
+	GasWellDataEntry priorEntry = averagedData.getEntry( row - 1 );
+    GasWellDataEntry redundantEntry = averagedData.getEntry( row );
+    GasWellDataEntry replacementEntry = averagedData.consolidateEntries( priorEntry.from(), redundantEntry.until() );
     replacementEntry.setComment( priorEntry.getComment() );
     
-    actualData.getData().remove( row );
-    actualData.getData().remove( row - 1 );
-    actualData.getData().add( row - 1, replacementEntry );
+    averagedData.getData().remove( row );
+    averagedData.getData().remove( row - 1 );
+    averagedData.getData().add( row - 1, replacementEntry );
 }
 
 /**

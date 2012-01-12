@@ -62,7 +62,7 @@ public void addDataSet( GasWellDataSet dataSet )
 {
     if ( dataSet == null )
     {
-        throw new NullPointerException( "NULL dataSet specified!! Unable to add it to this multiple well data set!!");
+        throw new NullPointerException( "NULL averagedDataSet specified!! Unable to add it to this multiple well data set!!");
     }
     this.dataMap.put( dataSet.getWell(), dataSet );
 }

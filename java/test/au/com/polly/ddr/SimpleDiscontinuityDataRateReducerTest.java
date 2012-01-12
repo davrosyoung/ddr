@@ -165,7 +165,7 @@ public void testReducingSAA2FragmentData()
     
 
  /*
-    Map<WellMeasurementType,Double> errorMap = GasWellDataSetUtil.getError( dataSet, reducedDataSet );
+    Map<WellMeasurementType,Double> errorMap = GasWellDataSetUtil.getError( averagedDataSet, reducedDataSet );
     if ( errorMap.containsKey( WellMeasurementType.OIL_FLOW ) )
     {
         logger.debug( "error on OIL_FLOW=" + errorMap.get( WellMeasurementType.OIL_FLOW ) );

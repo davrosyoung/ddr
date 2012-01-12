@@ -45,7 +45,8 @@ import java.io.PrintWriter;
 public class IntervalEditorPane extends JPanel implements ActionListener, TableModelListener
 {
 private final static Logger logger = Logger.getLogger(  IntervalEditorPane.class  );
-protected GasWellDataSet dataSet = null;
+protected GasWellDataSet averagedDataSet = null;
+protected GasWellDataSet originalDataSet = null;
 
 protected JLabel spacerLabel;
 protected JButton saveButton;
@@ -57,10 +58,12 @@ protected GasWellDataSetTableModel dataTableModel;
 protected List<IntervalEditorListener> editorListenerList;
 
 
-protected IntervalEditorPane( GasWellDataSet dataSet )
+protected IntervalEditorPane( GasWellDataSet averagedDataSet, GasWellDataSet originalDataSet )
 {
+	this.averagedDataSet = averagedDataSet;
+	this.originalDataSet = originalDataSet;
     editorListenerList = new ArrayList<IntervalEditorListener>();
-    dataTableModel = new GasWellDataSetTableModel( dataSet );
+    dataTableModel = new GasWellDataSetTableModel( averagedDataSet, originalDataSet );
     populate();
 }
 
@@ -120,7 +123,13 @@ protected void populate()
             JTable table = (JTable) e.getSource();
             int row = Integer.valueOf( e.getActionCommand() );
             GasWellDataSetTableModel model = (GasWellDataSetTableModel)table.getModel();
-            model.deleteRow( row  );
+			if ( row > 0 )
+			{
+				model.deleteRow( row  );
+
+				ListSelectionModel lsm = table.getSelectionModel();
+				lsm.setSelectionInterval( row - 1, row - 1 );
+			}
         }
     };
 
@@ -242,16 +251,16 @@ public void actionPerformed( ActionEvent e )
         logger.debug( "requested to saveIntervalEditor the data!!" );
         for( IntervalEditorListener listener : editorListenerList )
         {
-            listener.saveIntervalEditor(dataTableModel.actualData);
+            listener.saveIntervalEditor(dataTableModel.averagedData );
         }
     }
     
     if ( e.getActionCommand().equals( "csv" ) )
     {
         logger.debug( "requested to output csv" );
-        logger.debug( "we have " + dataTableModel.getRowCount() + " rows in model. actualData.getSize()=" + dataTableModel.actualData.getData().size() );
+        logger.debug( "we have " + dataTableModel.getRowCount() + " rows in model. averagedData.getSize()=" + dataTableModel.averagedData.getData().size() );
         PrintWriter writer = new PrintWriter( System.out );
-        dataTableModel.actualData.outputCSV( writer );
+        dataTableModel.averagedData.outputCSV( writer );
         writer.flush();
         logger.debug( "csv output finished" );
     }

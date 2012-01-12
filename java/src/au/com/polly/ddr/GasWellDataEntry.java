@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,6 +44,12 @@ private GasWell well;
 private DateRange range;
 private Map<WellMeasurementType,Double> measurements;
 private String comment;
+private static NumberFormat oneDotSix = NumberFormat.getNumberInstance();
+
+static {
+	oneDotSix.setMaximumFractionDigits( 6 );
+	oneDotSix.setGroupingUsed( false );
+}
 
 public GasWellDataEntry()
 {
@@ -63,7 +70,7 @@ public GasWellDataEntry copy()
     }
     if ( getComment() != null )
     {
-        setComment( getComment() );
+        copy.setComment( getComment() );
     }
 
     return copy;
@@ -138,7 +145,7 @@ public String getComment()
     return comment;
 }
 
-public void setComment(String comment)
+public void setComment( String comment )
 {
     if ( ( comment != null ) && ( comment.trim().length() > 0 ) )
     {
@@ -232,7 +239,7 @@ public boolean equals( Object other )
 
                 if ( this.containsMeasurement( wmt ) && otherEntry.containsMeasurement( wmt ) )
                 {
-                    result = Math.abs( this.getMeasurement( wmt ) - otherEntry.getMeasurement( wmt ) ) < 0.0000001;
+                    result = Math.abs( this.getMeasurement( wmt ) - otherEntry.getMeasurement( wmt ) ) < 0.000001;
                 }
             }
         }
@@ -263,11 +270,13 @@ public int hashCode()
     {
         if ( measurements.containsKey( wmt ) )
         {
-            result = HashCodeUtil.hash( result, measurements.get( wmt ) );
+			String text = oneDotSix.format( measurements.get(  wmt  ) );
+			if ( logger.isTraceEnabled() ) { logger.trace( "hashcode(): " + wmt + "=\"" + text + "\"" ); }
+            result = HashCodeUtil.hash( result, text );
         }
 
     }
-    result = HashCodeUtil.hash(result, comment);
+    result = HashCodeUtil.hash( result, comment );
     return result;
 }
 
@@ -292,7 +301,7 @@ public String toString()
     {
         if ( measurements.containsKey( wmt ) )
         {
-            out.append( wmt + "=" + measurements.get(WellMeasurementType.OIL_FLOW ) + " " );
+            out.append( wmt + "=" + measurements.get( wmt ) + " " );
         } else {
             out.append( "no " + wmt + " ");
         }

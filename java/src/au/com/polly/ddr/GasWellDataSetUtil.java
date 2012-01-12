@@ -24,8 +24,10 @@ import au.com.polly.util.DateArmyKnife;
 import au.com.polly.util.DateRange;
 import org.apache.log4j.Logger;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -192,7 +194,7 @@ public static Map<WellMeasurementType,Double> calculateTotalVolume( GasWellDataS
 
     if ( dataSet == null )
     {
-        throw new NullPointerException( "Must specify dataSet, you specified NULL!!" );
+        throw new NullPointerException( "Must specify averagedDataSet, you specified NULL!!" );
     }
     
     fromStamp = ( range != null ) ? range.from() : dataSet.from();
@@ -232,5 +234,89 @@ public static Map<WellMeasurementType,Double> calculateTotalVolume( GasWellDataS
 
     return result;
 }
+
+/**
+ * @param original the original date/time boundary
+ * @param updated the revised date/time boundary.
+ *
+ * @throws IllegalArgumentException if the original date could not be found, or if the updated
+ * date/time is either before the start of the previous boundary, or the original date/time is the
+ * start/end of all data or the updated dte/time is after the end of the next boundary.
+ */
+public static void moveAveragedDataBoundary( Date original, Date updated, GasWellDataSet originalData, GasWellDataSet averagedData )
+{
+	List<Date> stampList;
+	int pos;
+	GasWellDataEntry entry;
+	GasWellDataEntry previousEntry;
+
+	// some rudimentary sanity checks....
+	// -----------------------------------
+	if ( original == null )
+	{
+		throw new NullPointerException( "original date/time must NOT be NULL" );
+	}
+
+	if ( updated == null )
+	{
+		throw new NullPointerException( "updated date/time must NOT be NULL" );
+	}
+
+	if ( averagedData.from().after( original ) || averagedData.from().equals( original ) )
+	{
+		throw new IllegalArgumentException( "original date/time (" + original + ") on or BEFORE start of data (" + averagedData.from() + ")" );
+	}
+
+	if ( averagedData.until().before( original ) || averagedData.until().equals( original ) )
+	{
+		throw new IllegalArgumentException( "original date/time (" + original + ") on or AFTER end of data (" + averagedData.until() + ")" );
+	}
+
+	if ( averagedData.from().after( updated ) || averagedData.from().equals( updated ) )
+	{
+		throw new IllegalArgumentException( "updated date/time (" + updated + ") on or BEFORE start of data (" + averagedData.from() + ")" );
+	}
+
+	if ( averagedData.until().before( updated ) || averagedData.until().equals( updated ) )
+	{
+		throw new IllegalArgumentException( "updated date/time (" + updated + ") on or AFTER end of data (" + averagedData.until() + ")" );
+	}
+
+	// endeavour to find the original timestamp ....
+	// ----------------------------------------------
+	stampList = averagedData.getBoundaryTimestamps();
+	pos = Collections.binarySearch( stampList, original );
+
+	if ( pos < 0 )
+	{
+		throw new IllegalArgumentException( "Oh no!!! The original date could not be found!!!" );
+	}
+
+	entry = averagedData.getEntry( pos );
+	previousEntry = averagedData.getEntry( pos - 1 );
+
+	logger.debug( "pos=" + pos );
+	logger.debug( "entry=" + entry );
+	logger.debug( "previousEntry=" + previousEntry );
+
+	if ( updated.getTime() <= previousEntry.from().getTime() )
+	{
+		throw new IllegalArgumentException( "updated date/time (" + updated + ") is on or BEFORE previous interval start date/time " + previousEntry.from() );
+	}
+
+	if ( updated.getTime() >= entry.until().getTime() )
+	{
+		throw new IllegalArgumentException( "updated date/time (" + updated + ") is on or AFTER next interval start date/time " + entry.until() );
+	}
+
+	GasWellDataEntry replacementPreviousEntry = originalData.consolidateEntries( previousEntry.from(), updated );
+	replacementPreviousEntry.setComment( previousEntry.getComment() );
+	GasWellDataEntry replacementEntry = originalData.consolidateEntries( updated, entry.until() );
+	replacementEntry.setComment( entry.getComment() );
+
+	averagedData.getData().set( pos, replacementEntry );
+	averagedData.getData().set( pos - 1, replacementPreviousEntry );
+}
+
 
 }

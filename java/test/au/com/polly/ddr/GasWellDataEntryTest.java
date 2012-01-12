@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import javax.swing.colorchooser.AbstractColorChooserPanel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -55,6 +56,7 @@ import static org.junit.Assert.fail;
 @RunWith( JUnit4.class )
 public class GasWellDataEntryTest
 {
+private final static double ACCEPTABLE_ERROR = 1E-6;
 DateParser dateParser;
 Calendar twentyThirdApril;
 Calendar endJuly;
@@ -249,6 +251,138 @@ public void testEqualityWithMeasurements()
     beta.setComment( "hello world " );
     assertEquals( alpha, beta );
     assertEquals( alpha.hashCode(), beta.hashCode() );
+}
+
+@Test
+public void testEqualityWithAlmostIdenticalMeasurements()
+{
+    GasWell davesWell = new GasWell( "Dave's well" );
+    GasWell davesOtherWell = new GasWell( "Dave's well" );
+    GasWell alansWell = new GasWell( "Alan's well" );
+    GasWellDataEntry alpha = new GasWellDataEntry();
+    GasWellDataEntry beta = new GasWellDataEntry();
+    Date now = new Date();
+
+    assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
+
+    beta.setWell( davesWell );
+    assertFalse( alpha.equals( beta ) );
+    assertFalse( alpha.hashCode() == beta.hashCode() );
+    alpha.setWell( alansWell );
+    assertFalse( alpha.equals( beta ) );
+    assertFalse( alpha.hashCode() == beta.hashCode() );
+    alpha.setWell( davesOtherWell );
+    assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
+
+
+    alpha.setDateRange(new DateRange(now, 360000L, 1000L));
+    assertFalse( alpha.equals( beta ) );
+    assertFalse( alpha.hashCode() == beta.hashCode() );
+    beta.setDateRange(new DateRange(now, 360000L, 1000L));
+    assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
+
+    alpha.setMeasurement( WellMeasurementType.WATER_FLOW, 0.0 );
+    assertFalse( beta.equals( alpha ) );
+    beta.setMeasurement( WellMeasurementType.WATER_FLOW, 0.001 );
+    assertFalse( alpha.equals( beta ) );
+    alpha.setMeasurement( WellMeasurementType.WATER_FLOW, 0.0010001 );
+    assertEquals( alpha, beta );
+
+    beta.setMeasurement( WellMeasurementType.GAS_FLOW, 57.6 );
+    assertFalse( alpha.equals( beta ) );
+    alpha.setMeasurement( WellMeasurementType.GAS_FLOW, 5.76 );
+    assertFalse( alpha.equals( beta ) );
+    beta.setMeasurement( WellMeasurementType.GAS_FLOW, 5.760001 );
+    assertFalse( alpha.equals( beta ) );
+    beta.setMeasurement( WellMeasurementType.GAS_FLOW, 5.7600001 );
+    assertEquals( alpha, beta );
+
+    beta.setMeasurement( WellMeasurementType.OIL_FLOW, 57.6 );
+    assertFalse( alpha.equals( beta ) );
+    alpha.setMeasurement( WellMeasurementType.OIL_FLOW, 5.76 );
+    assertFalse( alpha.equals( beta ) );
+    assertFalse( alpha.hashCode() == beta.hashCode() );
+    beta.setMeasurement( WellMeasurementType.OIL_FLOW, 5.760001 );
+    assertFalse( alpha.equals( beta ) );
+    assertFalse( alpha.hashCode() == beta.hashCode() );
+    beta.setMeasurement( WellMeasurementType.OIL_FLOW, 5.7600001 );
+    assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
+
+    beta.setMeasurement( WellMeasurementType.CONDENSATE_FLOW, 57.6 );
+    assertFalse( alpha.equals( beta ) );
+    alpha.setMeasurement( WellMeasurementType.CONDENSATE_FLOW, 5.76 );
+    assertFalse( alpha.equals( beta ) );
+	beta.setMeasurement( WellMeasurementType.CONDENSATE_FLOW,  5.76 );
+	assertEquals( alpha, beta );
+	assertEquals(  alpha.hashCode(), beta.hashCode() );
+
+	// equality test stretches to six decimal points!!
+	// this should be different enough to trigger inequality...
+	// ---------------------------------------------------------
+    beta.setMeasurement( WellMeasurementType.CONDENSATE_FLOW, 5.760001 );
+    assertFalse( alpha.equals( beta ) );
+    assertFalse( alpha.hashCode() == beta.hashCode() );
+
+	// this should be equal to 5.76!!;
+	// --------------------------------
+    beta.setMeasurement( WellMeasurementType.CONDENSATE_FLOW,  5.7600001 );
+    assertEquals( alpha, beta );
+	assertEquals(  alpha.hashCode(), beta.hashCode() );
+
+    alpha.setComment( " " );
+    assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
+
+    alpha.setComment( "hello world" );
+    assertFalse( alpha.equals( beta ) );
+    assertFalse(alpha.hashCode() == beta.hashCode());
+    beta.setComment( "hello world " );
+    assertEquals( alpha, beta );
+    assertEquals( alpha.hashCode(), beta.hashCode() );
+}
+	
+@Test
+public void testCopyingEntry()
+{
+	GasWellDataEntry alpha = new GasWellDataEntry();
+	alpha.setWell(  new GasWell(  "osho" ) );
+	alpha.setDateRange( new DateRange( "12/JAN/2012", "18/JAN/2012", 1000L ) );
+	alpha.setComment( "just testing" );
+	alpha.setMeasurement( WellMeasurementType.OIL_FLOW, 576.112952 );
+	alpha.setMeasurement( WellMeasurementType.GAS_FLOW, 17.892751 );
+	alpha.setMeasurement( WellMeasurementType.WATER_FLOW, 675.1152 );
+	alpha.setMeasurement( WellMeasurementType.CONDENSATE_FLOW, 13.25262 );
+	
+	GasWellDataEntry beta = alpha.copy();
+	assertEquals(  alpha, beta );
+	assertEquals(  alpha.hashCode(), beta.hashCode() );
+	assertEquals(  576.112952, beta.getMeasurement( WellMeasurementType.OIL_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  17.892751, beta.getMeasurement( WellMeasurementType.GAS_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  675.1152, beta.getMeasurement( WellMeasurementType.WATER_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  13.25262, beta.getMeasurement( WellMeasurementType.CONDENSATE_FLOW ), ACCEPTABLE_ERROR );
+	assertEquals(  "just testing", beta.getComment() );
+	assertEquals(  "osho", beta.getWell().getName() );
+}
+	
+@Test
+public void testSettingComment()
+{
+	GasWellDataEntry alpha = new GasWellDataEntry();
+	alpha.setWell(  new GasWell(  "osho" ) );
+	alpha.setDateRange( new DateRange( "12/JAN/2012", "18/JAN/2012" ) );
+	alpha.setMeasurement( WellMeasurementType.OIL_FLOW, 576.112952 );
+	alpha.setMeasurement( WellMeasurementType.GAS_FLOW, 17.892751 );
+	alpha.setMeasurement( WellMeasurementType.WATER_FLOW, 675.1152 );
+	alpha.setMeasurement( WellMeasurementType.CONDENSATE_FLOW, 13.25262 );
+	
+	assertNull(  alpha.getComment()  );
+	alpha.setComment( "  hello world" );
+	assertNotNull(  alpha.getComment() );
+	assertEquals(  "hello world", alpha.getComment() );
 }
 
 }
