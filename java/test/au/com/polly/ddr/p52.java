@@ -25,6 +25,9 @@ import au.com.polly.util.DateRange;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
+import java.util.Calendar;
+import java.util.Formatter;
+import java.util.Locale;
 
 /**
  * Output a reduced version of the BY11 data..
@@ -62,32 +65,32 @@ private final static DateRange[] intervalDates = new DateRange[] {
 };
 	          */
 	private final static DateRange[] intervalDates = new DateRange[] {
-			new DateRange( "16/Jul/2006 20:47", "08/Aug/2006 08:25" ),
-			new DateRange( "08/Aug/2006 08:25", "14/Aug/2006 15:19" ),
-			new DateRange( "14/Aug/2006 15:19", "19/Sep/2006 13:06" ),
-			new DateRange( "19/Sep/2006 13:06", "20/Oct/2006 14:07" ),
-			new DateRange( "20/Oct/2006 14:07", "14/May/2007 20:02" ),
-			new DateRange( "14/May/2007 20:02", "01/Jun/2007 04:57" ),
-			new DateRange( "01/Jun/2007 04:57", "22/Jun/2007 06:06" ),
-			new DateRange( "22/Jun/2007 06:06", "02/Jul/2007 04:57" ),
-			new DateRange( "02/Jul/2007 04:57", "01/Feb/2008 04:57" ),
-			new DateRange( "01/Feb/2008 04:57", "01/Jul/2008 04:57" ),
-			new DateRange( "01/Jul/2008 04:57", "01/Aug/2008 04:57" ),
-			new DateRange( "01/Aug/2008 04:57", "05/Aug/2008 23:42" ),
-			new DateRange( "05/Aug/2008 23:42", "13/Aug/2008 01:42" ),
-			new DateRange( "13/Aug/2008 01:42", "17/Jan/2009 18:02" ),
-			new DateRange( "17/Jan/2009 18:02", "22/Jan/2009 09:36" ),
-			new DateRange( "22/Jan/2009 09:36", "12/Mar/2009 16:20" ),
-			new DateRange( "12/Mar/2009 16:20", "18/Mar/2009 17:51" ),
-			new DateRange( "18/Mar/2009 17:51", "12/Aug/2009 03:03" ),
-			new DateRange( "12/Aug/2009 03:03", "15/Aug/2009 23:33" ),
-			new DateRange( "15/Aug/2009 23:33", "27/May/2010 23:33" ),
-			new DateRange( "27/May/2010 23:33", "02/Jun/2010 15:24" ),
-			new DateRange( "02/Jun/2010 15:24", "17/Sep/2010 08:57" ),
-			new DateRange( "17/Sep/2010 08:57", "21/Sep/2010 08:57" ),
-			new DateRange( "21/Sep/2010 08:57", "27/Sep/2010 12:00" ),
-			new DateRange( "27/Sep/2010 12:00", "27/Sep/2011 01:11" ),
-
+			new DateRange( "16/JUL/2006 20:47", "08/AUG/2006 08:25" ),
+			new DateRange( "08/AUG/2006 08:25", "14/AUG/2006 15:19" ),
+			new DateRange( "14/AUG/2006 15:19", "19/SEP/2006 13:06" ),
+			new DateRange( "19/SEP/2006 13:06", "20/OCT/2006 14:07" ),
+			new DateRange( "20/OCT/2006 14:07", "14/MAY/2007 20:02" ),
+			new DateRange( "14/MAY/2007 20:02", "01/JUN/2007 04:57" ),
+			new DateRange( "01/JUN/2007 04:57", "22/JUN/2007 06:06" ),
+			new DateRange( "22/JUN/2007 06:06", "02/JUL/2007 04:57" ),
+			new DateRange( "02/JUL/2007 04:57", "01/FEB/2008 04:57" ),
+			new DateRange( "01/FEB/2008 04:57", "01/JUL/2008 04:57" ),
+			new DateRange( "01/JUL/2008 04:57", "10/JUL/2008 14:36" ),
+			new DateRange( "10/JUL/2008 14:36", "01/AUG/2008 00:37" ),
+			new DateRange( "01/AUG/2008 00:37", "05/AUG/2008 23:42" ),
+			new DateRange( "05/AUG/2008 23:42", "13/AUG/2008 01:42" ),
+			new DateRange( "13/AUG/2008 01:42", "17/JAN/2009 18:02" ),
+			new DateRange( "17/JAN/2009 18:02", "22/JAN/2009 09:36" ),
+			new DateRange( "22/JAN/2009 09:36", "12/MAR/2009 16:20" ),
+			new DateRange( "12/MAR/2009 16:20", "18/MAR/2009 17:51" ),
+			new DateRange( "18/MAR/2009 17:51", "12/AUG/2009 03:03" ),
+			new DateRange( "12/AUG/2009 03:03", "15/AUG/2009 23:33" ),
+			new DateRange( "15/AUG/2009 23:33", "27/MAY/2010 23:33" ),
+			new DateRange( "27/MAY/2010 23:33", "02/JUN/2010 15:24" ),
+			new DateRange( "02/JUN/2010 15:24", "17/SEP/2010 08:57" ),
+			new DateRange( "17/SEP/2010 08:57", "21/SEP/2010 08:57" ),
+			new DateRange( "21/SEP/2010 08:57", "27/SEP/2010 12:00" ),
+			new DateRange( "27/SEP/2010 12:00", "27/SEP/2011 01:11" )
 	};
 
 
@@ -104,7 +107,40 @@ private final static DateRange[] intervalDates = new DateRange[] {
 
 		PrintWriter writer = new PrintWriter( System.out );
 
-		modified.outputCSV(  writer  );
+		System.out.println( "from,until,duration,oil,condensate,gas,water" );
+		for( GasWellDataEntry entry : modified.getData() )
+		{
+			Calendar cal = Calendar.getInstance();
+			cal.setTime( entry.from() );
+			System.out.print( "=DATE(" + cal.get( Calendar.YEAR ) );
+			System.out.print(  ";" + ( cal.get(  Calendar.MONTH ) + 1 ) );
+			System.out.print(  ";" + cal.get(  Calendar.DAY_OF_MONTH ) + ")+TIME(" );
+			System.out.print(  cal.get( Calendar.HOUR_OF_DAY) + ";" + cal.get( Calendar.MINUTE ) + ";" + cal.get(  Calendar.SECOND  ) + ")" );
+			System.out.print(  "," );
+
+			cal.setTime( entry.until() );
+			System.out.print( "=DATE(" + cal.get(  Calendar.YEAR ) );
+			System.out.print(  ";" + ( cal.get(  Calendar.MONTH ) + 1 ) );
+			System.out.print(  ";" + cal.get(  Calendar.DAY_OF_MONTH ) + ")+TIME(" );
+			System.out.print(  cal.get( Calendar.HOUR_OF_DAY) + ";" + cal.get( Calendar.MINUTE ) + ";" + cal.get(  Calendar.SECOND  ) + ")" );
+			System.out.print(  "," );
+			Formatter formatter = new Formatter( writer, Locale.UK );
+			formatter.format(  "%10.4f", entry.getIntervalLengthMS() / 3600000.0 );
+			for( WellMeasurementType wmt : WellMeasurementType.values() )
+			{
+				if ( entry.containsMeasurement( wmt ) )
+				{
+					formatter.format(  ",%12.8f", entry.getMeasurement( wmt ) );
+				} else {
+					writer.print(  ",    0.00000000" );
+				}
+			}
+			writer.println();
+			writer.flush();
+		}
+		System.out.flush();
+
+//		modified.outputCSV(  writer  );
 		
 //		reducedBY11Data.outputCSV( writer, true, false );
 		writer.flush();

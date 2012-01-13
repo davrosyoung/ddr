@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import static junit.framework.Assert.assertFalse;
@@ -69,7 +70,7 @@ public void testFormattingDateWithMillisecondsTwoDigitYear()
 public void testFormattingDateWithSeconds()
 {
     Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
-    String text = DateArmyKnife.formatWithSeconds(stamp);
+    String text = DateArmyKnife.formatWithSeconds( stamp );
     Assert.assertEquals( "13/JUN/1968 04:13:59", text  );
 }
 
@@ -85,7 +86,7 @@ public void testFormattingDateWithSecondsTwoDigitYear()
 public void testFormattingDateWithMinutes()
 {
     Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
-    String text = DateArmyKnife.formatWithMinutes(stamp);
+    String text = DateArmyKnife.formatWithMinutes( stamp );
     Assert.assertEquals( "13/JUN/1968 04:13", text  );
 }
 
@@ -95,6 +96,16 @@ public void testFormattingDateWithMinutesTwoDigitYear()
     Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
     String text = DateArmyKnife.formatWithMinutes(stamp, false);
     Assert.assertEquals( "13/JUN/68 04:13", text  );
+}
+
+@Test
+public void testFormattingCaledarWithMinutesTwoDigitYearAndDashMonthSeparator()
+{
+    Date stamp = parser.parse( "13/JUN/1968 04:13:59.235" ).getTime();
+	Calendar cal = Calendar.getInstance();
+	cal.setTime( stamp );
+    String text = DateArmyKnife.formatWithMinutes( cal, false, '-' );
+    Assert.assertEquals( "13-JUN-68 04:13", text  );
 }
 
 @Test
