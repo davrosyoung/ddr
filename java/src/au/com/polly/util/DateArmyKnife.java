@@ -223,9 +223,21 @@ public static String formatWithMinutes( Calendar cal )
  */
 public static String formatWithMinutes(Calendar cal, boolean fourDigitYear )
 {
+	return formatWithMinutes(  cal, fourDigitYear, '/' );
+}
+
+/**
+ *
+ *
+ * @param cal
+ * @param fourDigitYear whether to output four digit year or not.
+ * @return date formatted as dd/MMM/yyyy hh:mm  or dd/MMM/yy hh:mm
+ */
+public static String formatWithMinutes(Calendar cal, boolean fourDigitYear, char monthSeparator )
+{
     StringBuilder out = new StringBuilder();
     
-    out.append( formatJustDate( cal, fourDigitYear ) );
+    out.append( formatJustDate( cal, fourDigitYear, monthSeparator ) );
     out.append( " " );
     out.append( twoDigitFormatter.format( cal.get( Calendar.HOUR_OF_DAY ) ) );
     out.append( ":" );

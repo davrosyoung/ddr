@@ -20,10 +20,15 @@
 
 package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.GasWellDataEntry;
 import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.WellMeasurementType;
+import au.com.polly.util.DateArmyKnife;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Formatter;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -35,6 +40,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
+import java.util.Locale;
 
 /**
  * Displays the data interval boundaries to the operator.
@@ -203,22 +209,24 @@ protected void populate()
     gbc.gridwidth = 1;
     gbc.gridheight = 1;
     
-    gbc.gridwidth = 7;
+    gbc.gridwidth = 6;
     gbc.gridx = 1;
     add( spacerLabel, gbc );
+
+
+	//  CSV button is only really for debugging ... not intended for production purposes...
+	gbc.gridx = 7;
+	gbc.gridy = 11;
+	gbc.gridwidth = 1;
+	add( csvButton, gbc );
+
 
     gbc.gridwidth = 1;
     
     gbc.gridx = 8;
     gbc.gridy = 11;
     add( saveButton, gbc );
-    
- /* CSV button is only really for debugging ... not intended for production purposes...
-    gbc.gridx = 8;
-    gbc.gridy = 11;
-    
-    add( csvButton, gbc );
-*/
+
     gbc.gridx=9;
     
     add( cancelButton, gbc );
@@ -263,6 +271,46 @@ public void actionPerformed( ActionEvent e )
         dataTableModel.averagedData.outputCSV( writer );
         writer.flush();
         logger.debug( "csv output finished" );
+		System.out.println( "-------------------------------------------" );
+		System.out.println( "JAVA DATE RANGES" ) ;
+		for( GasWellDataEntry entry : dataTableModel.averagedData.getData() )
+		{
+			System.out.println( "new DateRange( \"" + DateArmyKnife.formatWithMinutes( entry.from() ) + "\", \"" + DateArmyKnife.formatWithMinutes( entry.until() ) + "\" )," );
+		}
+		System.out.println( "-------------------------------------------" );
+		System.out.println( "from,until,duration,oil,condensate,gas,water" );
+		for( GasWellDataEntry entry : dataTableModel.averagedData.getData() )
+		{
+			Calendar cal = Calendar.getInstance();
+
+			cal.setTime( entry.from() );
+			System.out.print( "=DATE(" + cal.get( Calendar.YEAR ) );
+			System.out.print( ";" + ( cal.get(  Calendar.MONTH ) + 1 ) );
+			System.out.print( ";" + cal.get( Calendar.DAY_OF_MONTH ) + ")+TIME(" );
+			System.out.print(  cal.get( Calendar.HOUR_OF_DAY) + ";" + cal.get( Calendar.MINUTE ) + ";" + cal.get(  Calendar.SECOND  ) + ")" );
+			System.out.print(  "," );
+
+			cal.setTime( entry.until() );
+			System.out.print( "=DATE(" + cal.get(  Calendar.YEAR ) );
+			System.out.print(  ";" + ( cal.get(  Calendar.MONTH ) + 1 ) );
+			System.out.print(  ";" + cal.get(  Calendar.DAY_OF_MONTH ) + ")+TIME(" );
+			System.out.print(  cal.get( Calendar.HOUR_OF_DAY) + ";" + cal.get( Calendar.MINUTE ) + ";" + cal.get(  Calendar.SECOND  ) + ")" );
+			System.out.print(  "," );
+			Formatter formatter = new Formatter( writer, Locale.UK );
+			formatter.format(  "%10.4f", entry.getIntervalLengthMS() / 3600000.0 );
+			for( WellMeasurementType wmt : WellMeasurementType.values() )
+			{
+				if ( entry.containsMeasurement( wmt ) )
+				{
+					formatter.format(  ",%12.8f", entry.getMeasurement( wmt ) );
+				} else {
+					writer.print(  ",    0.00000000" );
+				}
+			}
+			writer.println();
+			writer.flush();
+		}
+		System.out.flush();
     }
     
     if ( e.getActionCommand().startsWith( "add" ) )

@@ -22,6 +22,7 @@ package au.com.polly.ddr.ui;
 
 import au.com.polly.ddr.GasWellDataEntry;
 import au.com.polly.ddr.GasWellDataSet;
+import au.com.polly.ddr.GasWellDataSetUtil;
 import au.com.polly.ddr.WellMeasurementType;
 import au.com.polly.util.AussieDateParser;
 import au.com.polly.util.DateArmyKnife;
@@ -333,7 +334,8 @@ public void setValueAt( Object value, int row, int col)
                 // -------------------------------------------------------------------------------------
                 try {
                     if ( row >= 0 ) {
-						averagedData.moveBoundary( entry.from(), stamp );
+						GasWellDataSetUtil.moveAveragedDataBoundary( entry.from(), stamp, originalData, averagedData );
+//						averagedData.moveBoundary( entry.from(), stamp );
                         fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH ));
                         fireTableCellUpdated( row, getColumnIndex( ColumnType.UNTIL_TIMESTAMP ));
 
@@ -359,7 +361,9 @@ public void setValueAt( Object value, int row, int col)
                 // this next line will update BOTH this entry and the subsequent... OR throw an error!!
                 // -------------------------------------------------------------------------------------
 				try {
-                    averagedData.moveBoundary( entry.until(), stamp );
+//                    averagedData.moveBoundary( entry.until(), stamp );
+					GasWellDataSetUtil.moveAveragedDataBoundary( entry.until(), stamp, originalData, averagedData );
+
                     fireTableCellUpdated( row, getColumnIndex( ColumnType.INTERVAL_LENGTH ));
                     fireTableCellUpdated( row, getColumnIndex( ColumnType.UNTIL_TIMESTAMP ));
 

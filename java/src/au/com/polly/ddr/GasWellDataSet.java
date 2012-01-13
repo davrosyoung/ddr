@@ -914,6 +914,7 @@ public void outputAmitsFormat( PrintWriter writer )
     long dm = 0;
     long dh = 0;
     long dd = 0;
+	Calendar cal = Calendar.getInstance();
 
     durationSeconds = ( until().getTime() - from().getTime() ) / 1000L;
     ds = durationSeconds % 60;
@@ -930,8 +931,8 @@ public void outputAmitsFormat( PrintWriter writer )
     StringBuilder firstHeadingLine = new StringBuilder();
     StringBuilder secondHeadingLine = new StringBuilder();
     
-    firstHeadingLine.append(  "           " );
-    secondHeadingLine.append( "           " );
+    firstHeadingLine.append(  "                 " );
+    secondHeadingLine.append( "                 " );
 
     if ( containsMeasurement( WellMeasurementType.OIL_FLOW ) )
     {
@@ -967,7 +968,8 @@ public void outputAmitsFormat( PrintWriter writer )
 
     for( GasWellDataEntry entry : list )
     {
-        writer.print( DateArmyKnife.formatJustDate( entry.from(), false, '-' ) );
+		cal.setTime( entry.from() );
+        writer.print( DateArmyKnife.formatWithMinutes( cal, false, '-' ) );
         writer.print( "       " );
         
         for( WellMeasurementType wmt : WellMeasurementType.values() )
