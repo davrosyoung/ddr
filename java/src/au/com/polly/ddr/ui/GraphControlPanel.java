@@ -20,6 +20,7 @@
 
 package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.ApplicationConfiguration;
 import au.com.polly.ddr.GasWell;
 import au.com.polly.ddr.GasWellDataExtractor;
 import au.com.polly.ddr.GasWellDataExtractorFactory;
@@ -60,22 +61,7 @@ public class GraphControlPanel extends JPanel implements ActionListener, Reducti
 static private Logger logger = Logger.getLogger( GraphControlPanel.class );
 SimpleDateFormat dateFormatter = new SimpleDateFormat( "dd/MMM/yyyy HH:mm:ss" );
 DateParser dateParser = new AussieDateParser();
-
-private static File dataDirectory;
-
-static {
-    String text = null;
-    if ( ( text = System.getProperty( "ddr.data.directory" ) ) != null )
-    {
-        dataDirectory = new File( text );
-        if ( ! dataDirectory.isDirectory() )
-        {
-            dataDirectory = null;
-        } else {
-            logger.info( "Just set dataDirectory to [" +dataDirectory.getAbsolutePath() + "]" );
-        }
-    }
-}
+private final static ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
 
 JButton oilFlowButton;
 JButton gasFlowButton;
@@ -167,25 +153,16 @@ public GraphControlPanel( Date from, Date until )
     loadFileBox = new JFileChooser();
     loadFileBox.setDialogTitle( "Open Background Data File" );
     loadFileBox.setFileFilter( new DataSourceFileFilter() );
-    if ( dataDirectory != null )
-    {
-        loadFileBox.setCurrentDirectory( dataDirectory );
-    }
+    loadFileBox.setCurrentDirectory( appConfig.getDefaultOriginalCSVDirectory() );
 
     loadOverlayFileBox = new JFileChooser();
     loadOverlayFileBox.setDialogTitle("Open Overlay Data File" );
     loadOverlayFileBox.setFileFilter(new DataSourceFileFilter());
-    if ( dataDirectory != null )
-    {
-        loadOverlayFileBox.setCurrentDirectory( dataDirectory );
-    }
+    loadOverlayFileBox.setCurrentDirectory( appConfig.getDefaultAveragedCSVDirectory() );
 
     saveOverlayFileBox = new JFileChooser();
     saveOverlayFileBox.setDialogTitle( "Save Overlay Data File" );
-    if ( dataDirectory != null )
-    {
-        saveOverlayFileBox.setCurrentDirectory( dataDirectory );
-    }
+    saveOverlayFileBox.setCurrentDirectory( appConfig.getDefaultAveragedCSVDirectory() );
 
     fromDateLabel = new JLabel( "from:" );
     untilDateLabel = new JLabel( "until:" );
