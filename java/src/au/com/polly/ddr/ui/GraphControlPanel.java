@@ -99,14 +99,14 @@ public GraphControlPanel( Date from, Date until )
     String label;
 
     oilFlowButton = new JButton();
-    oilFlowButton.setEnabled( true );
+    oilFlowButton.setEnabled( false );
     oilFlowButton.setName( "oilFlowButton" );
     oilFlowButton.setText( "Oil Flow" );
     oilFlowButton.setVisible( true );
     oilFlowButton.addActionListener( this );
 
     gasFlowButton = new JButton();
-    gasFlowButton.setEnabled( true );
+    gasFlowButton.setEnabled( false );
     gasFlowButton.setText( "Gas Flow" );
     gasFlowButton.setName( "gasFlowButton" );
     gasFlowButton.setVisible( true );
@@ -115,14 +115,14 @@ public GraphControlPanel( Date from, Date until )
     waterFlowButton = new JButton();
     waterFlowButton.setName( "waterFlowButton" );
     waterFlowButton.setText( "Water Flow" );
-    waterFlowButton.setEnabled( true );
+    waterFlowButton.setEnabled( false );
     waterFlowButton.setVisible( true );
     waterFlowButton.addActionListener( this );
 
     condensateFlowButton = new JButton();
     condensateFlowButton.setName( "condensateFlowButton" );
     condensateFlowButton.setText( "Condensate" );
-    condensateFlowButton.setEnabled( true );
+    condensateFlowButton.setEnabled( false );
     condensateFlowButton.setVisible( true );
     condensateFlowButton.addActionListener( this );
 
@@ -138,23 +138,27 @@ public GraphControlPanel( Date from, Date until )
     loadOverlayFileButton.setText( label );
     loadOverlayFileButton.addActionListener( this );
     loadOverlayFileButton.setName( "openOverlayFileButton" );
+    loadOverlayFileButton.setEnabled( false );
 
     label = appConfig.getEditOverlayDataButtonLabel();
     editOverlayButton = new JButton();
     editOverlayButton.setText( label );
     editOverlayButton.addActionListener( this );
     editOverlayButton.setName( "editOverlayData" );
+    editOverlayButton.setEnabled( false );
 
     generateOverlayButton = new JButton();
     generateOverlayButton.setText( "reduce" );
     generateOverlayButton.setName("reduce");
     generateOverlayButton.addActionListener( this );
+    generateOverlayButton.setEnabled( false );
 
     label = appConfig.getSaveOverlayDataButtonLabel();
     saveOverlayFileButton = new JButton();
     saveOverlayFileButton.setText( label );
     saveOverlayFileButton.addActionListener( this );
     saveOverlayFileButton.setName( "saveOverlayFileButton" );
+    saveOverlayFileButton.setEnabled( false );
 
     loadFileBox = new JFileChooser();
     loadFileBox.setDialogTitle( "Open Original CSV Data File" );
@@ -198,6 +202,7 @@ public GraphControlPanel( Date from, Date until )
     updateGraphFromDatesButton.setText( "update graph" );
     updateGraphFromDatesButton.addActionListener( this );
     updateGraphFromDatesButton.setName( "updateGraph" );
+    updateGraphFromDatesButton.setEnabled( false );
 
 
     setLayout(new GridBagLayout());
@@ -300,13 +305,22 @@ public void actionPerformed(ActionEvent evt)
                     grapher.loadData( newData );
                     StringBuilder dateAvailabilityText = new StringBuilder( "from:" );
                     dateAvailabilityText.append( ( from != null ) ? dateFormatter.format( from ) : "unavailable" );
-                    dateAvailabilityText.append( " until:" );
-                    dateAvailabilityText.append( ( until != null ) ? dateFormatter.format( until ) : "unavailable" );
+                    dateAvailabilityText.append(" until:");
+                    dateAvailabilityText.append((until != null) ? dateFormatter.format(until) : "unavailable");
                     availableDateLabel.setText(dateAvailabilityText.toString());
-                    fromDateField.setText( dateFormatter.format(from) );
-                    untilDateField.setText( dateFormatter.format( until ) );
+                    fromDateField.setText(dateFormatter.format(from));
+                    untilDateField.setText(dateFormatter.format(until));
                     fromDateField.setEnabled( true );
                     untilDateField.setEnabled( true );
+                    updateGraphFromDatesButton.setEnabled(true );
+                    oilFlowButton.setEnabled( true );
+                    gasFlowButton.setEnabled( true );
+                    condensateFlowButton.setEnabled( true );
+                    waterFlowButton.setEnabled( true );
+                    loadFileButton.setEnabled( true );
+                    loadOverlayFileButton.setEnabled( true );
+                    generateOverlayButton.setEnabled( true );
+
                 }
                 break;
             }
@@ -316,6 +330,8 @@ public void actionPerformed(ActionEvent evt)
                 GasWellDataSet newData = loadDataFromFileChooser( loadOverlayFileBox );
                 if ( newData != null )
                 {
+                    editOverlayButton.setEnabled( true );
+                    saveOverlayFileButton.setEnabled( true );
                     grapher.loadOverlayData( newData );
                     ((JComponent)grapher).repaint();
                 }
@@ -544,7 +560,7 @@ protected GasWellDataSet loadDataFromFileChooser( JFileChooser chooser )
             logger.debug( "NO file selected from open dialog" );
         }
     }
-
+    
     return result;
 }
 
@@ -571,6 +587,9 @@ public void reduce( ReductionParameters reductionParameters )
     grapher.reduce(reducer);
 
     logger.debug( "Just finished reduction" );
+
+    saveOverlayFileButton.setEnabled( true );
+    editOverlayButton.setEnabled( true );
 
     reducerControlPanel.setVisible( false );
     reducerControlPanel.removeAll();
