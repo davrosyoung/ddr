@@ -20,6 +20,7 @@
 
 package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.ApplicationConfiguration;
 import au.com.polly.ddr.GasWellDataEntry;
 import au.com.polly.ddr.GasWellDataSet;
 import au.com.polly.ddr.GasWellDataSetUtil;
@@ -58,7 +59,8 @@ import java.util.Map;
  */
 public class GasWellDataSetTableModel extends AbstractTableModel
 {
-static final Logger logger = Logger.getLogger( GasWellDataSetTableModel.class );
+private final static Logger logger = Logger.getLogger( GasWellDataSetTableModel.class );
+private final static ApplicationConfiguration appConf = ApplicationConfiguration.getInstance();
 protected GasWellDataSet averagedData = null;
 protected GasWellDataSet originalData = null;
 enum ColumnType {
@@ -70,8 +72,8 @@ enum ColumnType {
     GAS_FLOW( 80, Double.class, false, "Gas Flow Rate", WellMeasurementType.GAS_FLOW ),
     WATER_FLOW( 80, Double.class, false, "Water Flow Rate", WellMeasurementType.WATER_FLOW ),
     COMMENT( 300, String.class, true, "Comment" ),
-    ADD( 120, String.class, true, "Add" ),
-    DELETE( 120, String.class, true, "Del" );
+    ADD( 120, String.class, true, appConf.getIntervalAddButtonLabel() ),
+    DELETE( 120, String.class, true, appConf.getIntervalDeleteButtonLabel() );
 
     protected int width = 5;
     protected Class klass = null;
@@ -259,10 +261,15 @@ public Object getValueAt( int rowIndex, int columnIndex )
             result = entry.getComment();
             break;
         case ADD:
-            result = "Add";
+            result = appConf.getIntervalAddButtonLabel();
             break;
         case DELETE:
-            result = "Del";
+            if ( rowIndex > 0 )
+            {
+                result = appConf.getIntervalDeleteButtonLabel();
+            } else {
+                result = null;
+            }
             break;
     }
     return result;
