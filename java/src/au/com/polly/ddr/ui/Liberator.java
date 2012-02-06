@@ -20,6 +20,7 @@
 
 package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.ApplicationConfiguration;
 import au.com.polly.ddr.ExcelWorkbookExplorer;
 import au.com.polly.ddr.ExcelWorkbookExplorerFactory;
 import au.com.polly.ddr.GasWell;
@@ -57,36 +58,9 @@ public class Liberator extends JPanel implements ActionListener
 private final static Logger logger = Logger.getLogger( Liberator.class );
 private final static String CHOOSE_FILE = "chooseFilePanel";
 private final static String LOADING_FILE = "loadingFilePanel";
-//private final static String SELECT_WORKSHEET = "worksheetSelectorPanel";
 private final static String SELECT_WELLS = "wellSelectorPanel";
 private final static NumberFormat percentageFormatter = NumberFormat.getPercentInstance();
-private static File dataDirectory;
-private static File sourceDirectory;
-
-static {
-    String text = null;
-    if ( ( text = System.getProperty( "ddr.data.directory" ) ) != null )
-    {
-        dataDirectory = new File( text );
-        if ( ! dataDirectory.isDirectory() )
-        {
-            dataDirectory = null;
-        } else {
-            logger.info( "Just set dataDirectory to [" +dataDirectory.getAbsolutePath() + "]" );
-        }
-    }
-
-    if ( ( text = System.getProperty( "ddr.source.directory" ) ) != null )
-    {
-        sourceDirectory = new File( text );
-        if ( ! sourceDirectory.isDirectory() )
-        {
-            sourceDirectory = ( dataDirectory != null ) ? dataDirectory : null;
-        } else {
-            logger.info( "Just set sourceDirectory to [" + sourceDirectory.getAbsolutePath() + "]" );
-        }
-    }
-}
+private final static ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
 
 JPanel chooseFilePanel;
 JPanel loadingFilePanel;
@@ -177,12 +151,10 @@ protected JPanel createChooseFilePanel()
 
     spreadsheetFileChooser = new JFileChooser();
     spreadsheetFileChooser.setFileFilter( new ExcelFileFilter() );
-    spreadsheetFileChooser.addActionListener( this );
-    spreadsheetFileChooser.setName( "spreadsheetFileChooser" );
-    if ( sourceDirectory != null )
-    {
-        spreadsheetFileChooser.setCurrentDirectory( sourceDirectory );
-    }
+    spreadsheetFileChooser.addActionListener(this);
+    spreadsheetFileChooser.setName("spreadsheetFileChooser");
+    logger.debug( "appConfig.getDefaultExcelDirectory()=[" + appConfig.getDefaultExcelDirectory() + "]" );
+    spreadsheetFileChooser.setCurrentDirectory( appConfig.getDefaultExcelDirectory() );
 
     result.add( spreadsheetFileChooser, gbc );
     
@@ -393,10 +365,7 @@ protected void handleExtractButton(ActionEvent evt)
     MultipleWellDataMap mwdm = extractor.extract();
     Map<GasWell,GasWellDataSet> dataMap = mwdm.getDataMap();
     JFileChooser chooser = new JFileChooser();
-    if ( dataDirectory != null )
-    {
-        chooser.setCurrentDirectory( dataDirectory );
-    }
+    chooser.setCurrentDirectory( appConfig.getDefaultOriginalCSVDirectory() );
 
     // choose directory to saveIntervalEditor files in...
     // ------------------------------------
