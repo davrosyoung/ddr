@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -36,7 +35,6 @@ import java.util.Properties;
 public class ApplicationConfiguration
 {
 private final static Logger logger = Logger.getLogger( ApplicationConfiguration.class );
-private final static Object singletonLock = new Date();
 private static Properties defaultProperties = null;
 
 private File defaultExcelDirectory;
@@ -79,7 +77,7 @@ protected static ApplicationConfiguration loadFromProperties()
     File propertiesFile = null;
     ApplicationConfiguration result = null;
     Properties properties = null;
-    
+
     do {
         
         // step 1 ... interrogate ddr.properties command line argument
