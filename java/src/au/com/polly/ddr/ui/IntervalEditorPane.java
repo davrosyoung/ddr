@@ -52,6 +52,7 @@ import java.util.Locale;
 public class IntervalEditorPane extends JPanel implements ActionListener, TableModelListener
 {
 private final static Logger logger = Logger.getLogger(IntervalEditorPane.class);
+private final static ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
 protected GasWellDataSet averagedDataSet = null;
 protected GasWellDataSet originalDataSet = null;
 
@@ -91,13 +92,16 @@ protected void populate()
     cancelButton.setText( "Cancel" );
     cancelButton.setActionCommand( "cancel" );
     cancelButton.addActionListener( this );
-    
-    csvButton = new JButton();
-    csvButton.setName("csv");
-    csvButton.setText("csv");
-    csvButton.setActionCommand( "csv" );
-    csvButton.setEnabled( true );
-    csvButton.addActionListener(this);
+
+    if ( appConfig.isDisplayIntervalEditorCSVButton() )
+    {
+        csvButton = new JButton();
+        csvButton.setName("csv");
+        csvButton.setText("csv");
+        csvButton.setActionCommand( "csv" );
+        csvButton.setEnabled( true );
+        csvButton.addActionListener(this);
+    }
 
     dataDisplayTable = new JTable( dataTableModel );
     dataDisplayTable.setEnabled( true );
@@ -220,14 +224,16 @@ protected void populate()
 
 
 	//  CSV button is only really for debugging ... not intended for production purposes...
-	gbc.gridx = 7;
-	gbc.gridy = 11;
-	gbc.gridwidth = 1;
-	add( csvButton, gbc );
+    if ( appConfig.isDisplayIntervalEditorCSVButton() )
+    {
+        gbc.gridx = 7;
+        gbc.gridy = 11;
+        gbc.gridwidth = 1;
+        add( csvButton, gbc );
 
+    }
 
     gbc.gridwidth = 1;
-    
     gbc.gridx = 8;
     gbc.gridy = 11;
     add( saveButton, gbc );
