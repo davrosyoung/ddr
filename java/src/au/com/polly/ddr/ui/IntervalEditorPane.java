@@ -20,6 +20,7 @@
 
 package au.com.polly.ddr.ui;
 
+import au.com.polly.ddr.ApplicationConfiguration;
 import au.com.polly.ddr.GasWellDataEntry;
 import au.com.polly.ddr.GasWellDataSet;
 import au.com.polly.ddr.WellMeasurementType;
@@ -50,7 +51,7 @@ import java.util.Locale;
  */
 public class IntervalEditorPane extends JPanel implements ActionListener, TableModelListener
 {
-private final static Logger logger = Logger.getLogger(  IntervalEditorPane.class  );
+private final static Logger logger = Logger.getLogger(IntervalEditorPane.class);
 protected GasWellDataSet averagedDataSet = null;
 protected GasWellDataSet originalDataSet = null;
 
@@ -105,29 +106,33 @@ protected void populate()
     dataDisplayTable.setRowHeight( 32 );
 
     scrollPane = new JScrollPane( dataDisplayTable );
-	dataTableModel.addTableModelListener( this );
+	dataTableModel.addTableModelListener(this);
     
-    Action addRow = new AbstractAction( "Add" )
+    Action addRow = new AbstractAction( "add" )
     {
         @Override
-        public void actionPerformed(ActionEvent e)
+        public void actionPerformed( ActionEvent e )
         {
             JTable table = (JTable) e.getSource();
             int row = Integer.valueOf(e.getActionCommand());
+            logger.debug( "addRow action, row=" + row );
             GasWellDataSetTableModel model = (GasWellDataSetTableModel)table.getModel();
             model.addRow( row );
+            table.getSelectionModel().setSelectionInterval( row, row + 1 );
         }
     };
     
     ButtonColumn addColumn = new ButtonColumn( dataDisplayTable, addRow, dataTableModel.getColumnIndex( GasWellDataSetTableModel.ColumnType.ADD ) );
-
-    Action delRow = new AbstractAction( "Del" )
+    
+    Action delRow = new AbstractAction( "delete" )
     {
         @Override
         public void actionPerformed( ActionEvent e )
         {
             JTable table = (JTable) e.getSource();
             int row = Integer.valueOf( e.getActionCommand() );
+            logger.debug( "delRow action, row=" + row );
+
             GasWellDataSetTableModel model = (GasWellDataSetTableModel)table.getModel();
 			if ( row > 0 )
 			{
@@ -161,7 +166,7 @@ protected void populate()
                 renderer = (TableCellRenderer)klass.getConstructor().newInstance();
                 column.setCellRenderer( renderer );
             } catch ( Throwable t ) {
-                t.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                t.printStackTrace();
             }
 
         }
@@ -332,7 +337,6 @@ public void addEditorListener( IntervalEditorListener listener )
     {
         editorListenerList.add( listener );
     }
-    return;
 }
 
 
@@ -355,7 +359,7 @@ public void addEditorListener( IntervalEditorListener listener )
  * a table model event type.
  *
  * @param type
- * @return
+ * @return text describing the table model event type.
  */
 	protected static String getTableModelEventTypeText( int type )
 	{           
