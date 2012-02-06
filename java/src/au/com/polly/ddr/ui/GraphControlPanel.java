@@ -96,6 +96,7 @@ public GraphControlPanel( Date from, Date until )
 {
     this.from = from;
     this.until = until;
+    String label;
 
     oilFlowButton = new JButton();
     oilFlowButton.setEnabled( true );
@@ -125,18 +126,22 @@ public GraphControlPanel( Date from, Date until )
     condensateFlowButton.setVisible( true );
     condensateFlowButton.addActionListener( this );
 
+    label = appConfig.getOpenBackgroundDataButtonLabel();
     loadFileButton = new JButton();
-    loadFileButton.setText( "Open Background data ..." );
+    loadFileButton.setText( label );
     loadFileButton.addActionListener( this );
     loadFileButton.setName( "openFileButton" );
 
+
+    label = appConfig.getOpenOverlayDataButtonLabel();
     loadOverlayFileButton = new JButton();
-    loadOverlayFileButton.setText( "Open Overlay data..." );
+    loadOverlayFileButton.setText( label );
     loadOverlayFileButton.addActionListener( this );
     loadOverlayFileButton.setName( "openOverlayFileButton" );
-    
+
+    label = appConfig.getEditOverlayDataButtonLabel();
     editOverlayButton = new JButton();
-    editOverlayButton.setText( "Edit Overlay data" );
+    editOverlayButton.setText( label );
     editOverlayButton.addActionListener( this );
     editOverlayButton.setName( "editOverlayData" );
 
@@ -145,23 +150,24 @@ public GraphControlPanel( Date from, Date until )
     generateOverlayButton.setName("reduce");
     generateOverlayButton.addActionListener( this );
 
+    label = appConfig.getSaveOverlayDataButtonLabel();
     saveOverlayFileButton = new JButton();
-    saveOverlayFileButton.setText( " Save Overlay Data..." );
+    saveOverlayFileButton.setText( label );
     saveOverlayFileButton.addActionListener( this );
     saveOverlayFileButton.setName( "saveOverlayFileButton" );
 
     loadFileBox = new JFileChooser();
-    loadFileBox.setDialogTitle( "Open Background Data File" );
+    loadFileBox.setDialogTitle( "Open Original CSV Data File" );
     loadFileBox.setFileFilter( new DataSourceFileFilter() );
     loadFileBox.setCurrentDirectory( appConfig.getDefaultOriginalCSVDirectory() );
 
     loadOverlayFileBox = new JFileChooser();
-    loadOverlayFileBox.setDialogTitle("Open Overlay Data File" );
+    loadOverlayFileBox.setDialogTitle("Open Averaged CSV Data File" );
     loadOverlayFileBox.setFileFilter(new DataSourceFileFilter());
     loadOverlayFileBox.setCurrentDirectory( appConfig.getDefaultAveragedCSVDirectory() );
 
     saveOverlayFileBox = new JFileChooser();
-    saveOverlayFileBox.setDialogTitle( "Save Overlay Data File" );
+    saveOverlayFileBox.setDialogTitle( "Save Averaged CSV Data File" );
     saveOverlayFileBox.setCurrentDirectory( appConfig.getDefaultAveragedCSVDirectory() );
 
     fromDateLabel = new JLabel( "from:" );
@@ -324,7 +330,7 @@ public void actionPerformed(ActionEvent evt)
                     if ( intervalEditorDialog == null )
                     {
                         Frame frame = JOptionPane.getFrameForComponent( this );
-                        intervalEditorDialog = new JDialog( frame, "Reduced data editor", Dialog.ModalityType.MODELESS );
+                        intervalEditorDialog = new JDialog( frame, appConfig.getIntervalEditorTitle(), Dialog.ModalityType.MODELESS );
                         intervalEditorPane = new IntervalEditorPane( grapher.getOverlayData().copy(), grapher.getData() );
                         intervalEditorDialog.setContentPane( intervalEditorPane );
                         intervalEditorPane.setVisible( true );
